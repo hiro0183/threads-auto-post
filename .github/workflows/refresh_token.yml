@@ -1,0 +1,46 @@
+name: Threadsトークン自動更新
+
+on:
+  schedule:
+    - cron: '0 21 1 * *'  # 毎月1日 06:00 JST
+  workflow_dispatch:       # 手動実行も可能
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - run: pip install requests python-dotenv
+
+      - name: トークンをリフレッシュ
+        id: refresh
+        env:
+          THREADS_APP_SECRET: ${{ secrets.THREADS_APP_SECRET }}
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+        run: |
+          python - <<'EOF'
+          import os, requests, json
+          token = os.environ["THREADS_ACCESS_TOKEN"]
+          resp = requests.get(
+              "https://graph.threads.net/refresh_access_token",
+              params={"grant_type": "th_refresh_token", "access_token": token}
+          )
+          data = resp.json()
+          new_token = data.get("access_token", token)
+          print(f"新トークン取得: {new_token[:20]}...")
+          with open("new_token.txt", "w") as f:
+              f.write(new_token)
+          EOF
+
+      - name: GitHubシークレットを更新
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          NEW_TOKEN=$(cat new_token.txt)
+          gh secret set THREADS_ACCESS_TOKEN --body "$NEW_TOKEN" --repo hiro0183/threads-auto-post
+          echo "シークレット更新完了"
