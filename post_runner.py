@@ -119,6 +119,35 @@ def show_recent_logs(n: int = 10):
         print(f"{mark} {entry['timestamp'][:16]}  {entry['preview']}")
 
 
+# ── 事前生成ファイル読み込み ────────────────────────────
+
+def load_scheduled_post() -> list[str] | None:
+    """今日の現在時刻に対応する事前生成投稿を返す。なければNone"""
+    now = datetime.now()
+    date_str = now.strftime("%Y-%m-%d")
+    time_str = now.strftime("%H:%M")
+
+    json_file = BASE_DIR / "posts" / f"{date_str}.json"
+    if not json_file.exists():
+        return None
+
+    with open(json_file, encoding="utf-8") as f:
+        schedule = json.load(f)
+
+    # 現在時刻±5分以内のスロットを探す
+    from datetime import timedelta
+    now_t = now.replace(second=0, microsecond=0)
+    for slot_time, posts in schedule.items():
+        h, m = map(int, slot_time.split(":"))
+        slot_dt = now_t.replace(hour=h, minute=m)
+        diff = abs((now_t - slot_dt).total_seconds())
+        if diff <= 300 and posts:
+            print(f"  スロット {slot_time} の投稿を使用")
+            return posts
+
+    return None
+
+
 # ── メイン ─────────────────────────────────────────────
 
 def main():
@@ -139,10 +168,14 @@ def main():
         print("トークン更新完了")
         return
 
-    # コンテンツ生成
-    from content_generator import generate_thread
-    print(f"[{datetime.now().strftime('%H:%M')}] ツリー投稿を生成中...")
-    posts = generate_thread()
+    # コンテンツ取得（事前生成ファイル優先 → なければAI生成）
+    posts = load_scheduled_post()
+    if posts:
+        print(f"[{datetime.now().strftime('%H:%M')}] 事前生成ファイルから投稿を読み込みました")
+    else:
+        from content_generator import generate_thread
+        print(f"[{datetime.now().strftime('%H:%M')}] ファイルなし → AI生成中...")
+        posts = generate_thread()
 
     print("\n--- 生成内容 ---")
     for i, post in enumerate(posts, 1):

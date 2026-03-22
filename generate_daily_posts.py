@@ -6,11 +6,11 @@
 """
 
 import sys
-import os
+import json
+import random
 from datetime import datetime, timedelta
 from pathlib import Path
 from content_generator import generate_thread, THEMES
-import random
 
 BASE_DIR = Path(__file__).parent
 POSTS_DIR = BASE_DIR / "posts"
@@ -26,38 +26,47 @@ TIMES = [
 
 
 def generate_and_save(target_date: datetime):
-    filename = POSTS_DIR / f"{target_date.strftime('%Y-%m-%d')}.txt"
+    date_str = target_date.strftime('%Y-%m-%d')
+    json_file = POSTS_DIR / f"{date_str}.json"
+    txt_file  = POSTS_DIR / f"{date_str}.txt"
+
     themes = random.sample(THEMES, len(THEMES))
-    # テーマが足りない場合はランダム補充
     while len(themes) < len(TIMES):
         themes.append(random.choice(THEMES))
 
-    lines = []
-    lines.append(f"# {target_date.strftime('%Y-%m-%d')} 投稿スケジュール（{len(TIMES)}件）\n")
+    schedule = {}   # JSONデータ: {"05:45": ["投稿1", "投稿2", "投稿3"], ...}
+    txt_lines = [f"# {date_str} 投稿スケジュール（{len(TIMES)}件）\n"]
 
     for i, time_str in enumerate(TIMES):
         print(f"[{i+1}/{len(TIMES)}] {time_str} 生成中...")
         try:
             posts = generate_thread(themes[i])
-            lines.append(f"{'='*40}")
-            lines.append(f"⏰ {time_str}")
-            lines.append(f"{'='*40}")
+            schedule[time_str] = posts
+
+            txt_lines.append(f"{'='*40}")
+            txt_lines.append(f"⏰ {time_str}")
+            txt_lines.append(f"{'='*40}")
             for j, post in enumerate(posts, 1):
-                lines.append(f"【{j}投稿目】")
-                lines.append(post)
-                lines.append("")
+                txt_lines.append(f"【{j}投稿目】")
+                txt_lines.append(post)
+                txt_lines.append("")
         except Exception as e:
             print(f"  エラー: {e}")
-            lines.append(f"{'='*40}")
-            lines.append(f"⏰ {time_str}  ※生成失敗: {e}")
-            lines.append("")
+            schedule[time_str] = None
+            txt_lines.append(f"{'='*40}")
+            txt_lines.append(f"⏰ {time_str}  ※生成失敗: {e}")
+            txt_lines.append("")
 
-    content = "\n".join(lines)
-    with open(filename, "w", encoding="utf-8") as f:
-        f.write(content)
+    # JSON保存（GitHub Actions用）
+    with open(json_file, "w", encoding="utf-8") as f:
+        json.dump(schedule, f, ensure_ascii=False, indent=2)
 
-    print(f"\n保存完了: {filename}")
-    return filename
+    # TXT保存（人間確認用）
+    with open(txt_file, "w", encoding="utf-8") as f:
+        f.write("\n".join(txt_lines))
+
+    print(f"\n保存完了: {txt_file}")
+    return txt_file
 
 
 if __name__ == "__main__":
