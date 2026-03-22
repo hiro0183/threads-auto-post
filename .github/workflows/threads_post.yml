@@ -1,0 +1,58 @@
+name: Threads自動投稿
+
+on:
+  schedule:
+    # JST = UTC+9（全時刻をUTCに変換）
+    - cron: '45 20 * * *'  # 05:45 JST
+    - cron: '0 21 * * *'   # 06:00 JST
+    - cron: '0 22 * * *'   # 07:00 JST
+    - cron: '30 22 * * *'  # 07:30 JST
+    - cron: '0 23 * * *'   # 08:00 JST
+    - cron: '30 23 * * *'  # 08:30 JST
+    - cron: '0 0 * * *'    # 09:00 JST
+    - cron: '30 0 * * *'   # 09:30 JST
+    - cron: '0 1 * * *'    # 10:00 JST
+    - cron: '0 2 * * *'    # 11:00 JST
+    - cron: '0 3 * * *'    # 12:00 JST
+    - cron: '30 3 * * *'   # 12:30 JST
+    - cron: '0 4 * * *'    # 13:00 JST
+    - cron: '0 5 * * *'    # 14:00 JST
+    - cron: '0 6 * * *'    # 15:00 JST
+    - cron: '0 7 * * *'    # 16:00 JST
+    - cron: '0 8 * * *'    # 17:00 JST
+    - cron: '0 9 * * *'    # 18:00 JST
+    - cron: '30 9 * * *'   # 18:30 JST
+    - cron: '0 10 * * *'   # 19:00 JST
+    - cron: '15 10 * * *'  # 19:15 JST
+    - cron: '30 10 * * *'  # 19:30 JST
+    - cron: '0 11 * * *'   # 20:00 JST
+    - cron: '15 11 * * *'  # 20:15 JST
+    - cron: '20 11 * * *'  # 20:20 JST
+    - cron: '40 11 * * *'  # 20:40 JST
+    - cron: '0 12 * * *'   # 21:00 JST
+    - cron: '20 12 * * *'  # 21:20 JST
+    - cron: '40 12 * * *'  # 21:40 JST
+    - cron: '0 13 * * *'   # 22:00 JST
+  workflow_dispatch:  # 手動実行も可能
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Python設定
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: ライブラリインストール
+        run: pip install anthropic requests python-dotenv
+
+      - name: 投稿実行
+        env:
+          THREADS_APP_ID: ${{ secrets.THREADS_APP_ID }}
+          THREADS_APP_SECRET: ${{ secrets.THREADS_APP_SECRET }}
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python post_runner.py
