@@ -10,7 +10,7 @@ import json
 import random
 from datetime import datetime, timedelta
 from pathlib import Path
-from content_generator import generate_thread, THEMES
+from content_generator import generate_thread, generate_single_post, THEMES
 
 BASE_DIR = Path(__file__).parent
 POSTS_DIR = BASE_DIR / "posts"
@@ -24,6 +24,40 @@ TIMES = [
     "20:20", "20:40", "21:00", "21:20", "21:40", "22:00",
 ]
 
+# post_runner.py の SLOT_PLAN と同期させること
+SLOT_PLAN = {
+    "05:45": {"type": "tree",   "cta": False},
+    "06:00": {"type": "single", "cta": False},
+    "07:00": {"type": "tree",   "cta": False},
+    "07:30": {"type": "tree",   "cta": False},
+    "08:00": {"type": "tree",   "cta": True},
+    "08:30": {"type": "single", "cta": False},
+    "09:00": {"type": "tree",   "cta": False},
+    "09:30": {"type": "tree",   "cta": False},
+    "10:00": {"type": "tree",   "cta": True},
+    "11:00": {"type": "single", "cta": False},
+    "12:00": {"type": "tree",   "cta": False},
+    "12:30": {"type": "tree",   "cta": True},
+    "13:00": {"type": "tree",   "cta": False},
+    "14:00": {"type": "single", "cta": False},
+    "15:00": {"type": "tree",   "cta": False},
+    "16:00": {"type": "tree",   "cta": True},
+    "17:00": {"type": "tree",   "cta": True},
+    "18:00": {"type": "tree",   "cta": False},
+    "18:30": {"type": "single", "cta": False},
+    "19:00": {"type": "tree",   "cta": True},
+    "19:15": {"type": "tree",   "cta": False},
+    "19:30": {"type": "tree",   "cta": False},
+    "20:00": {"type": "single", "cta": False},
+    "20:15": {"type": "tree",   "cta": False},
+    "20:20": {"type": "tree",   "cta": True},
+    "20:40": {"type": "single", "cta": False},
+    "21:00": {"type": "tree",   "cta": False},
+    "21:20": {"type": "tree",   "cta": True},
+    "21:40": {"type": "tree",   "cta": False},
+    "22:00": {"type": "single", "cta": False},
+}
+
 
 def generate_and_save(target_date: datetime):
     date_str = target_date.strftime('%Y-%m-%d')
@@ -34,13 +68,26 @@ def generate_and_save(target_date: datetime):
     while len(themes) < len(TIMES):
         themes.append(random.choice(THEMES))
 
+    # treeスロットの約3割（9件）をランダムに「X選」スタイルにする
+    tree_indices = [i for i, t in enumerate(TIMES) if SLOT_PLAN.get(t, {}).get("type") == "tree"]
+    list_style_indices = set(random.sample(tree_indices, k=round(len(tree_indices) * 0.3)))
+
     schedule = {}   # JSONデータ: {"05:45": ["投稿1", "投稿2", "投稿3"], ...}
     txt_lines = [f"# {date_str} 投稿スケジュール（{len(TIMES)}件）\n"]
 
     for i, time_str in enumerate(TIMES):
-        print(f"[{i+1}/{len(TIMES)}] {time_str} 生成中...")
+        slot_info = SLOT_PLAN.get(time_str, {"type": "tree", "cta": False})
+        is_single = slot_info["type"] == "single"
+        use_list = i in list_style_indices  # treeスロットのみ該当
+        cta = slot_info["cta"]
+
+        style_label = " [単体]" if is_single else (" [X選型]" if use_list else "")
+        print(f"[{i+1}/{len(TIMES)}] {time_str} 生成中...{style_label}")
         try:
-            posts = generate_thread(themes[i])
+            if is_single:
+                posts = generate_single_post(themes[i])
+            else:
+                posts = generate_thread(themes[i], cta=cta, list_style=use_list)
             schedule[time_str] = posts
 
             txt_lines.append(f"{'='*40}")

@@ -197,8 +197,9 @@ def show_recent_logs(n: int = 10):
     lines = LOG_FILE.read_text(encoding="utf-8").strip().split("\n")
     for line in lines[-n:]:
         entry = json.loads(line)
-        mark = "✅" if entry["status"] == "ok" else "❌"
-        print(f"{mark} {entry['timestamp'][:16]}  {entry['preview']}")
+        mark = "[OK]" if entry["status"] == "ok" else "[NG]"
+        preview = entry.get("posts", [""])[0][:30] if entry.get("posts") else ""
+        print(f"{mark} {entry['timestamp'][:16]}  {preview}")
 
 
 # ── スロット計画（ツリー22件・単体8件・CTA6件/日）──────────
@@ -252,7 +253,11 @@ def load_scheduled_post(target_slot: str) -> list[str] | None:
     if not json_file.exists():
         return None
 
-    schedule = json.loads(json_file.read_text(encoding="utf-8"))
+    try:
+        schedule = json.loads(json_file.read_text(encoding="utf-8"))
+    except Exception as e:
+        print(f"  [WARN] JSONファイル読み込み失敗: {e} → AI生成にフォールバック")
+        return None
     posts = schedule.get(target_slot)
     if posts:
         print(f"  スロット {target_slot} の事前生成投稿を使用")
