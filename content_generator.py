@@ -8,13 +8,49 @@ Claude APIで店舗コンサル・集客・整体院・サロン向けThreadsツ
 """
 
 import os
+import json
 import random
 import anthropic
+from pathlib import Path
 from dotenv import load_dotenv
 
 load_dotenv()
 
 client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+
+BASE_DIR = Path(__file__).parent
+INSIGHTS_DATA_FILE = BASE_DIR / "insights_data.jsonl"
+
+
+def _load_top_patterns(top_n: int = 10) -> str:
+    """インサイトデータから上位投稿のキャッチをまとめて返す"""
+    if not INSIGHTS_DATA_FILE.exists():
+        return ""
+    rows = []
+    seen = set()
+    for line in INSIGHTS_DATA_FILE.read_text(encoding="utf-8").strip().split("\n"):
+        if not line:
+            continue
+        try:
+            r = json.loads(line)
+            rid = r.get("root_id", "")
+            if rid in seen:
+                continue
+            seen.add(rid)
+            if isinstance(r.get("views"), int):
+                rows.append(r)
+        except Exception:
+            pass
+    if not rows:
+        return ""
+    top = sorted(rows, key=lambda x: x["views"], reverse=True)[:top_n]
+    catches = [r.get("catch", "") for r in top if r.get("catch")]
+    if not catches:
+        return ""
+    lines = ["【実績のある高パフォーマンス投稿の冒頭（参考にして構成や言葉選びをブラッシュアップすること）】"]
+    for c in catches:
+        lines.append(f"・{c}")
+    return "\n".join(lines)
 
 THEMES = [
     # 集客
@@ -165,7 +201,10 @@ def generate_thread(theme: str = None, cta: bool = False, list_style: bool = Fal
 
     list_style_instruction = "\n【重要】1投稿目は必ず「〇〇 X選」形式（数字＋選）で始めること。例：「集客が変わる3つの習慣」「潰れる院の共通点5選」" if list_style else ""
 
-    prompt = PROMPT_TREE.format(theme=theme, cta_line=cta_line) + list_style_instruction
+    pattern_hint = _load_top_patterns()
+    pattern_section = f"\n\n{pattern_hint}" if pattern_hint else ""
+
+    prompt = PROMPT_TREE.format(theme=theme, cta_line=cta_line) + list_style_instruction + pattern_section
 
     message = client.messages.create(
         model="claude-haiku-4-5-20251001",

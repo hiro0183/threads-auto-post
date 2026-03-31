@@ -18,6 +18,19 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+
+def self_ping():
+    """Renderのスリープ防止：自分自身のヘルスエンドポイントに10分おきにアクセス"""
+    url = os.environ.get("RENDER_EXTERNAL_URL")
+    if not url:
+        return
+    try:
+        import requests as req
+        req.get(url, timeout=10)
+        logger.info("[PING] スリープ防止ping送信")
+    except Exception as e:
+        logger.warning(f"[PING] ping失敗: {e}")
+
 JST = timezone(timedelta(hours=9))
 
 app = Flask(__name__)
@@ -91,6 +104,14 @@ def start_scheduler():
             id=f"post_{slot.replace(':', '')}",
             misfire_grace_time=300,  # 5分以内の遅延は許容、それ以上はスキップ
         )
+
+    # スリープ防止ping（10分おき）
+    scheduler.add_job(
+        self_ping,
+        "interval",
+        minutes=10,
+        id="self_ping",
+    )
 
     scheduler.start()
     logger.info(f"スケジューラ起動完了 ({len(POST_SCHEDULE)}スロット登録)")
