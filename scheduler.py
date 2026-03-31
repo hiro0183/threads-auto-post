@@ -1,0 +1,103 @@
+"""
+Render用スケジューラ
+Flask Web Service + APScheduler で全スロットを時刻通り自動投稿
+- PCに依存しない（クラウド常時稼働）
+- misfire_grace_time=300: 5分以内の遅延は許容、それ以上はスキップ（再起動時の重複投稿を防止）
+"""
+
+import os
+import logging
+from datetime import datetime, timezone, timedelta
+from flask import Flask, jsonify
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(message)s",
+)
+logger = logging.getLogger(__name__)
+
+JST = timezone(timedelta(hours=9))
+
+app = Flask(__name__)
+
+
+@app.route("/")
+def health():
+    now = datetime.now(JST).strftime("%Y-%m-%d %H:%M:%S JST")
+    return jsonify({"status": "running", "time": now})
+
+
+def post_slot(slot: str):
+    """指定スロットを投稿する"""
+    from post_runner import (
+        load_posted_state,
+        save_posted_state,
+        get_slot_info,
+        load_scheduled_post,
+        get_user_id,
+        post_thread,
+        write_log,
+        write_obsidian,
+    )
+    from token_manager import check_and_refresh
+    from content_generator import generate_thread, generate_single_post
+
+    jst_now = datetime.now(JST)
+    date_str = jst_now.strftime("%Y-%m-%d")
+
+    posted = load_posted_state(date_str)
+    if slot in posted:
+        logger.info(f"[SKIP] {slot} は既に投稿済み")
+        return
+
+    logger.info(f"[START] {slot} 投稿開始 ({jst_now.strftime('%H:%M:%S')} JST)")
+
+    try:
+        token = check_and_refresh()
+        user_id = get_user_id(token)
+
+        posts = load_scheduled_post(slot)
+        if not posts:
+            slot_info = get_slot_info(slot)
+            if slot_info["type"] == "single":
+                posts = generate_single_post()
+            else:
+                posts = generate_thread(cta=slot_info["cta"])
+
+        post_ids = post_thread(posts, token, user_id)
+        write_log(post_ids, posts, "ok", slot=slot)
+        write_obsidian(posts, slot)
+        save_posted_state(date_str, slot)
+        logger.info(f"[OK] {slot} 投稿完了 ({len(post_ids)}件)")
+
+    except Exception as e:
+        logger.error(f"[ERROR] {slot} 投稿失敗: {e}", exc_info=True)
+        write_log([], [], "error", str(e), slot=slot)
+
+
+def start_scheduler():
+    from post_runner import POST_SCHEDULE
+
+    scheduler = BackgroundScheduler(timezone=JST)
+
+    for slot in POST_SCHEDULE:
+        h, m = map(int, slot.split(":"))
+        scheduler.add_job(
+            post_slot,
+            CronTrigger(hour=h, minute=m, timezone=JST),
+            args=[slot],
+            id=f"post_{slot.replace(':', '')}",
+            misfire_grace_time=300,  # 5分以内の遅延は許容、それ以上はスキップ
+        )
+
+    scheduler.start()
+    logger.info(f"スケジューラ起動完了 ({len(POST_SCHEDULE)}スロット登録)")
+    return scheduler
+
+
+if __name__ == "__main__":
+    start_scheduler()
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
