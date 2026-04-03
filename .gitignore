@@ -4,6 +4,6 @@ post_log.jsonl
 error.log
 __pycache__/
 *.pyc
-posts/
+posts/*.txt
 insights_collected.jsonl
 watch.log
