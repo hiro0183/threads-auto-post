@@ -3,3 +3,4 @@ python-dotenv
 anthropic
 flask
 apscheduler
+psycopg2-binary

@@ -26,6 +26,8 @@ LOG_FILE = BASE_DIR / "post_log.jsonl"
 STATE_DIR = BASE_DIR / "state"
 OBSIDIAN_THREADS_DIR = Path(os.environ.get("OBSIDIAN_DIR", r"C:\Users\tujid\iCloudDrive\HIRAYASU\コンサルThreads\投稿履歴"))
 
+from db_state import load_posted_state, save_posted_state, is_posted
+
 # 投稿スケジュール（JST）
 POST_SCHEDULE = [
     "05:00", "05:15", "05:30", "05:45", "06:00", "06:30",
@@ -39,35 +41,19 @@ POST_SCHEDULE = [
     "21:50", "22:00",
 ]
 
-def load_posted_state(date_str: str) -> set:
-    """今日の投稿済みスロットのセットを返す"""
-    state_file = STATE_DIR / f"{date_str}.json"
-    if not state_file.exists():
-        return set()
-    data = json.loads(state_file.read_text(encoding="utf-8"))
-    return set(data.get("posted", []))
-
-
-def save_posted_state(date_str: str, slot: str):
-    """投稿済みスロットを記録する"""
-    STATE_DIR.mkdir(exist_ok=True)
-    state_file = STATE_DIR / f"{date_str}.json"
-    posted = load_posted_state(date_str)
-    posted.add(slot)
-    jst = timezone(timedelta(hours=9))
-    data = {
-        "posted": sorted(posted),
-        "updated": datetime.now(jst).isoformat(),
-    }
-    state_file.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
-
-
 def find_target_slot() -> str | None:
-    """投稿すべきスロットを返す（現在時刻以前で最も新しい未投稿スロット）"""
+    """投稿すべきスロットを返す。
+
+    - 現在時刻の 30分前〜現在 の範囲内にある未投稿スロットのうち最も新しいものを返す。
+    - PC スリープ復帰時に古いスロットを一斉に拾って重複投稿するのを防ぐため
+      30分より古いスロットは無視する。
+    """
     jst = timezone(timedelta(hours=9))
     now = datetime.now(jst)
     date_str = now.strftime("%Y-%m-%d")
     now_min = now.hour * 60 + now.minute
+    # 30分前までのスロットのみ対象（古い取りこぼしは拾わない）
+    cutoff_min = now_min - 30
 
     posted = load_posted_state(date_str)
 
@@ -75,7 +61,7 @@ def find_target_slot() -> str | None:
     for slot in POST_SCHEDULE:
         h, m = map(int, slot.split(":"))
         slot_min = h * 60 + m
-        if slot_min <= now_min and slot not in posted:
+        if cutoff_min <= slot_min <= now_min and slot not in posted:
             target = slot  # より新しいものに上書き
 
     if target:

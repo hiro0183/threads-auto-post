@@ -2,7 +2,9 @@
 Render用スケジューラ
 Flask Web Service + APScheduler で全スロットを時刻通り自動投稿
 - PCに依存しない（クラウド常時稼働）
-- misfire_grace_time=300: 5分以内の遅延は許容、それ以上はスキップ（再起動時の重複投稿を防止）
+- misfire_grace_time=60: 遅延60秒以内のみ許容。再起動時に古いスロットを
+  再実行しないことで重複投稿を防止する。
+- 投稿済みstateはPostgreSQLに永続化（db_state.py）。Render再起動後も維持。
 """
 
 import os
@@ -11,6 +13,7 @@ from datetime import datetime, timezone, timedelta
 from flask import Flask, jsonify
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
+from db_state import load_posted_state, save_posted_state, is_posted
 
 logging.basicConfig(
     level=logging.INFO,
@@ -45,8 +48,6 @@ def health():
 def post_slot(slot: str):
     """指定スロットを投稿する"""
     from post_runner import (
-        load_posted_state,
-        save_posted_state,
         get_slot_info,
         load_scheduled_post,
         get_user_id,
@@ -60,8 +61,8 @@ def post_slot(slot: str):
     jst_now = datetime.now(JST)
     date_str = jst_now.strftime("%Y-%m-%d")
 
-    posted = load_posted_state(date_str)
-    if slot in posted:
+    # DB（またはファイル）で原子的にチェック → 重複投稿を防止
+    if is_posted(date_str, slot):
         logger.info(f"[SKIP] {slot} は既に投稿済み")
         return
 
@@ -102,7 +103,9 @@ def start_scheduler():
             CronTrigger(hour=h, minute=m, timezone=JST),
             args=[slot],
             id=f"post_{slot.replace(':', '')}",
-            misfire_grace_time=300,  # 5分以内の遅延は許容、それ以上はスキップ
+            misfire_grace_time=60,   # 60秒以内の遅延のみ許容。再起動時の古いスロット再実行を防止
+            coalesce=True,           # 同一スロットが複数キューに溜まっても1回だけ実行
+            max_instances=1,         # 同一スロットの並列実行を禁止
         )
 
     # スリープ防止ping（10分おき）
