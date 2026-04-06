@@ -1,3 +1,9 @@
+databases:
+  - name: threads-db
+    plan: free
+    databaseName: threads_state
+    user: threads_user
+
 services:
   - type: web
     name: threads-auto-post
@@ -15,4 +21,6 @@ services:
       - key: ANTHROPIC_API_KEY
         sync: false
       - key: DATABASE_URL
-        sync: false
+        fromDatabase:
+          name: threads-db
+          property: connectionString
