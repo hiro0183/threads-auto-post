@@ -91,6 +91,26 @@ def post_slot(slot: str):
         write_log([], [], "error", str(e), slot=slot)
 
 
+def collect_insights_job():
+    """毎朝6:05 — 前日までの投稿インサイトを集計してGitHubに同期"""
+    logger.info("[INSIGHTS] インサイト集計開始")
+    try:
+        import collect_insights
+        collect_insights.main()
+    except Exception as e:
+        logger.error(f"[INSIGHTS] 集計失敗: {e}", exc_info=True)
+
+
+def github_sync_job():
+    """毎晩23:30 — post_log.jsonlとinsights_data.jsonlをGitHubにpush"""
+    logger.info("[GITHUB] 同期ジョブ開始")
+    try:
+        from github_sync import sync_all
+        sync_all()
+    except Exception as e:
+        logger.error(f"[GITHUB] 同期失敗: {e}", exc_info=True)
+
+
 def start_scheduler():
     from post_runner import POST_SCHEDULE
 
@@ -116,8 +136,28 @@ def start_scheduler():
         id="self_ping",
     )
 
+    # インサイト集計（毎朝6:05）
+    scheduler.add_job(
+        collect_insights_job,
+        CronTrigger(hour=6, minute=5, timezone=JST),
+        id="collect_insights",
+        misfire_grace_time=300,
+        coalesce=True,
+        max_instances=1,
+    )
+
+    # GitHub同期（毎晩23:30）
+    scheduler.add_job(
+        github_sync_job,
+        CronTrigger(hour=23, minute=30, timezone=JST),
+        id="github_sync",
+        misfire_grace_time=300,
+        coalesce=True,
+        max_instances=1,
+    )
+
     scheduler.start()
-    logger.info(f"スケジューラ起動完了 ({len(POST_SCHEDULE)}スロット登録)")
+    logger.info(f"スケジューラ起動完了 ({len(POST_SCHEDULE)}スロット登録 + insights/sync)")
     return scheduler
 
 
