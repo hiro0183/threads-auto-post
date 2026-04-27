@@ -8,6 +8,9 @@ import logging
 import requests
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
+from dotenv import load_dotenv
+
+load_dotenv()
 
 logger = logging.getLogger(__name__)
 
