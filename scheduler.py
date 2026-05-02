@@ -111,6 +111,35 @@ def github_sync_job():
         logger.error(f"[GITHUB] 同期失敗: {e}", exc_info=True)
 
 
+def recover_missed_slots():
+    """起動時に今日の未投稿スロットを回収して順次実行する（Render再起動対策）"""
+    import threading
+    import time as _time
+    from post_runner import POST_SCHEDULE
+    from db_state import is_posted
+
+    jst_now = datetime.now(JST)
+    date_str = jst_now.strftime("%Y-%m-%d")
+    current_hm = jst_now.strftime("%H:%M")
+
+    missed = [s for s in POST_SCHEDULE if s < current_hm and not is_posted(date_str, s)]
+    if not missed:
+        logger.info("[RECOVER] 未投稿スロットなし")
+        return
+
+    logger.info(f"[RECOVER] {len(missed)}件の未投稿スロットを順次実行: {missed}")
+
+    def _run():
+        for slot in missed:
+            try:
+                post_slot(slot)
+            except Exception as e:
+                logger.error(f"[RECOVER] {slot} 失敗: {e}", exc_info=True)
+            _time.sleep(10)  # スロット間に10秒待機してAPI負荷を分散
+
+    threading.Thread(target=_run, daemon=True).start()
+
+
 def start_scheduler():
     from post_runner import POST_SCHEDULE
 
@@ -123,9 +152,9 @@ def start_scheduler():
             CronTrigger(hour=h, minute=m, timezone=JST),
             args=[slot],
             id=f"post_{slot.replace(':', '')}",
-            misfire_grace_time=60,   # 60秒以内の遅延のみ許容。再起動時の古いスロット再実行を防止
-            coalesce=True,           # 同一スロットが複数キューに溜まっても1回だけ実行
-            max_instances=1,         # 同一スロットの並列実行を禁止
+            misfire_grace_time=60,
+            coalesce=True,
+            max_instances=1,
         )
 
     # スリープ防止ping（10分おき）
@@ -158,6 +187,10 @@ def start_scheduler():
 
     scheduler.start()
     logger.info(f"スケジューラ起動完了 ({len(POST_SCHEDULE)}スロット登録 + insights/sync)")
+
+    # 起動時に未投稿スロットを回収（Render再起動後の取りこぼし対策）
+    recover_missed_slots()
+
     return scheduler
 
 
