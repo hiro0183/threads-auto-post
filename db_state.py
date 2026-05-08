@@ -135,3 +135,38 @@ def is_posted(date_str: str, slot: str) -> bool:
             conn.close()
 
     return slot in load_posted_state(date_str)
+
+
+def try_reserve_slot(date_str: str, slot: str) -> bool:
+    """スロットを原子的に予約してTrueを返す。既に予約済みならFalseを返す。
+
+    is_posted() → post() → save() の間に別スレッド/プロセスが割り込む
+    TOCTOU競合を防ぐため、投稿前にこの関数でDBを先に確保する。
+    INSERT ON CONFLICT はDB側で排他制御されるので複数プロセスでも安全。
+    """
+    conn = _get_conn()
+    if conn:
+        try:
+            _ensure_table(conn)
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO posted_slots (date, slot, posted_at)
+                    VALUES (%s, %s, NOW())
+                    ON CONFLICT (date, slot) DO NOTHING
+                    """,
+                    (date_str, slot),
+                )
+                reserved = cur.rowcount == 1
+            conn.commit()
+            return reserved
+        except Exception as e:
+            logger.error(f"[DB] try_reserve失敗 → スキップ扱いで安全側に倒す: {e}")
+            return False
+        finally:
+            conn.close()
+
+    # ファイルフォールバック（ローカル開発用）
+    if slot in load_posted_state(date_str):
+        return False
+    return True

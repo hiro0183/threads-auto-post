@@ -13,7 +13,7 @@ from datetime import datetime, timezone, timedelta
 from flask import Flask, jsonify
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from db_state import load_posted_state, save_posted_state, is_posted
+from db_state import load_posted_state, save_posted_state, is_posted, try_reserve_slot
 
 logging.basicConfig(
     level=logging.INFO,
@@ -61,9 +61,10 @@ def post_slot(slot: str):
     jst_now = datetime.now(JST)
     date_str = jst_now.strftime("%Y-%m-%d")
 
-    # DB（またはファイル）で原子的にチェック → 重複投稿を防止
-    if is_posted(date_str, slot):
-        logger.info(f"[SKIP] {slot} は既に投稿済み")
+    # 投稿前にDBへ原子的にINSERT → 重複投稿をDBレベルで防止
+    # try_reserve_slot は ON CONFLICT DO NOTHING なので複数スレッド/プロセスでも安全
+    if not try_reserve_slot(date_str, slot):
+        logger.info(f"[SKIP] {slot} は既に予約済み・投稿済み")
         return
 
     logger.info(f"[START] {slot} 投稿開始 ({jst_now.strftime('%H:%M:%S')} JST)")
@@ -83,7 +84,7 @@ def post_slot(slot: str):
         post_ids = post_thread(posts, token, user_id)
         write_log(post_ids, posts, "ok", slot=slot)
         write_obsidian(posts, slot)
-        save_posted_state(date_str, slot)
+        # save_posted_state は try_reserve_slot でINSERT済みのため不要
         logger.info(f"[OK] {slot} 投稿完了 ({len(post_ids)}件)")
 
     except Exception as e:
