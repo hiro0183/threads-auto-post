@@ -319,13 +319,19 @@ def main():
     if posts:
         print(f"[{target_slot}] 事前生成ファイルから読み込みました")
     else:
-        from content_generator import generate_thread, generate_single_post
+        from content_generator import generate_thread, generate_single_post, load_used_catches, PRIORITY_THEMES, PRIORITY_SLOTS
         slot_info = get_slot_info(target_slot)
         print(f"[{target_slot}] ファイルなし → AI生成中... ({slot_info['type']}{', CTA' if slot_info['cta'] else ''})")
+        used_catches = load_used_catches(days=30)
         if slot_info["type"] == "single":
-            posts = generate_single_post()
+            posts = generate_single_post(used_catches=used_catches)
+        elif target_slot in PRIORITY_SLOTS and slot_info["type"] == "tree":
+            import random
+            priority_theme = random.choice(PRIORITY_THEMES)
+            print(f"  [優先スロット] テーマ:「{priority_theme}」")
+            posts = generate_thread(theme=priority_theme, cta=slot_info["cta"], used_catches=used_catches)
         else:
-            posts = generate_thread(cta=slot_info["cta"])
+            posts = generate_thread(cta=slot_info["cta"], used_catches=used_catches)
 
     print("\n--- 生成内容 ---")
     for i, post in enumerate(posts, 1):
