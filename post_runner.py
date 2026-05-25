@@ -31,14 +31,14 @@ from db_state import load_posted_state, save_posted_state, is_posted
 # 投稿スケジュール（JST）
 POST_SCHEDULE = [
     "05:00", "05:15", "05:30", "05:45", "06:00", "06:30",
-    "07:00", "07:30", "08:00", "08:15", "08:30", "09:00", "09:30",
-    "09:45", "10:00", "10:15", "10:30", "11:00", "11:15", "11:30",
+    "07:00", "07:30", "08:00", "08:30", "09:00", "09:30",
+    "09:45", "10:00", "10:15", "10:30", "11:00", "11:30",
     "12:00", "12:30", "12:45", "13:00", "13:15", "13:30",
-    "14:00", "14:15", "14:30", "15:00", "15:30", "16:00", "16:30",
-    "16:45", "17:00", "17:15", "17:30", "18:00", "18:15", "18:30",
+    "14:00", "14:30", "15:00", "15:30", "16:00", "16:30",
+    "16:45", "17:00", "17:30", "18:00", "18:15", "18:30",
     "18:45", "19:00", "19:15", "19:30", "19:45", "20:00",
     "20:15", "20:20", "20:40", "21:00", "21:20", "21:40",
-    "21:50", "22:00", "22:30",
+    "21:50", "22:00",
 ]
 
 def find_target_slot() -> str | None:
@@ -205,7 +205,6 @@ SLOT_PLAN = {
     "07:00": {"type": "tree",   "cta": False},
     "07:30": {"type": "tree",   "cta": False},
     "08:00": {"type": "tree",   "cta": True},   # CTA 2
-    "08:15": {"type": "single", "cta": False},  # comment
     "08:30": {"type": "single", "cta": False},
     "09:00": {"type": "tree",   "cta": False},
     "09:30": {"type": "tree",   "cta": False},
@@ -214,7 +213,6 @@ SLOT_PLAN = {
     "10:15": {"type": "tree",   "cta": False},
     "10:30": {"type": "single", "cta": False},
     "11:00": {"type": "single", "cta": False},
-    "11:15": {"type": "single", "cta": False},  # comment
     "11:30": {"type": "tree",   "cta": False},
     "12:00": {"type": "tree",   "cta": False},
     "12:30": {"type": "tree",   "cta": True},   # CTA 4
@@ -223,7 +221,6 @@ SLOT_PLAN = {
     "13:15": {"type": "tree",   "cta": False},
     "13:30": {"type": "single", "cta": False},
     "14:00": {"type": "single", "cta": False},
-    "14:15": {"type": "single", "cta": False},  # comment
     "14:30": {"type": "tree",   "cta": True},   # CTA 6
     "15:00": {"type": "tree",   "cta": False},
     "15:30": {"type": "tree",   "cta": False},
@@ -231,7 +228,6 @@ SLOT_PLAN = {
     "16:30": {"type": "tree",   "cta": False},
     "16:45": {"type": "single", "cta": False},
     "17:00": {"type": "tree",   "cta": True},   # CTA 8
-    "17:15": {"type": "single", "cta": False},  # comment
     "17:30": {"type": "tree",   "cta": False},
     "18:00": {"type": "tree",   "cta": False},
     "18:15": {"type": "tree",   "cta": False},
@@ -250,7 +246,6 @@ SLOT_PLAN = {
     "21:40": {"type": "tree",   "cta": False},
     "21:50": {"type": "single", "cta": False},
     "22:00": {"type": "single", "cta": False},
-    "22:30": {"type": "single", "cta": False},  # comment
 }
 
 
