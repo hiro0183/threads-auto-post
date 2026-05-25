@@ -45,7 +45,7 @@ PRIORITY_THEMES = [
 ]
 
 
-def load_used_catches(days: int = 30) -> list[str]:
+def load_used_catches(days: int = 7) -> list[str]:
     """過去N日間の投稿1行目を返す（重複防止用）"""
     if not POST_LOG_FILE.exists():
         return []
@@ -102,30 +102,29 @@ def _load_top_patterns(top_n: int = 10) -> str:
         return ""
 
     top_views = sorted(rows, key=lambda x: x["views"], reverse=True)[:top_n]
-    top_eng = sorted(rows, key=lambda x: _eng_rate(x), reverse=True)[:5]
+    top_eng = sorted(rows, key=lambda x: _eng_rate(x), reverse=True)[:3]
 
-    lines = ["【バズ投稿パターン（実走インサイトデータから自動抽出）】"]
+    lines = ["【参考：過去に伸びた投稿の冒頭（型の構造のみ参考にすること）】"]
     lines.append("")
 
-    # エンゲージ率上位の全文（構造ごとリミックスする用）
-    lines.append("▼ エンゲージ率上位投稿（投稿構造・リズム・言葉選びをリミックスすること）")
+    # エンゲージ率上位の冒頭1行のみ（真似ではなく型の構造の参考に留める）
+    lines.append("▼ エンゲージ率上位投稿の冒頭（型の構造を参考にする・言葉やフックは真似せず、今回のテーマに合わせて新しく書くこと）")
     for i, r in enumerate(top_eng, 1):
         er = round(_eng_rate(r), 1)
         posts = r.get("posts", [])
+        first_line = posts[0][:60] if posts else r.get("catch", "")[:60]
         lines.append(f"[{i}位] エンゲージ率{er}% / Views {r.get('views',0):,}")
-        for j, p in enumerate(posts, 1):
-            label = f"{j}投稿目" if r.get("post_type") == "tree" else "本文"
-            lines.append(f"  {label}: {p[:60]}{'…' if len(p) > 60 else ''}")
-        lines.append("")
+        lines.append(f"  冒頭: {first_line}{'…' if posts and len(posts[0]) > 60 else ''}")
+    lines.append("")
 
     # Views上位のキャッチ（言葉選びの参考）
     catches = [r.get("catch", "") for r in top_views if r.get("catch")]
     if catches:
-        lines.append("▼ Views上位投稿の1投稿目（言葉のリズム・具体性・感情の刺さり方を学ぶこと）")
+        lines.append("▼ Views上位投稿の1投稿目（フックの型の参考）")
         for c in catches:
             lines.append(f"・{c}")
         lines.append("")
-        lines.append("※共通点：具体的な数字や人物像・失敗結果・常識破壊・スタッフ/廃業テーマが高パフォーマンス。これらのパターンを積極的に使うこと。")
+        lines.append("※型の構造（数字・人物像・失敗結果・常識破壊・伏字・引きなど）を参考にして、固有数字とフックの言い回しは今回のテーマに合わせて新しく作ること。同じ表現・同じ構文を繰り返さない。")
 
     return "\n".join(lines)
 

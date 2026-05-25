@@ -192,60 +192,60 @@ def show_recent_logs(n: int = 10):
         print(f"{mark} {entry['timestamp'][:16]}  {preview}")
 
 
-# ── スロット計画（ツリー22件・単体8件・CTA6件/日）──────────
+# ── スロット計画（全50スロットツリー・CTA12件/日）──────────
 # type: "tree" or "single" / cta: True → 3投稿目にLINE CTA追加
 
 SLOT_PLAN = {
     "05:00": {"type": "tree",   "cta": False},
-    "05:15": {"type": "single", "cta": False},
+    "05:15": {"type": "tree",   "cta": False},
     "05:30": {"type": "tree",   "cta": False},
     "05:45": {"type": "tree",   "cta": False},
-    "06:00": {"type": "single", "cta": False},
+    "06:00": {"type": "tree",   "cta": False},
     "06:30": {"type": "tree",   "cta": True},   # CTA 1
     "07:00": {"type": "tree",   "cta": False},
     "07:30": {"type": "tree",   "cta": False},
     "08:00": {"type": "tree",   "cta": True},   # CTA 2
-    "08:30": {"type": "single", "cta": False},
+    "08:30": {"type": "tree",   "cta": False},
     "09:00": {"type": "tree",   "cta": False},
     "09:30": {"type": "tree",   "cta": False},
-    "09:45": {"type": "single", "cta": False},
+    "09:45": {"type": "tree",   "cta": False},
     "10:00": {"type": "tree",   "cta": True},   # CTA 3
     "10:15": {"type": "tree",   "cta": False},
-    "10:30": {"type": "single", "cta": False},
-    "11:00": {"type": "single", "cta": False},
+    "10:30": {"type": "tree",   "cta": False},
+    "11:00": {"type": "tree",   "cta": False},
     "11:30": {"type": "tree",   "cta": False},
     "12:00": {"type": "tree",   "cta": False},
     "12:30": {"type": "tree",   "cta": True},   # CTA 4
     "12:45": {"type": "tree",   "cta": True},   # CTA 5
     "13:00": {"type": "tree",   "cta": False},
     "13:15": {"type": "tree",   "cta": False},
-    "13:30": {"type": "single", "cta": False},
-    "14:00": {"type": "single", "cta": False},
+    "13:30": {"type": "tree",   "cta": False},
+    "14:00": {"type": "tree",   "cta": False},
     "14:30": {"type": "tree",   "cta": True},   # CTA 6
     "15:00": {"type": "tree",   "cta": False},
     "15:30": {"type": "tree",   "cta": False},
     "16:00": {"type": "tree",   "cta": True},   # CTA 7
     "16:30": {"type": "tree",   "cta": False},
-    "16:45": {"type": "single", "cta": False},
+    "16:45": {"type": "tree",   "cta": False},
     "17:00": {"type": "tree",   "cta": True},   # CTA 8
     "17:30": {"type": "tree",   "cta": False},
     "18:00": {"type": "tree",   "cta": False},
     "18:15": {"type": "tree",   "cta": False},
-    "18:30": {"type": "single", "cta": False},
+    "18:30": {"type": "tree",   "cta": False},
     "18:45": {"type": "tree",   "cta": True},   # CTA 9
     "19:00": {"type": "tree",   "cta": True},   # CTA 10
     "19:15": {"type": "tree",   "cta": False},
     "19:30": {"type": "tree",   "cta": False},
     "19:45": {"type": "tree",   "cta": False},
-    "20:00": {"type": "single", "cta": False},
+    "20:00": {"type": "tree",   "cta": False},
     "20:15": {"type": "tree",   "cta": False},
     "20:20": {"type": "tree",   "cta": True},   # CTA 11
-    "20:40": {"type": "single", "cta": False},
+    "20:40": {"type": "tree",   "cta": False},
     "21:00": {"type": "tree",   "cta": False},
     "21:20": {"type": "tree",   "cta": True},   # CTA 12
     "21:40": {"type": "tree",   "cta": False},
-    "21:50": {"type": "single", "cta": False},
-    "22:00": {"type": "single", "cta": False},
+    "21:50": {"type": "tree",   "cta": False},
+    "22:00": {"type": "tree",   "cta": False},
 }
 
 
@@ -314,17 +314,12 @@ def main():
     if posts:
         print(f"[{target_slot}] 事前生成ファイルから読み込みました")
     else:
-        from content_generator import generate_thread, generate_single_post, load_used_catches, PRIORITY_THEMES, PRIORITY_SLOTS
+        from content_generator import generate_thread, generate_single_post, load_used_catches
         slot_info = get_slot_info(target_slot)
         print(f"[{target_slot}] ファイルなし → AI生成中... ({slot_info['type']}{', CTA' if slot_info['cta'] else ''})")
-        used_catches = load_used_catches(days=30)
+        used_catches = load_used_catches(days=7)
         if slot_info["type"] == "single":
             posts = generate_single_post(used_catches=used_catches)
-        elif target_slot in PRIORITY_SLOTS and slot_info["type"] == "tree":
-            import random
-            priority_theme = random.choice(PRIORITY_THEMES)
-            print(f"  [優先スロット] テーマ:「{priority_theme}」")
-            posts = generate_thread(theme=priority_theme, cta=slot_info["cta"], used_catches=used_catches)
         else:
             posts = generate_thread(cta=slot_info["cta"], used_catches=used_catches)
 

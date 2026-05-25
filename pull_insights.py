@@ -133,8 +133,15 @@ def main():
         print("\nインサイト集計を実行中...")
         import collect_insights
         collect_insights.main()
+
+        print("\nダッシュボード更新中...")
+        try:
+            import generate_dashboard
+            generate_dashboard.main()
+        except Exception as e:
+            print(f"[WARN] ダッシュボード更新失敗: {e}")
     else:
-        print("\n--no-collect 指定のため集計はスキップ")
+        print("\n--no-collect 指定のため集計・ダッシュボードはスキップ")
 
 
 if __name__ == "__main__":

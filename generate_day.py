@@ -16,7 +16,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 from post_runner import SLOT_PLAN
-from content_generator import generate_thread, generate_single_post, THEMES, PRIORITY_THEMES, PRIORITY_SLOTS, load_used_catches
+from content_generator import generate_thread, generate_single_post, THEMES, PRIORITY_THEMES, load_used_catches
 
 BASE_DIR = Path(__file__).parent
 POSTS_DIR = BASE_DIR / "posts"
@@ -32,34 +32,25 @@ def generate_day(date_str: str, preview: bool = False):
     print(f"  構成: ツリー{tree_count}件 / 単体{single_count}件 / CTA付き{cta_count}件\n")
     print("=" * 60)
 
-    # 過去30日の使用済みキャッチを読み込む（重複防止）
-    used_catches = load_used_catches(days=30)
-    print(f"  重複防止: 過去30日の使用済みキャッチ {len(used_catches)}件を参照\n")
+    # 過去7日の使用済みキャッチを読み込む（重複防止・短期）
+    used_catches = load_used_catches(days=7)
+    print(f"  重複防止: 過去7日の使用済みキャッチ {len(used_catches)}件を参照\n")
 
     schedule = {}
 
-    # テーマプールを準備（優先テーマは優先スロット以外でも使う）
-    themes_pool = THEMES.copy()
+    # PRIORITY_THEMES を通常 THEMES に混ぜ込み、強制配置をやめて多様性確保
+    themes_pool = THEMES.copy() + PRIORITY_THEMES.copy()
     random.shuffle(themes_pool)
-    priority_pool = PRIORITY_THEMES.copy()
-    random.shuffle(priority_pool)
 
     all_slots = sorted(SLOT_PLAN.keys())
     theme_idx = 0
-    priority_idx = 0
 
     for slot in all_slots:
         info = SLOT_PLAN[slot]
 
-        # 優先スロットは失敗ストーリー型・対比型テーマを優先
-        if slot in PRIORITY_SLOTS and info["type"] == "tree":
-            theme = priority_pool[priority_idx % len(priority_pool)]
-            priority_idx += 1
-            slot_label = f"[優先]"
-        else:
-            theme = themes_pool[theme_idx % len(themes_pool)]
-            theme_idx += 1
-            slot_label = ""
+        theme = themes_pool[theme_idx % len(themes_pool)]
+        theme_idx += 1
+        slot_label = ""
 
         label = "単体" if info["type"] == "single" else f"ツリー{'[CTA]' if info['cta'] else ''}"
         print(f"\n[{slot}]{slot_label} {label} テーマ:「{theme}」")
