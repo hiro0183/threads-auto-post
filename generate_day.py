@@ -16,10 +16,15 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 from post_runner import SLOT_PLAN
-from content_generator import generate_thread, generate_single_post, THEMES, PRIORITY_THEMES, load_used_catches
+from content_generator import generate_thread, generate_single_post, THEMES, AI_THEMES, PRIORITY_THEMES, load_used_catches
 
 BASE_DIR = Path(__file__).parent
 POSTS_DIR = BASE_DIR / "posts"
+
+# 1日の投稿に占めるAI×経営テーマの割合（0.0〜1.0）。
+# 0.4 = 約4割をAIネタにする。フォロワーの反応を見ながらこの数字だけ動かせばよい。
+# 純経営に戻したいときは 0.0、AI全振りなら 1.0。
+AI_RATIO = 0.05
 
 
 def generate_day(date_str: str, preview: bool = False):
@@ -29,7 +34,8 @@ def generate_day(date_str: str, preview: bool = False):
     total = len(SLOT_PLAN)
 
     print(f"\n{'[PREVIEW]' if preview else '[生成・保存]'} {date_str} 分（{total}スロット）\n")
-    print(f"  構成: ツリー{tree_count}件 / 単体{single_count}件 / CTA付き{cta_count}件\n")
+    print(f"  構成: ツリー{tree_count}件 / 単体{single_count}件 / CTA付き{cta_count}件")
+    print(f"  AI比率: {int(AI_RATIO*100)}%（約{round(total*AI_RATIO)}件をAI×経営テーマに割当）\n")
     print("=" * 60)
 
     # 過去7日の使用済みキャッチを読み込む（重複防止・短期）
@@ -38,19 +44,33 @@ def generate_day(date_str: str, preview: bool = False):
 
     schedule = {}
 
-    # PRIORITY_THEMES を通常 THEMES に混ぜ込み、強制配置をやめて多様性確保
-    themes_pool = THEMES.copy() + PRIORITY_THEMES.copy()
-    random.shuffle(themes_pool)
+    # 経営プール（通常THEMES＋PRIORITY）とAIプールを分けて持つ
+    biz_pool = THEMES.copy() + PRIORITY_THEMES.copy()
+    ai_pool = AI_THEMES.copy()
+    random.shuffle(biz_pool)
+    random.shuffle(ai_pool)
 
     all_slots = sorted(SLOT_PLAN.keys())
-    theme_idx = 0
+    biz_idx = 0
+    ai_idx = 0
+    ai_acc = 0.0  # AI_RATIOに従ってAIテーマを1日に均等配置するためのアキュムレータ
+    ai_used = 0
 
     for slot in all_slots:
         info = SLOT_PLAN[slot]
 
-        theme = themes_pool[theme_idx % len(themes_pool)]
-        theme_idx += 1
-        slot_label = ""
+        # AI_RATIO分だけ均等にAIテーマを差し込む（連続クラスタを避ける）
+        ai_acc += AI_RATIO
+        if ai_acc >= 1.0 and ai_pool:
+            ai_acc -= 1.0
+            theme = ai_pool[ai_idx % len(ai_pool)]
+            ai_idx += 1
+            ai_used += 1
+            slot_label = " [AI]"
+        else:
+            theme = biz_pool[biz_idx % len(biz_pool)]
+            biz_idx += 1
+            slot_label = ""
 
         label = "単体" if info["type"] == "single" else f"ツリー{'[CTA]' if info['cta'] else ''}"
         print(f"\n[{slot}]{slot_label} {label} テーマ:「{theme}」")
