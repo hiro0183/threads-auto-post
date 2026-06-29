@@ -13,7 +13,7 @@ from pathlib import Path
 POSTS_DIR = Path(__file__).parent / "posts"
 
 # 変換しない例外語（複合語）
-EXCEPTIONS = {"観客", "客室", "客員", "客体", "客席", "客観", "顧客"}
+EXCEPTIONS = {"観客", "客室", "客員", "客体", "客席", "客観", "顧客", "集客", "来客", "送客", "迎客", "招客"}
 
 def make_polite(text: str) -> str:
     # ──── 生成時のモデルミス修正 ────
@@ -21,6 +21,10 @@ def make_polite(text: str) -> str:
     text = text.replace("じゃません", "ではありません")
     # 二重変換ミス：おお客様様 → お客様
     text = re.sub(r"おお+客様+", "お客様", text)
+    # 複合語誤変換修正：集お客様 → 集客 など
+    text = text.replace("集お客様", "集客")
+    text = text.replace("顧お客様", "顧客")
+    text = text.replace("来お客様", "来客")
 
     # ──── 敬語変換 ────
     # ないです → ません
