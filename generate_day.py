@@ -24,7 +24,7 @@ POSTS_DIR = BASE_DIR / "posts"
 # 1日の投稿に占めるAI×経営テーマの割合（0.0〜1.0）。
 # 0.4 = 約4割をAIネタにする。フォロワーの反応を見ながらこの数字だけ動かせばよい。
 # 純経営に戻したいときは 0.0、AI全振りなら 1.0。
-AI_RATIO = 0.05
+AI_RATIO = 0.0
 
 
 def generate_day(date_str: str, preview: bool = False):
