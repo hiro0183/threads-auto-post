@@ -7,3 +7,4 @@ __pycache__/
 posts/*.txt
 insights_collected.jsonl
 watch.log
+reports/
