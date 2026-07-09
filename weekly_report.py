@@ -24,9 +24,22 @@ sys.path.insert(0, str(BASE_DIR))
 from analyze_patterns import classify_catch, eng_rate  # noqa: E402
 from generate_dashboard import classify_theme  # noqa: E402
 
-INSIGHTS_DATA_FILE = BASE_DIR / "insights_data.jsonl"
-POST_LOG_FILE = BASE_DIR / "post_log.jsonl"
-FOLLOWER_LOG_FILE = BASE_DIR / "follower_log.jsonl"
+def _data_file(name: str) -> Path:
+    """データファイルの場所を返す。ローカル(フル)を優先し、無ければ累積sync/を読む。
+
+    ローカルPC: BASE_DIR/{name}（pull_insightsが蓄積したフル履歴）
+    クラウド週次ルーティン: BASE_DIR/{name}は無いので sync/{name}（github_syncの累積）を使う
+    """
+    primary = BASE_DIR / name
+    if primary.exists():
+        return primary
+    fallback = BASE_DIR / "sync" / name
+    return fallback if fallback.exists() else primary
+
+
+INSIGHTS_DATA_FILE = _data_file("insights_data.jsonl")
+POST_LOG_FILE = _data_file("post_log.jsonl")
+FOLLOWER_LOG_FILE = _data_file("follower_log.jsonl")
 OBSIDIAN_REPORT_DIR = Path(r"C:\Users\tujid\OneDrive\Desktop\HIRAYASU\コンサルThreads\インサイト\週次レポート")
 LINE_MANUAL_FILE = OBSIDIAN_REPORT_DIR / "_LINE流入_手動記入.jsonl"
 
