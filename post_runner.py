@@ -24,21 +24,18 @@ load_dotenv()
 BASE_DIR = Path(__file__).parent
 LOG_FILE = BASE_DIR / "post_log.jsonl"
 STATE_DIR = BASE_DIR / "state"
-OBSIDIAN_THREADS_DIR = Path(os.environ.get("OBSIDIAN_DIR", r"C:\Users\tujid\iCloudDrive\HIRAYASU\コンサルThreads\投稿履歴"))
+OBSIDIAN_THREADS_DIR = Path(os.environ.get("OBSIDIAN_DIR", r"C:\Users\tujid\OneDrive\Desktop\HIRAYASU\コンサルThreads\投稿履歴"))
 
 from db_state import load_posted_state, save_posted_state, is_posted
 
 # 投稿スケジュール（JST）
+# 2026-07-12: エンゲージ回復のため 50→10スロットへ削減。
+# 過剰投稿による自己リーチ共食い＋低エンゲージのアルゴ抑制を解除する狙い。
+# 残す10枠は直近30日の中央値views・いいね実績・時間帯の散らしで選定。
+# 1週間リーチ/エンゲージを見て戻りが鈍ければ次段階で更に削減する。
 POST_SCHEDULE = [
-    "05:00", "05:15", "05:30", "05:45", "06:00", "06:30",
-    "07:00", "07:30", "08:00", "08:30", "09:00", "09:30",
-    "09:45", "10:00", "10:15", "10:30", "11:00", "11:30",
-    "12:00", "12:30", "12:45", "13:00", "13:15", "13:30",
-    "14:00", "14:30", "15:00", "15:30", "16:00", "16:30",
-    "16:45", "17:00", "17:30", "18:00", "18:15", "18:30",
-    "18:45", "19:00", "19:15", "19:30", "19:45", "20:00",
-    "20:15", "20:20", "20:40", "21:00", "21:20", "21:40",
-    "21:50", "22:00",
+    "05:00", "06:00", "07:00", "08:00", "11:00",
+    "14:00", "16:30", "19:30", "20:15", "22:00",
 ]
 
 def find_target_slot() -> str | None:
@@ -192,59 +189,22 @@ def show_recent_logs(n: int = 10):
         print(f"{mark} {entry['timestamp'][:16]}  {preview}")
 
 
-# ── スロット計画（全50スロットツリー・CTA12件/日）──────────
+# ── スロット計画（全50スロットツリー・CTA3件/日）──────────
 # type: "tree" or "single" / cta: True → 3投稿目にLINE CTA追加
+# 2026-07-07: taboo.md #5「CTA付き投稿は1日2〜3本まで」に合わせて12→3件へ修正
+# （旧12件設定はCTA過多でリーチ壊滅の実測知見に反していた）
 
+# 2026-07-12: 10スロットへ削減（POST_SCHEDULEと連動）。CTAは1日2本（taboo上限2〜3の下限側）。
 SLOT_PLAN = {
     "05:00": {"type": "tree",   "cta": False},
-    "05:15": {"type": "tree",   "cta": False},
-    "05:30": {"type": "tree",   "cta": False},
-    "05:45": {"type": "tree",   "cta": False},
     "06:00": {"type": "tree",   "cta": False},
-    "06:30": {"type": "tree",   "cta": True},   # CTA 1
     "07:00": {"type": "tree",   "cta": False},
-    "07:30": {"type": "tree",   "cta": False},
-    "08:00": {"type": "tree",   "cta": True},   # CTA 2
-    "08:30": {"type": "tree",   "cta": False},
-    "09:00": {"type": "tree",   "cta": False},
-    "09:30": {"type": "tree",   "cta": False},
-    "09:45": {"type": "tree",   "cta": False},
-    "10:00": {"type": "tree",   "cta": True},   # CTA 3
-    "10:15": {"type": "tree",   "cta": False},
-    "10:30": {"type": "tree",   "cta": False},
+    "08:00": {"type": "tree",   "cta": True},   # CTA 1（朝）
     "11:00": {"type": "tree",   "cta": False},
-    "11:30": {"type": "tree",   "cta": False},
-    "12:00": {"type": "tree",   "cta": False},
-    "12:30": {"type": "tree",   "cta": True},   # CTA 4
-    "12:45": {"type": "tree",   "cta": True},   # CTA 5
-    "13:00": {"type": "tree",   "cta": False},
-    "13:15": {"type": "tree",   "cta": False},
-    "13:30": {"type": "tree",   "cta": False},
     "14:00": {"type": "tree",   "cta": False},
-    "14:30": {"type": "tree",   "cta": True},   # CTA 6
-    "15:00": {"type": "tree",   "cta": False},
-    "15:30": {"type": "tree",   "cta": False},
-    "16:00": {"type": "tree",   "cta": True},   # CTA 7
     "16:30": {"type": "tree",   "cta": False},
-    "16:45": {"type": "tree",   "cta": False},
-    "17:00": {"type": "tree",   "cta": True},   # CTA 8
-    "17:30": {"type": "tree",   "cta": False},
-    "18:00": {"type": "tree",   "cta": False},
-    "18:15": {"type": "tree",   "cta": False},
-    "18:30": {"type": "tree",   "cta": False},
-    "18:45": {"type": "tree",   "cta": True},   # CTA 9
-    "19:00": {"type": "tree",   "cta": True},   # CTA 10
-    "19:15": {"type": "tree",   "cta": False},
-    "19:30": {"type": "tree",   "cta": False},
-    "19:45": {"type": "tree",   "cta": False},
-    "20:00": {"type": "tree",   "cta": False},
+    "19:30": {"type": "tree",   "cta": True},   # CTA 2（夕・いいね実績枠）
     "20:15": {"type": "tree",   "cta": False},
-    "20:20": {"type": "tree",   "cta": True},   # CTA 11
-    "20:40": {"type": "tree",   "cta": False},
-    "21:00": {"type": "tree",   "cta": False},
-    "21:20": {"type": "tree",   "cta": True},   # CTA 12
-    "21:40": {"type": "tree",   "cta": False},
-    "21:50": {"type": "tree",   "cta": False},
     "22:00": {"type": "tree",   "cta": False},
 }
 
