@@ -1,0 +1,322 @@
+<title>朝のチェック</title>
+<style>
+  :root {
+    --paper: #F5F3FA; --ink: #2E2A3D; --muted: #8A84A0; --panel: #FFFFFF; --line: #E3DFF0;
+    --accent: #FF8F6B; --accent-ink: #7A3B22;
+    --warn-bg: #FFF1E3; --warn-line: #F2C89B; --warn-ink: #8A5321;
+    --good: #3F9B6A; --good-soft: #E1F3E9; --critical: #D9484B; --critical-soft: #FBE4E4;
+    --neutral-soft: #EEECF6; --neutral-ink: #726C88;
+
+    --floor-a: #E7E2F0; --floor-b: #DED7EC;
+    --desk-wood: #C89A6A; --desk-wood-dark: #A9794A;
+    --rug-threads: #D9E4F5; --rug-diet: #E3F1E8; --rug-empty: #EFEDF6;
+
+    --skin: #F0C9A0; --skin-dark: #C99B6E;
+    --shirt-penguin: #4F9BC4; --shirt-panda: #6B6478; --shirt-writer: #D97F32; --shirt-owl: #7C5CA6; --shirt-rabbit: #E0608C; --shirt-diet: #4FA97C; --shirt-empty: #B9B2CC;
+
+    --font-display: 'Hiragino Maru Gothic ProN', 'BIZ UDPGothic', 'Yu Gothic UI', 'Rounded Mplus 1c', 'Zen Maru Gothic', sans-serif;
+    --font-body: 'Hiragino Sans', 'Yu Gothic', 'Noto Sans JP', system-ui, sans-serif;
+    --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Consolas, monospace;
+    --shadow: 0 1px 2px rgba(46,42,61,0.06), 0 8px 24px -12px rgba(46,42,61,0.18);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #15131C; --ink: #EDEAF7; --muted: #9B94B5; --panel: #201D29; --line: #322E40;
+      --accent: #FFB37B; --accent-ink: #2A1710;
+      --warn-bg: #332615; --warn-line: #6B4A22; --warn-ink: #FFCE95;
+      --good: #5CBE8A; --good-soft: #1E3A2B; --critical: #E8797B; --critical-soft: #3E2222;
+      --neutral-soft: #2B2739; --neutral-ink: #A79FC2;
+      --floor-a: #211E2C; --floor-b: #262233;
+      --desk-wood: #8A6642; --desk-wood-dark: #6E4F30;
+      --skin: #D9A876; --skin-dark: #A97C4E;
+      --shirt-penguin: #7FC1E8; --shirt-panda: #9B93AC; --shirt-writer: #F0A054; --shirt-owl: #B08FE0; --shirt-rabbit: #F080A6; --shirt-diet: #7BCB9E; --shirt-empty: #4A4560;
+      --rug-threads: #262E42; --rug-diet: #223229; --rug-empty: #2A2636;
+      --shadow: 0 1px 2px rgba(0,0,0,0.35), 0 8px 28px -14px rgba(0,0,0,0.65);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #15131C; --ink: #EDEAF7; --muted: #9B94B5; --panel: #201D29; --line: #322E40;
+    --accent: #FFB37B; --accent-ink: #2A1710;
+    --warn-bg: #332615; --warn-line: #6B4A22; --warn-ink: #FFCE95;
+    --good: #5CBE8A; --good-soft: #1E3A2B; --critical: #E8797B; --critical-soft: #3E2222;
+    --neutral-soft: #2B2739; --neutral-ink: #A79FC2;
+    --floor-a: #211E2C; --floor-b: #262233;
+    --desk-wood: #8A6642; --desk-wood-dark: #6E4F30;
+    --skin: #D9A876; --skin-dark: #A97C4E;
+    --shirt-penguin: #7FC1E8; --shirt-panda: #9B93AC; --shirt-writer: #F0A054; --shirt-owl: #B08FE0; --shirt-rabbit: #F080A6; --shirt-diet: #7BCB9E; --shirt-empty: #4A4560;
+    --rug-threads: #262E42; --rug-diet: #223229; --rug-empty: #2A2636;
+    --shadow: 0 1px 2px rgba(0,0,0,0.35), 0 8px 28px -14px rgba(0,0,0,0.65);
+  }
+  :root[data-theme="light"] {
+    --paper: #F5F3FA; --ink: #2E2A3D; --muted: #8A84A0; --panel: #FFFFFF; --line: #E3DFF0;
+    --accent: #FF8F6B; --accent-ink: #7A3B22;
+    --warn-bg: #FFF1E3; --warn-line: #F2C89B; --warn-ink: #8A5321;
+    --good: #3F9B6A; --good-soft: #E1F3E9; --critical: #D9484B; --critical-soft: #FBE4E4;
+    --neutral-soft: #EEECF6; --neutral-ink: #726C88;
+    --floor-a: #E7E2F0; --floor-b: #DED7EC;
+    --desk-wood: #C89A6A; --desk-wood-dark: #A9794A;
+    --skin: #F0C9A0; --skin-dark: #C99B6E;
+    --shirt-penguin: #4F9BC4; --shirt-panda: #6B6478; --shirt-writer: #D97F32; --shirt-owl: #7C5CA6; --shirt-rabbit: #E0608C; --shirt-diet: #4FA97C; --shirt-empty: #B9B2CC;
+    --rug-threads: #D9E4F5; --rug-diet: #E3F1E8; --rug-empty: #EFEDF6;
+    --shadow: 0 1px 2px rgba(46,42,61,0.06), 0 8px 24px -12px rgba(46,42,61,0.18);
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--font-body); line-height: 1.7; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 56px 24px 80px; }
+
+  .eyebrow { font-family: var(--font-mono); font-size: 12.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent-ink); background: color-mix(in srgb, var(--accent) 18%, var(--panel)); display: inline-block; padding: 4px 10px; border-radius: 999px; margin-bottom: 18px; }
+  h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(28px, 4.4vw, 42px); margin: 0 0 12px; text-wrap: balance; }
+  .lede { max-width: 64ch; color: var(--muted); font-size: 16px; margin: 0 0 4px; }
+
+  .status-strip { display: flex; gap: 10px; flex-wrap: wrap; margin: 22px 0 0; }
+  .status-strip .pill { font-family: var(--font-mono); font-size: 12.5px; padding: 6px 12px; border-radius: 999px; display: flex; align-items: center; gap: 6px; }
+  .status-strip .pill::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+  .pill.good { background: var(--good-soft); color: var(--good); }
+  .pill.critical { background: var(--critical-soft); color: var(--critical); }
+  .pill.neutral { background: var(--neutral-soft); color: var(--neutral-ink); }
+
+  section { margin-bottom: 52px; }
+  h2.section-title { font-family: var(--font-display); font-size: 20px; font-weight: 700; margin: 0 0 6px; }
+  .section-sub { color: var(--muted); font-size: 14px; margin: 0 0 22px; }
+
+  .incident { background: var(--critical-soft); border: 1px solid var(--critical); border-radius: 18px; padding: 18px 22px; display: flex; gap: 14px; align-items: flex-start; margin-top: 32px; }
+  .incident .incident-icon { font-size: 22px; line-height: 1; flex-shrink: 0; }
+  .incident h3 { margin: 0 0 4px; font-family: var(--font-display); font-size: 15.5px; color: var(--critical); }
+  .incident p { margin: 0; font-size: 13.5px; }
+  .incident code { font-family: var(--font-mono); background: var(--panel); padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+
+  .all-clear { background: var(--good-soft); border: 1px solid var(--good); border-radius: 18px; padding: 16px 22px; display: flex; gap: 12px; align-items: center; margin-top: 32px; font-size: 14px; color: var(--ink); }
+  .all-clear .icon { font-size: 20px; }
+
+  .floor {
+    border-radius: 24px;
+    background: repeating-linear-gradient(90deg, var(--floor-a) 0 42px, var(--floor-b) 42px 44px);
+    padding: 8px 8px 28px;
+    box-shadow: var(--shadow);
+  }
+  .dept-zone { padding: 26px 20px 8px; }
+  .dept-header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 18px; padding: 0 10px; }
+  .dept-header .dept-name { font-family: var(--font-display); font-weight: 700; font-size: 16.5px; }
+  .dept-header .dept-note { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); }
+
+  .rug { border-radius: 18px; padding: 22px 18px 10px; display: flex; flex-wrap: wrap; gap: 24px; justify-content: center; }
+  .rug.threads { background: var(--rug-threads); }
+  .rug.diet { background: var(--rug-diet); }
+  .rug.empty { background: var(--rug-empty); border: 2px dashed color-mix(in srgb, var(--muted) 50%, transparent); }
+
+  .desk-unit { width: 108px; display: flex; flex-direction: column; align-items: center; position: relative; }
+  .desk-unit:hover .employee { transform: translateY(-2px); }
+  .employee { transition: transform 0.2s ease; position: relative; width: 60px; height: 66px; margin-bottom: -18px; z-index: 2; }
+  @media (prefers-reduced-motion: reduce) { .employee { transition: none; } .desk-unit:hover .employee { transform: none; } }
+
+  .emp-head { position: absolute; top: 0; left: 15px; width: 30px; height: 24px; border-radius: 7px; background: var(--skin); border: 2px solid var(--ink); }
+  .emp-hair { position: absolute; top: -3px; left: 13px; width: 34px; height: 12px; border-radius: 8px 8px 0 0; background: var(--skin-dark); border: 2px solid var(--ink); border-bottom: none; }
+  .eye { position: absolute; top: 9px; width: 3px; height: 3px; border-radius: 50%; background: var(--ink); }
+  .eye.l { left: 20px; } .eye.r { left: 32px; }
+  .eye.closed { width: 6px; height: 2px; border-radius: 1px; top: 10px; }
+  .eye.closed.l { left: 19px; } .eye.closed.r { left: 31px; }
+
+  .emp-torso { position: absolute; top: 20px; left: 6px; width: 48px; height: 30px; border-radius: 6px 6px 0 0; border: 2px solid var(--ink); border-bottom: none; }
+  .emp-arm { position: absolute; top: 38px; width: 16px; height: 8px; border-radius: 4px; border: 2px solid var(--ink); }
+  .emp-arm.l { left: -4px; transform: rotate(12deg); } .emp-arm.r { right: -4px; transform: rotate(-12deg); }
+
+  .zzz { position: absolute; top: -14px; right: -6px; font-family: var(--font-display); font-weight: 700; font-size: 13px; color: var(--muted); animation: rise 2.6s ease-in infinite; }
+  @keyframes rise { 0% { opacity: 0; transform: translateY(4px) scale(0.8); } 30% { opacity: 0.8; } 100% { opacity: 0; transform: translateY(-16px) scale(1.15); } }
+  @media (prefers-reduced-motion: reduce) { .zzz { animation: none; opacity: 0.5; } }
+
+  .desk { width: 92px; height: 30px; background: linear-gradient(180deg, var(--desk-wood), var(--desk-wood-dark)); border: 2px solid var(--ink); border-radius: 3px; position: relative; z-index: 3; }
+  .monitor { position: absolute; top: -22px; left: 50%; transform: translateX(-50%); width: 34px; height: 24px; background: #2A2833; border: 2px solid var(--ink); border-radius: 3px; }
+  .screen { position: absolute; inset: 3px; border-radius: 1px; }
+  .screen.ok { background: var(--good); box-shadow: 0 0 6px 1px color-mix(in srgb, var(--good) 60%, transparent); }
+  .screen.fail { background: var(--critical); }
+  .screen.neutral { background: color-mix(in srgb, var(--neutral-ink) 55%, transparent); }
+  .screen.off { background: #17151E; }
+
+  .cloud-worker { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 66px; margin-bottom: 4px; }
+  .cloud { width: 58px; height: 30px; background: var(--panel); border: 2px solid var(--ink); border-radius: 50px; position: relative; }
+  .cloud::before, .cloud::after { content: ''; position: absolute; background: var(--panel); border: 2px solid var(--ink); border-radius: 50%; }
+  .cloud::before { width: 22px; height: 22px; top: -12px; left: 6px; }
+  .cloud::after { width: 18px; height: 18px; top: -9px; right: 6px; }
+  .cloud-dot { position: absolute; width: 6px; height: 6px; border-radius: 50%; top: 12px; left: 26px; }
+  .cloud-dot.ok { background: var(--good); box-shadow: 0 0 5px 1px color-mix(in srgb, var(--good) 60%, transparent); }
+  .cloud-dot.fail { background: var(--critical); box-shadow: 0 0 5px 1px color-mix(in srgb, var(--critical) 60%, transparent); }
+  .cloud-dot.neutral { background: var(--neutral-ink); }
+
+  .empty-chair { width: 30px; height: 34px; border: 3px solid color-mix(in srgb, var(--muted) 55%, transparent); border-radius: 4px 4px 10px 10px; border-top: none; margin-bottom: 4px; opacity: 0.7; }
+
+  .nameplate { margin-top: 14px; text-align: center; }
+  .nameplate .role { font-family: var(--font-display); font-weight: 700; font-size: 13px; }
+  .nameplate .task-count { font-family: var(--font-mono); font-size: 10.5px; color: var(--muted); margin-top: 2px; }
+  .status-chip { display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-mono); font-size: 10.5px; padding: 2px 8px; border-radius: 999px; margin-top: 5px; }
+  .status-chip::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+  .status-chip.ok { background: var(--good-soft); color: var(--good); }
+  .status-chip.fail { background: var(--critical-soft); color: var(--critical); }
+  .status-chip.neutral { background: var(--neutral-soft); color: var(--neutral-ink); }
+
+  .ledger-scroll { overflow-x: auto; }
+  table.ledger { width: 100%; border-collapse: collapse; min-width: 680px; font-size: 13.5px; }
+  table.ledger th, table.ledger td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: left; }
+  table.ledger th { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.04em; color: var(--muted); text-transform: uppercase; font-weight: 500; }
+  table.ledger td.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 12.5px; }
+  table.ledger tr:last-child td { border-bottom: none; }
+  .dept-tag { font-size: 11.5px; font-family: var(--font-mono); padding: 2px 8px; border-radius: 6px; }
+  .dept-tag.threads { background: color-mix(in srgb, var(--shirt-penguin) 20%, var(--panel)); color: var(--shirt-penguin); }
+  .dept-tag.diet { background: color-mix(in srgb, var(--shirt-diet) 22%, var(--panel)); color: var(--shirt-diet); }
+
+  footer { margin-top: 8px; color: var(--muted); font-size: 12.5px; font-family: var(--font-mono); }
+  footer p { margin: 4px 0; }
+</style>
+
+<div class="wrap">
+
+  <header>
+    <span class="eyebrow">Back Office Floor · {{ snapshot_date }} {{ snapshot_time }} 生成</span>
+    <h1>朝のチェック</h1>
+    <p class="lede">部門ごとに机が並ぶオフィス。モニターの色で「今動いているか」が一目でわかる ── 緑は正常、赤はエラー、グレーは未確認。</p>
+    <div class="status-strip">
+      {% for pill in status_pills %}
+      <span class="pill {{ pill.class }}">{{ pill.label }}</span>
+      {% endfor %}
+    </div>
+  </header>
+
+  <section aria-labelledby="incident-h">
+    {% if incident %}
+    <div class="incident" role="alert">
+      <div class="incident-icon" aria-hidden="true">🚨</div>
+      <div>
+        <h3 id="incident-h">{{ incident.title }}</h3>
+        <p>{{ incident.body | safe }}</p>
+      </div>
+    </div>
+    {% else %}
+    <div class="all-clear">
+      <span class="icon" aria-hidden="true">✅</span>
+      <span>今朝は全部署とも異常なし。何もする必要はありません。</span>
+    </div>
+    {% endif %}
+  </section>
+
+  <section aria-labelledby="floor-h">
+    <h2 class="section-title" id="floor-h">フロア図</h2>
+    <p class="section-sub">机ひとつ＝ひとつの役割（複数タスクをまとめて担当している人もいます）。</p>
+
+    <div class="floor">
+
+      <div class="dept-zone">
+        <div class="dept-header">
+          <span class="dept-name">Threadsコンサル部</span>
+          <span class="dept-note">電源: このPC + Render</span>
+        </div>
+        <div class="rug threads">
+          {% for d in threads_desks %}
+          <div class="desk-unit">
+            {% if d.kind == 'cloud' %}
+            <div class="cloud-worker" title="{{ d.title }}">
+              <div class="cloud"><span class="cloud-dot {{ d.status_class }}"></span></div>
+            </div>
+            <div class="empty-chair"></div>
+            {% elif d.kind == 'vacant' %}
+            <div class="employee" style="opacity:0.45;" title="{{ d.title }}">
+              <div class="emp-hair" style="background:var(--shirt-empty);"></div>
+              <div class="emp-head" style="background:var(--shirt-empty);"><span class="eye closed l"></span><span class="eye closed r"></span></div>
+              <div class="emp-torso" style="background:var(--shirt-empty);"></div>
+            </div>
+            <div class="empty-chair"></div>
+            {% else %}
+            <div class="employee" title="{{ d.title }}">
+              <div class="emp-hair" {% if d.hair %}style="background:var(--{{ d.hair }});"{% endif %}></div>
+              <div class="emp-head">
+                <span class="eye {{ 'closed' if d.kind == 'sleeping' else '' }} l"></span>
+                <span class="eye {{ 'closed' if d.kind == 'sleeping' else '' }} r"></span>
+              </div>
+              <div class="emp-torso" style="background:var(--{{ d.shirt }});{% if d.rotate %} transform:rotate({{ d.rotate }}deg);{% endif %}"></div>
+              <div class="emp-arm l" style="background:var(--{{ d.shirt }});"></div>
+              <div class="emp-arm r" style="background:var(--{{ d.shirt }});"></div>
+              {% if d.kind == 'sleeping' %}<span class="zzz">Zz</span>{% endif %}
+            </div>
+            <div class="desk"><div class="monitor"><div class="screen {{ 'off' if d.kind == 'sleeping' else d.status_class }}"></div></div></div>
+            {% endif %}
+            <div class="nameplate">
+              <p class="role">{{ d.role }}</p>
+              <p class="task-count">{{ d.task_count }}</p>
+              {% if d.status_label %}<span class="status-chip {{ d.status_class }}">{{ d.status_label }}</span>{% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="dept-zone">
+        <div class="dept-header">
+          <span class="dept-name">ダイエットBOT部</span>
+          <span class="dept-note">電源: Renderのみ（このPCと無関係）</span>
+        </div>
+        <div class="rug diet">
+          {% for d in diet_desks %}
+          <div class="desk-unit">
+            <div class="employee" title="{{ d.title }}">
+              <div class="emp-hair"></div>
+              <div class="emp-head"><span class="eye l"></span><span class="eye r"></span></div>
+              <div class="emp-torso" style="background:var(--shirt-diet);"></div>
+              <div class="emp-arm l" style="background:var(--shirt-diet);"></div>
+              <div class="emp-arm r" style="background:var(--shirt-diet);"></div>
+            </div>
+            <div class="desk"><div class="monitor"><div class="screen {{ d.status_class }}"></div></div></div>
+            <div class="nameplate">
+              <p class="role">{{ d.role }}</p>
+              <p class="task-count">{{ d.task_count }}</p>
+              <span class="status-chip {{ d.status_class }}">{{ d.status_label }}</span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="dept-zone">
+        <div class="dept-header">
+          <span class="dept-name">ラポール整体院Threads部</span>
+          <span class="dept-note">{{ rapport_note }}</span>
+        </div>
+        <div class="rug empty">
+          <div class="desk-unit">
+            <div class="empty-chair" style="margin-top:32px;"></div>
+            <div class="nameplate">
+              <p class="role">採用予定</p>
+              <p class="task-count">机だけ用意・まだ誰もいない</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section aria-labelledby="ledger-h">
+    <h2 class="section-title" id="ledger-h">部署横断タスク台帳（{{ snapshot_date }}時点）</h2>
+    <p class="section-sub">机の下にある実際のジョブ一覧。</p>
+    <div class="ledger-scroll">
+      <table class="ledger">
+        <thead><tr><th>状態</th><th>部署</th><th>タスク</th><th>時刻</th><th>実体</th></tr></thead>
+        <tbody>
+          {% for row in ledger_rows %}
+          <tr>
+            <td><span class="status-chip {{ row.status_class }}">{{ row.status_label }}</span></td>
+            <td><span class="dept-tag {{ row.dept_class }}">{{ row.dept_label }}</span></td>
+            <td class="mono">{{ row.task }}</td>
+            <td class="mono">{{ row.time }}</td>
+            <td>{{ row.entity }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    <p>「未確認」＝データ取得元が未整備のため今回は判定していない項目（診断API未整備など）。</p>
+    <p>このページは {{ snapshot_date }} {{ snapshot_time }} に自動生成されたスナップショットです。</p>
+  </footer>
+
+</div>

@@ -17,7 +17,7 @@ from collections import defaultdict
 
 BASE_DIR = Path(__file__).parent
 INSIGHTS_DATA_FILE = BASE_DIR / "insights_data.jsonl"
-OBSIDIAN_DIR = Path(r"C:\Users\tujid\iCloudDrive\HIRAYASU\コンサルThreads\インサイト")
+OBSIDIAN_DIR = Path(r"C:\Users\tujid\OneDrive\Desktop\HIRAYASU\コンサルThreads\インサイト")
 DASHBOARD_FILE = OBSIDIAN_DIR / "_ダッシュボード.md"
 
 JST = timezone(timedelta(hours=9))

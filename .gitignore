@@ -8,3 +8,8 @@ posts/*.txt
 insights_collected.jsonl
 watch.log
 reports/
+*.log
+follower_log.jsonl
+insights_data.jsonl
+posts_obsidian_saved.jsonl
+tmp_*.txt

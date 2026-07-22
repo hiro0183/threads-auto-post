@@ -12,6 +12,7 @@ Claude APIで整体院・整骨院・サロン経営者向けThreadsツリー投
 import os
 import json
 import random
+import subprocess
 import anthropic
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
@@ -21,9 +22,40 @@ load_dotenv()
 
 client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
 
+CLAUDE_CMD = r"C:\Users\tujid\AppData\Roaming\npm\claude.cmd"
+
+
+def claude_headless(prompt: str, model: str = "sonnet", timeout: int = 300) -> str:
+    """Claude Codeヘッドレス実行（Maxプラン枠内・API課金なし）でテキスト生成する。
+
+    2026-07-09: ユーザー方針「API課金ゼロ・サブスク完結」により、
+    日次の本文生成・品質ゲートの呼び出しをAnthropic APIからこちらに切替。
+    ANTHROPIC_API_KEYを環境から除外しないとAPI課金側で動いてしまうので必ず外す。
+    """
+    env = {k: v for k, v in os.environ.items() if k != "ANTHROPIC_API_KEY"}
+    # プロンプトは複数行日本語のためstdin渡し（.cmd経由の引数渡しは改行で壊れる）
+    result = subprocess.run(
+        [CLAUDE_CMD, "--model", model, "-p"],
+        input=prompt,
+        capture_output=True, text=True, encoding="utf-8", errors="replace",
+        env=env, timeout=timeout,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(f"claude headless失敗 (exit={result.returncode}): {(result.stderr or '')[:500]}")
+    out = (result.stdout or "").strip()
+    if not out:
+        raise RuntimeError("claude headlessの出力が空でした")
+    return out
+
 BASE_DIR = Path(__file__).parent
 INSIGHTS_DATA_FILE = BASE_DIR / "insights_data.jsonl"
 POST_LOG_FILE = BASE_DIR / "post_log.jsonl"
+PROMPTS_DIR = BASE_DIR / "prompts"
+
+
+def _load_prompt_file(name: str) -> str:
+    path = PROMPTS_DIR / name
+    return path.read_text(encoding="utf-8") if path.exists() else ""
 
 JST = timezone(timedelta(hours=9))
 
@@ -440,6 +472,107 @@ def generate_single_post(theme: str = None, used_catches: list = None) -> list[s
     if len(posts) != 1:
         raise ValueError(f"単体投稿が取得できませんでした\n{raw}")
 
+    return posts
+
+
+PROMPT_BODY_FROM_HOOK = """
+あなたは「ヒロ先生」。整体院・整骨院・サロンを営む46歳のアラフィフ院長です。
+
+以下はあなたが守るべきペルソナ・本文展開ルール・禁じ手です。必ず守ってください。
+
+【ペルソナ】
+{persona}
+
+【本文展開ルール】
+{body_rules}
+
+【禁じ手】
+{taboo}
+
+このツリーの1投稿目（フック）はFable5が既に確定しています。**一字も変更しないこと**：
+「{hook}」
+
+型: {type_label} / テーマ: {theme} / このツリーで伝える結論: {conclusion}
+
+このフックが約束したことを、2投稿目（本文）で必ず回収してください。{third_post_instruction}
+{cta_line}
+
+【文字数（厳守）】
+- 2投稿目: 80〜120文字（改行を使い読みやすくする。長いリスト羅列は負けパターンなので避ける）
+- 3投稿目があれば: 30〜50文字（CTAありの場合は最大70文字まで許容）
+
+【絶対ルール】
+- 「。」は使わない
+- ハッシュタグは使わない
+- ダブルクォートは一切使わない
+- です・ます調を徹底する（丁寧語統一・一人称「僕」で統一。3投稿目だけ視点を変えない）
+- 「実は」から書き出さない（文中も避ける。禁じ手4）
+- CTAはこのツリー内で最大1回まで（cta_lineの指示がある場合のみ・複数箇所に入れない）
+
+出力フォーマット（この区切り文字を必ず使うこと）：
+===POST2===
+（2投稿目の本文）
+{post3_marker}
+===END===
+"""
+
+
+def generate_body_from_hook(
+    hook: str,
+    type_label: str = "",
+    theme: str = "",
+    conclusion: str = "",
+    cta=None,
+    three_posts: bool = True,
+    used_catches: list = None,
+) -> list[str]:
+    """weekly_planで確定済みのフックを一字も変えず、本文（2〜3投稿目）のみ生成する（フェーズ3 planモード用）"""
+    persona = _load_prompt_file("persona.md")
+    body_rules = _load_prompt_file("body_rules.md")
+    taboo = _load_prompt_file("taboo.md")
+
+    if cta:
+        cta_line = f"3投稿目の締めに自然な流れで次のCTAを1行添える：「{random.choice(CTA_VARIANTS)}」"
+    else:
+        cta_line = ""
+
+    third_post_instruction = "3投稿目は深掘りか問いかけにしてください。" if three_posts else ""
+    post3_marker = "===POST3===\n（3投稿目の本文）" if three_posts else ""
+
+    avoid_section = ""
+    if used_catches:
+        recent = used_catches[-6:]
+        lines = ["\n【使用済み・類似を避けること】以下は直近使用済みの1投稿目です。同じ表現の繰り返しを避けること："]
+        for c in recent:
+            lines.append(f"・{c}")
+        avoid_section = "\n".join(lines)
+
+    prompt = PROMPT_BODY_FROM_HOOK.format(
+        persona=persona, body_rules=body_rules, taboo=taboo,
+        hook=hook, type_label=type_label, theme=theme, conclusion=conclusion,
+        third_post_instruction=third_post_instruction, cta_line=cta_line,
+        post3_marker=post3_marker,
+    ) + avoid_section
+
+    # 指示書§1: 実行層(本文展開)はSonnet担当。サブスク実行（API課金なし・2026-07-09変更）
+    raw = claude_headless(prompt, model="sonnet")
+    parts = raw.split("===")
+    body = {}
+    for i, part in enumerate(parts):
+        key = part.strip()
+        if key in ("POST2", "POST3"):
+            content = parts[i + 1].strip() if i + 1 < len(parts) else ""
+            content = content.replace('"', '').replace('“', '').replace('”', '')
+            body[key] = content
+
+    if "POST2" not in body:
+        raise ValueError(f"2投稿目が取得できませんでした\n{raw}")
+
+    posts = [hook, body["POST2"]]
+    if three_posts:
+        if "POST3" not in body:
+            raise ValueError(f"3投稿目が取得できませんでした\n{raw}")
+        posts.append(body["POST3"])
     return posts
 
 

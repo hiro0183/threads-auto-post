@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).parent
 LOG_FILE = BASE_DIR / "post_log.jsonl"
 COLLECTED_FILE = BASE_DIR / "insights_collected.jsonl"
 INSIGHTS_DATA_FILE = BASE_DIR / "insights_data.jsonl"
-OBSIDIAN_INSIGHTS_DIR = Path(r"C:\Users\tujid\iCloudDrive\HIRAYASU\コンサルThreads\インサイト")
+OBSIDIAN_INSIGHTS_DIR = Path(r"C:\Users\tujid\OneDrive\Desktop\HIRAYASU\コンサルThreads\インサイト")
 
 logging.basicConfig(
     filename=BASE_DIR / "insights.log",
@@ -102,7 +102,8 @@ def write_obsidian(date_str: str, rows: list):
         rp = row.get("reposts", "-")
         q = row.get("quotes", "-")
         eng = sum(x for x in [l, r, rp, q] if isinstance(x, int))
-        lines.append(f"| {row['slot']} | {kind} | {catch} | {v:,} | {l} | {r} | {rp} | {q} | {eng} |")
+        v_str = f"{v:,}" if isinstance(v, int) else str(v)
+        lines.append(f"| {row['slot']} | {kind} | {catch} | {v_str} | {l} | {r} | {rp} | {q} | {eng} |")
 
     # 上位3投稿の詳細
     valid = [r for r in rows if isinstance(r.get("views"), int)]

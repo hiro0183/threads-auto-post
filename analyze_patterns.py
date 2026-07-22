@@ -14,7 +14,7 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).parent
 INSIGHTS_DATA_FILE = BASE_DIR / "insights_data.jsonl"
-OBSIDIAN_PATTERN_DIR = Path(r"C:\Users\tujid\iCloudDrive\HIRAYASU\コンサルThreads\投稿パターン")
+OBSIDIAN_PATTERN_DIR = Path(r"C:\Users\tujid\OneDrive\Desktop\HIRAYASU\コンサルThreads\投稿パターン")
 
 JST = timezone(timedelta(hours=9))
 
@@ -34,6 +34,12 @@ def classify_catch(catch: str) -> str:
         return "知的好奇心型"
     if re.search(r"AI|自動化|ChatGPT|Claude|メタ|Meta|広告", catch):
         return "AI・テック型"
+    # 暗示型: 語尾を伏せて引きを作るタイプ（結末・詳細を明かさない）
+    if re.search(r"…$|\.\.\.$|\.{3}$", catch):
+        return "暗示型"
+    # 断言型: 疑問系でも伏字でもなく言い切って終わるタイプ
+    if re.search(r"(です|ます|でした|ました|ません)[。.]?$", catch) and not re.search(r"[?？]", catch):
+        return "断言型"
     return "直球型"
 
 
