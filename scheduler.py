@@ -102,6 +102,16 @@ def collect_insights_job():
         logger.error(f"[INSIGHTS] 集計失敗: {e}", exc_info=True)
 
 
+def track_followers_job():
+    """毎朝6:10 — フォロワー数を記録（2026-07-23にローカルPCから移管）"""
+    logger.info("[FOLLOWERS] フォロワー数の記録開始")
+    try:
+        import track_followers
+        track_followers.main()
+    except Exception as e:
+        logger.error(f"[FOLLOWERS] 記録失敗: {e}", exc_info=True)
+
+
 def github_sync_job():
     """毎晩23:30 — post_log.jsonlとinsights_data.jsonlをGitHubにpush"""
     logger.info("[GITHUB] 同期ジョブ開始")
@@ -171,6 +181,16 @@ def start_scheduler():
         collect_insights_job,
         CronTrigger(hour=6, minute=5, timezone=JST),
         id="collect_insights",
+        misfire_grace_time=300,
+        coalesce=True,
+        max_instances=1,
+    )
+
+    # フォロワー数の記録（毎朝6:10・2026-07-23にローカルPCから移管）
+    scheduler.add_job(
+        track_followers_job,
+        CronTrigger(hour=6, minute=10, timezone=JST),
+        id="track_followers",
         misfire_grace_time=300,
         coalesce=True,
         max_instances=1,

@@ -16,6 +16,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+IS_RENDER = bool(os.environ.get("RENDER"))
+
 BASE_DIR = Path(__file__).parent
 FOLLOWER_LOG_FILE = BASE_DIR / "follower_log.jsonl"
 OBSIDIAN_CONSULT_DIR = Path(r"C:\Users\tujid\OneDrive\Desktop\HIRAYASU\コンサルThreads")
@@ -62,6 +64,12 @@ def load_log() -> list:
 
 
 def write_obsidian(rows: list):
+    # Render(クラウド)にはOneDriveが無い。記録本体はfollower_log.jsonl＋GitHub同期なので
+    # Obsidian用のMarkdown出力だけスキップする（2026-07-23クラウド移行）
+    if IS_RENDER:
+        print("[skip] Render実行のためObsidian出力は省略")
+        return
+
     now_str = datetime.now(JST).strftime("%Y-%m-%d %H:%M")
     lines = [f"# フォロワー推移\n"]
     lines.append(f"> 更新: {now_str}\n")
