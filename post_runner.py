@@ -146,7 +146,8 @@ def write_obsidian(posts: list[str], post_time: str):
     """投稿内容をObsidianの日付ファイルに追記する"""
     try:
         OBSIDIAN_THREADS_DIR.mkdir(parents=True, exist_ok=True)
-        date_str = datetime.now().strftime("%Y-%m-%d")
+        jst = timezone(timedelta(hours=9))
+        date_str = datetime.now(jst).strftime("%Y-%m-%d")
         md_file = OBSIDIAN_THREADS_DIR / f"{date_str}.md"
 
         header = f"## {post_time}\n\n"
@@ -218,7 +219,11 @@ def get_slot_info(slot: str) -> dict:
 
 def load_scheduled_post(target_slot: str) -> list[str] | None:
     """指定スロットの事前生成投稿を返す。なければNone"""
-    date_str = datetime.now().strftime("%Y-%m-%d")
+    # ★重要: 必ずJST(日本時間)で日付を出す。Renderのサーバー時刻はUTCなので、
+    # 素のdatetime.now()を使うと朝9時前のJSTスロット(05:00〜08:00)がUTCでは前日となり、
+    # 前日の原稿ファイルを読んでしまう（2026-07-24に発覚したバグ）。
+    jst = timezone(timedelta(hours=9))
+    date_str = datetime.now(jst).strftime("%Y-%m-%d")
     json_file = BASE_DIR / "posts" / f"{date_str}.json"
     if not json_file.exists():
         return None
