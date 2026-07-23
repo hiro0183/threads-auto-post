@@ -17,6 +17,7 @@ $tasks = @(
     "Threads_WeeklyReport",
     "Threads_WeeklySession",
     "Threads_MondayCatchup",
+    "Threads_PreviewExport",
     "Rapport_PreviewExport",
     "Rapport_StoryWeekly"
 )
