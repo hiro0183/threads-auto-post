@@ -290,9 +290,14 @@ def collect_data():
     ig_link = _file_url(ig_week_dir if ig_week_dir.exists() else IG_OUT_DIR)
     todos = []
     todos.append(("IGストーリー投稿（1〜2分）", ig_detail, ig_link))
-    preview = PREVIEW_DIR / f"{today}.txt"
-    if preview.exists():
-        todos.append(("今日分プレビュー確認（1分）", f"コンサル投稿確認\\{today}.txt（昨夜21:30生成・品質ゲート⚠️だけ注意）", _file_url(preview)))
+    # 明日分プレビューは毎日12:00の昼検品（Threads_NoonInspection）が書き出す。
+    # それより前の時間帯は前日に出力済みの今日分を案内する（2026-07-23改修）
+    preview_tomorrow = PREVIEW_DIR / f"{tomorrow}.txt"
+    preview_today = PREVIEW_DIR / f"{today}.txt"
+    if preview_tomorrow.exists():
+        todos.append(("明日分プレビュー確認（1分）", f"コンサル投稿確認\\{tomorrow}.txt（昼12:00の検品時に生成・⚠️だけ注意。朝07:30のメールと同内容）", _file_url(preview_tomorrow)))
+    elif preview_today.exists():
+        todos.append(("今日分プレビュー確認（1分）", f"コンサル投稿確認\\{today}.txt（昨日の昼検品時に生成・品質ゲート⚠️だけ注意）", _file_url(preview_today)))
     if hc_ok is False:
         todos.append(("⚠️自動化の失敗対応", "Claude Codeで「ヘルスチェックが失敗してる、調べて」と伝える", None))
     if today_posts_ok is False:

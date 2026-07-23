@@ -16,10 +16,12 @@ $tasks = @(
     "Threads_OpsDashboard",
     "Threads_WeeklyReport",
     "Threads_WeeklySession",
-    "Threads_MondayCatchup"
+    "Threads_MondayCatchup",
+    "Rapport_PreviewExport",
+    "Rapport_StoryWeekly"
 )
 # 週次タスク（月曜のみ実行）は日次の総合判定から除外する
-$weeklyTasks = @("Threads_WeeklyReport", "Threads_WeeklySession", "Threads_MondayCatchup", "IG_StoryWeekly")
+$weeklyTasks = @("Threads_WeeklyReport", "Threads_WeeklySession", "Threads_MondayCatchup", "IG_StoryWeekly", "Rapport_StoryWeekly")
 # 予備タスク（意図的に無効化。日次生成はクラウドルーティンが正・2026-07-17決定）
 # 無効でも⏸表示にして総合判定から除外する（⛔❌にしない）
 $backupTasks = @("Threads_DailyPlanPipeline")
