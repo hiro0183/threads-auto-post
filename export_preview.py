@@ -66,10 +66,11 @@ def export(date_str: str, gate_results: dict = None):
     DESKTOP.mkdir(parents=True, exist_ok=True)
     out_file = DESKTOP / f"{date_str}.txt"
 
+    n_trees = sum(1 for v in schedule.values() if isinstance(v, list) and len(v) >= 2)
+    n_posts = sum(len(v) for v in schedule.values() if isinstance(v, list))
     lines = []
     lines.append(f"{'='*50}")
-    lines.append(f"  {date_str}  投稿一覧（全{len(schedule)}件）")
-    lines.append(f"  ツリー35件 / 単体15件 / CTA付き12件")
+    lines.append(f"  {date_str}  投稿一覧（{n_trees}ツリー・実投稿{n_posts}本）")
     if gate_results:
         n_ok = sum(1 for r in gate_results.values() if r.get("ok"))
         n_escalate = sum(1 for r in gate_results.values() if r.get("escalate_to_human"))

@@ -19,6 +19,7 @@
 """
 
 import json
+import subprocess
 import sys
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -32,6 +33,24 @@ if hasattr(sys.stderr, "reconfigure"):
 
 BASE_DIR = Path(__file__).parent
 POSTS_DIR = BASE_DIR / "posts"
+
+
+def sync_repo():
+    """検品の前にGitHubから最新を取り込む。
+    原稿の生成はclaude.aiクラウド（毎朝06:00）→GitHub push なので、
+    pullしないとこのPCは古い原稿を検品してしまう（2026-07-23の同期遅れ事故の教訓）。
+    失敗しても検品自体は止めない（非ブロック）。"""
+    try:
+        r = subprocess.run(
+            ["git", "pull", "--ff-only"],
+            cwd=BASE_DIR, capture_output=True, text=True, timeout=120,
+        )
+        if r.returncode == 0:
+            print(f"[sync] git pull: {(r.stdout or '').strip().splitlines()[-1] if r.stdout else 'ok'}")
+        else:
+            print(f"[WARN] git pull失敗（ローカルの原稿で続行）: {(r.stderr or '')[:200]}")
+    except Exception as e:
+        print(f"[WARN] git pull実行エラー（ローカルの原稿で続行）: {e}")
 
 
 def inspect(date_str: str):
@@ -69,7 +88,21 @@ def main():
         date_str = arg
     else:
         date_str = datetime.now().strftime("%Y-%m-%d")
-    inspect(date_str)
+
+    sync_repo()
+    results = inspect(date_str)
+
+    # 検品結果つきの読みやすいプレビューをOneDriveへ書き出す
+    # （2026-07-23再稼働: 旧21:30パイプライン停止後、前日確認の手段が消えていた）
+    try:
+        import export_preview
+        gate = None
+        if results:
+            gate = {s: {"ok": r["ok"], "escalate_to_human": not r["ok"], "raw": r["raw"]}
+                    for s, r in results.items()}
+        export_preview.export(date_str, gate_results=gate)
+    except Exception as e:
+        print(f"[WARN] プレビュー出力失敗: {e}")
 
     # 検品結果をすぐ司令室に反映（昼の便でNGが出たらその場で見えるように）
     try:
