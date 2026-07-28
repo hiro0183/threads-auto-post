@@ -56,10 +56,25 @@ def post_slot(slot: str):
         write_obsidian,
     )
     from token_manager import check_and_refresh
-    from content_generator import generate_thread, generate_single_post
 
     jst_now = datetime.now(JST)
     date_str = jst_now.strftime("%Y-%m-%d")
+
+    # ★原稿が無いときは投稿しない（2026-07-28）
+    # 以前はここで content_generator の緊急生成にフォールバックしていたが、
+    #   ・週次プランも品質ゲートも通っていない本文がそのまま出る
+    #   ・旧テーマ・旧ルール（禁止したはずの疑問形フック等）で書かれる
+    #   ・この経路だけ Anthropic API 直叩きで課金が発生する
+    # という三重の事故になる（2026-07-27にコンサル垢で11本発動）。
+    # 出さずに穴を空け、司令室と post_log に理由を残す方を選ぶ。
+    posts = load_scheduled_post(slot)
+    if not posts:
+        logger.error(
+            f"[NO-DRAFT] {slot} は原稿 posts/{date_str}.json が無い（または空）ため投稿しません。"
+            " 検品を通っていない緊急生成は行わない方針"
+        )
+        write_log([], [], "error", "原稿なし（無検品の緊急生成を回避してスキップ）", slot=slot)
+        return
 
     # 投稿前にDBへ原子的にINSERT → 重複投稿をDBレベルで防止
     # try_reserve_slot は ON CONFLICT DO NOTHING なので複数スレッド/プロセスでも安全
@@ -72,14 +87,6 @@ def post_slot(slot: str):
     try:
         token = check_and_refresh()
         user_id = get_user_id(token)
-
-        posts = load_scheduled_post(slot)
-        if not posts:
-            slot_info = get_slot_info(slot)
-            if slot_info["type"] == "single":
-                posts = generate_single_post()
-            else:
-                posts = generate_thread(cta=slot_info["cta"])
 
         post_ids = post_thread(posts, token, user_id)
         write_log(post_ids, posts, "ok", slot=slot)

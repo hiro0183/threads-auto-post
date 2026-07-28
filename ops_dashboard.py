@@ -210,10 +210,32 @@ def inspection_status(date_str: str):
         results = json.loads(f.read_text(encoding="utf-8"))
     except Exception:
         return (False, "結果ファイルが読めません")
-    ng = [slot for slot, r in results.items() if not r.get("ok")]
+    if not isinstance(results, dict):
+        return (False, "結果ファイルの形式が想定外です")
+
+    # クラウド側の検品は、原稿が無い日に {"status": "未生成", "reason": "..."} 形式で書く。
+    # スロット→判定の辞書ではないので、ここで先に吸収する（2026-07-28: これで司令室が落ちていた）
+    if "status" in results and not isinstance(results.get("status"), dict):
+        reason = str(results.get("reason", "")).strip()
+        return (None, f"検品対象外（{results['status']}）" + (f": {reason[:80]}" if reason else ""))
+
+    slots = {k: v for k, v in results.items() if isinstance(v, dict)}
+    if not slots:
+        return (False, "結果ファイルにスロット判定がありません")
+
+    # 検品プログラム自体が落ちた場合（claude CLI失敗など）は、投稿のNGと区別する。
+    # 全スロットが同じ実行エラーで倒れているのに「NG 10件」と出すと誤報になるため
+    errored = [s for s, r in slots.items() if "検品実行エラー" in str(r.get("raw", "") or r.get("reason", ""))]
+    if errored and len(errored) == len(slots):
+        return (False, f"検品が実行できていません（{len(errored)}スロット全部が実行エラー・投稿のNGではない）")
+
+    ng = [slot for slot, r in sorted(slots.items()) if not r.get("ok")]
     if ng:
-        return (False, f"NG {len(ng)}件: {', '.join(ng)}（中身は posts\\quality_gate\\{date_str}_inspection.json）")
-    return (True, f"全{len(results)}スロット合格")
+        detail = f"NG {len(ng)}件: {', '.join(ng)}（中身は posts\\quality_gate\\{date_str}_inspection.json）"
+        if errored:
+            detail += f" ※うち{len(errored)}件は検品自体の実行エラー"
+        return (False, detail)
+    return (True, f"全{len(slots)}スロット合格")
 
 
 def tomorrow_status(tomorrow: str, now: datetime):

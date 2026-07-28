@@ -13,6 +13,7 @@ import os
 import json
 import random
 import subprocess
+import time
 import anthropic
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
@@ -20,7 +21,25 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+_client = None
+
+
+def _get_client():
+    """Anthropic APIクライアント（予備手段専用・遅延生成）。
+
+    日次の生成・品質ゲートは claude_headless（サブスク・課金ゼロ）が正。
+    ここを使うのは手動の予備経路だけなので、キーが無くても import 時に落とさない。
+    """
+    global _client
+    if _client is None:
+        key = os.environ.get("ANTHROPIC_API_KEY")
+        if not key:
+            raise RuntimeError(
+                "ANTHROPIC_API_KEY がありません。API直叩きは予備手段です"
+                "（日次は claude_headless＝サブスク経路を使ってください）"
+            )
+        _client = anthropic.Anthropic(api_key=key)
+    return _client
 
 CLAUDE_CMD = r"C:\Users\tujid\AppData\Roaming\npm\claude.cmd"
 
@@ -33,19 +52,57 @@ def claude_headless(prompt: str, model: str = "sonnet", timeout: int = 300) -> s
     ANTHROPIC_API_KEYを環境から除外しないとAPI課金側で動いてしまうので必ず外す。
     """
     env = {k: v for k, v in os.environ.items() if k != "ANTHROPIC_API_KEY"}
-    # プロンプトは複数行日本語のためstdin渡し（.cmd経由の引数渡しは改行で壊れる）
-    result = subprocess.run(
-        [CLAUDE_CMD, "--model", model, "-p"],
-        input=prompt,
-        capture_output=True, text=True, encoding="utf-8", errors="replace",
-        env=env, timeout=timeout,
-    )
-    if result.returncode != 0:
-        raise RuntimeError(f"claude headless失敗 (exit={result.returncode}): {(result.stderr or '')[:500]}")
-    out = (result.stdout or "").strip()
-    if not out:
-        raise RuntimeError("claude headlessの出力が空でした")
-    return out
+
+    # 2026-07-28: 朝の時間帯だけ exit=1・stderr空で落ちる断続的な失敗があり、原因が
+    # 何も残らなかった（検品10スロットが全滅→司令室が「NG10件」と誤報）。
+    # 対策: ①stdoutも含めて claude_cli.log に残す ②間を空けて3回まで再試行
+    attempts = 3
+    last_err = ""
+    for attempt in range(1, attempts + 1):
+        # プロンプトは複数行日本語のためstdin渡し（.cmd経由の引数渡しは改行で壊れる）
+        try:
+            result = subprocess.run(
+                [CLAUDE_CMD, "--model", model, "-p"],
+                input=prompt,
+                capture_output=True, text=True, encoding="utf-8", errors="replace",
+                env=env, timeout=timeout,
+            )
+        except subprocess.TimeoutExpired:
+            last_err = f"タイムアウト({timeout}秒)"
+            _log_claude_failure(model, attempt, "timeout", "", last_err)
+            if attempt < attempts:
+                time.sleep(20 * attempt)
+                continue
+            raise RuntimeError(f"claude headless失敗: {last_err}")
+
+        out = (result.stdout or "").strip()
+        if result.returncode == 0 and out:
+            if attempt > 1:
+                _log_claude_failure(model, attempt, "recovered", out[:200], "")
+            return out
+
+        last_err = (
+            f"exit={result.returncode} / stderr={(result.stderr or '').strip()[:300] or '(空)'}"
+            f" / stdout={out[:200] or '(空)'}"
+        )
+        _log_claude_failure(model, attempt, str(result.returncode), out[:200], (result.stderr or "")[:300])
+        if attempt < attempts:
+            time.sleep(20 * attempt)
+
+    raise RuntimeError(f"claude headless失敗（{attempts}回試行）: {last_err}")
+
+
+def _log_claude_failure(model: str, attempt: int, code: str, stdout: str, stderr: str) -> None:
+    """claude CLI呼び出しの結果を1行残す。原因不明の失敗を追えるようにするため"""
+    try:
+        line = (
+            f"{datetime.now().isoformat(timespec='seconds')}\t"
+            f"model={model}\tattempt={attempt}\tcode={code}\t"
+            f"stdout={stdout!r}\tstderr={stderr!r}\n"
+        )
+        (Path(__file__).parent / "claude_cli.log").open("a", encoding="utf-8").write(line)
+    except Exception:
+        pass
 
 BASE_DIR = Path(__file__).parent
 INSIGHTS_DATA_FILE = BASE_DIR / "insights_data.jsonl"
@@ -418,7 +475,7 @@ def generate_thread(theme: str = None, cta: bool = False, list_style: bool = Fal
 
     prompt = PROMPT_TREE.format(theme=theme, cta_line=cta_line) + list_style_instruction + pattern_section + avoid_section
 
-    message = client.messages.create(
+    message = _get_client().messages.create(
         model="claude-haiku-4-5-20251001",
         max_tokens=1200,
         messages=[{"role": "user", "content": prompt}],
@@ -454,7 +511,7 @@ def generate_single_post(theme: str = None, used_catches: list = None) -> list[s
 
     prompt = PROMPT_SINGLE.format(theme=theme) + avoid_section
 
-    message = client.messages.create(
+    message = _get_client().messages.create(
         model="claude-haiku-4-5-20251001",
         max_tokens=300,
         messages=[{"role": "user", "content": prompt}],
