@@ -25,7 +25,13 @@ $tasks = @(
 $weeklyTasks = @("Threads_WeeklyReport", "Threads_WeeklySession", "Threads_MondayCatchup", "IG_StoryWeekly", "Rapport_StoryWeekly")
 # 予備タスク（意図的に無効化。日次生成はクラウドルーティンが正・2026-07-17決定）
 # 無効でも⏸表示にして総合判定から除外する（⛔❌にしない）
-$backupTasks = @("Threads_DailyPlanPipeline")
+# 2026-07-28追加: 検品2本もクラウド12:00便（Sonnet）と二重で、しかも弱いモデル(Haiku)の
+# 判定でクラウドの結果ファイルを上書きしていたため停止。誤報の発生源だった
+$backupTasks = @(
+    "Threads_DailyPlanPipeline",
+    "Threads_MorningInspection",
+    "Threads_NoonInspection"
+)
 
 $outFile = "C:\Users\tujid\OneDrive\Desktop\HIRAYASU\コンサルThreads\インサイト\_自動実行ヘルスチェック.md"
 $logFile = "C:\Users\tujid\threads_tool\health_check_history.log"
