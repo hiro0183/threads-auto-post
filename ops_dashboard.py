@@ -555,6 +555,7 @@ def build_md(data: dict) -> str:
     L.append("")
     L.append("| 見たいもの | 場所 |")
     L.append("|:---|:---|")
+    L.append("| **スマホでサッと1枚（両垢まとめ・毎朝7:15自動更新）** | https://claude.ai/code/artifact/92b5be2c-1bec-4c9f-90de-6b30da857aa8 |")
     L.append("| 今朝の状態カード（スマホでも） | `HIRAYASU\\コンサルThreads\\運用司令室_今朝の状態.png`（OneDriveアプリから見える） |")
     L.append("| 今日のIGストーリー画像 | `OneDrive\\IGストーリー投稿\\`（スマホのOneDriveアプリからも見える） |")
     L.append("| **今週分のIGストーリー（まとめDL用）** | `OneDrive\\IGストーリー投稿\\今週分\\`（月曜に7枚一括生成＋`_今週のアップ順.txt`。ここを丸ごと保存して毎日1枚アップ） |")
