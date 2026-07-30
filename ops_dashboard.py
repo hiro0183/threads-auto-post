@@ -267,6 +267,27 @@ def health_status():
     return ("[OK]" in last, last.split(" [")[0])
 
 
+def slot_schedule_mismatch(date_str: str):
+    """POST_SCHEDULE（Renderが実際に投稿する時刻）と、その日のposts/{date}.json（実際に
+    書かれた原稿のスロット）がズレていないか確認する。2026-07-30新設: POST_SCHEDULEだけ
+    新スロットに変えてSLOT_PLAN/生成済み原稿が旧スロットのまま、という事故が実際に起きたため
+    （気づかず数日投稿が抜け続けるところだった）。
+    返り値: (ミスマッチがあるスロットのリスト, 原稿ファイル自体が無いか) """
+    try:
+        from post_runner import POST_SCHEDULE
+    except Exception:
+        return ([], True)
+    posts_file = POSTS_DIR / f"{date_str}.json"
+    if not posts_file.exists():
+        return ([], True)
+    try:
+        content = json.loads(posts_file.read_text(encoding="utf-8"))
+    except Exception:
+        return ([], True)
+    missing = [s for s in POST_SCHEDULE if s not in content]
+    return (missing, False)
+
+
 def line_manual_pending():
     """LINE流入の週次手動記入（_LINE流入_手動記入.jsonl）に記入待ちの週があればその週開始日を返す。
     2026-07-30追加: 「今日やること」を増やさず、実際に記入漏れがある時だけ司令室に警告を出す。"""
@@ -314,6 +335,7 @@ def collect_data():
     today_posts_ok, posts_detail, posts_kind = posts_freshness(today)
     insp_ok, insp_detail = inspection_status(today)
     tmr_ok, tmr_detail = tomorrow_status(tomorrow, now)
+    missing_slots, slot_check_skipped = slot_schedule_mismatch(today)
 
     # チェック項目: (ラベル, ok(None=灰色), 詳細)
     checks = [
@@ -322,6 +344,8 @@ def collect_data():
         ("インサイト収集", ok_insight, f"最新: {li}"),
         ("IGストーリー準備", ig_ok, ig_detail if ig_ok else ig_detail),
         ("今日のThreads投稿", today_posts_ok, posts_detail),
+        ("投稿時刻と原稿のスロット一致", slot_check_skipped or not missing_slots,
+         "確認できず" if slot_check_skipped else ("一致" if not missing_slots else f"ズレあり: {', '.join(missing_slots)} に原稿が無い")),
         ("今日分の検品(Haiku)", insp_ok, insp_detail),
         ("明日分の原稿と昼検品", tmr_ok, tmr_detail),
     ]
@@ -341,6 +365,10 @@ def collect_data():
         todos.append(("明日分プレビュー確認（1分）", f"コンサル投稿確認\\{tomorrow}.txt（昼12:00の検品時に生成・⚠️だけ注意。朝07:30のメールと同内容）", _file_url(preview_tomorrow)))
     elif preview_today.exists():
         todos.append(("今日分プレビュー確認（1分）", f"コンサル投稿確認\\{today}.txt（昨日の昼検品時に生成・品質ゲート⚠️だけ注意）", _file_url(preview_today)))
+    if missing_slots:
+        todos.append((f"🚨投稿時刻に原稿が無いスロットあり（{len(missing_slots)}件・投稿が抜けます）",
+                      f"{', '.join(missing_slots)} が posts\\{today}.json に無い → post_runner.pyのPOST_SCHEDULEを"
+                      "その日の原稿スロットに合わせて至急修正", None))
     if hc_ok is False:
         todos.append(("⚠️自動化の失敗対応", "Claude Codeで「ヘルスチェックが失敗してる、調べて」と伝える", None))
     if today_posts_ok is False:

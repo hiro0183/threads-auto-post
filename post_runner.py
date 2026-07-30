@@ -29,14 +29,18 @@ OBSIDIAN_THREADS_DIR = Path(os.environ.get("OBSIDIAN_DIR", r"C:\Users\tujid\OneD
 from db_state import load_posted_state, save_posted_state, is_posted
 
 # 投稿スケジュール（JST）
-# 2026-07-30: _提案_スキーム全面見直し_2026-07-17.md §3の8枠に、
-# 直近21日の中央値views実績（未実施だった枠のため現行10枠内から選定）で
-# 上位2枠（11:00・08:00）を様子見枠として追加。
-# 8枠固定: 06:00/07:30/12:45/16:45/17:30/18:15/21:20/21:40
-# 様子見2枠: 11:00（直近中央値113v・n=10）/ 08:00（同67v・n=9）
+# 2026-07-30緊急revert: 新スロット案(SLOT_PLAN参照)は今週分のweekly_plan/posts/{date}.jsonが
+# まだ旧スロットのまま生成済み（次回の週次企画=8/3月曜まで）のため、POST_SCHEDULEだけ新スロットに
+# 変えるとRenderが「中身の無い時刻」を探しに行き投稿が抜ける事故になる（同日発覚・即revert）。
+# 新スロットへの切替は、weekly_plan/2026-08-03.json が新スロットで生成されるのを確認してから
+# POST_SCHEDULE = list(SLOT_PLAN.keys()) に揃えて反映する（SLOT_PLANは既に新設計へ更新済み）。
+#
+# 2026-07-12: エンゲージ回復のため 50→10スロットへ削減。
+# 過剰投稿による自己リーチ共食い＋低エンゲージのアルゴ抑制を解除する狙い。
+# 残す10枠は直近30日の中央値views・いいね実績・時間帯の散らしで選定。
 POST_SCHEDULE = [
-    "06:00", "07:30", "08:00", "11:00", "12:45",
-    "16:45", "17:30", "18:15", "21:20", "21:40",
+    "05:00", "06:00", "07:00", "08:00", "11:00",
+    "14:00", "16:30", "19:30", "20:15", "22:00",
 ]
 
 def find_target_slot() -> str | None:
@@ -196,18 +200,22 @@ def show_recent_logs(n: int = 10):
 # 2026-07-07: taboo.md #5「CTA付き投稿は1日2〜3本まで」に合わせて12→3件へ修正
 # （旧12件設定はCTA過多でリーチ壊滅の実測知見に反していた）
 
-# 2026-07-12: 10スロットへ削減（POST_SCHEDULEと連動）。CTAは1日2本（taboo上限2〜3の下限側）。
+# 2026-07-30: _提案_スキーム全面見直し_2026-07-17.md §3の4層ポートフォリオ + 様子見2枠へ更新。
+# ⚠️ POST_SCHEDULEはまだ旧スロットのまま（上のrevertコメント参照）。次回8/3週次企画で
+# weekly_plan/posts が新スロットで生成されるのを確認してから POST_SCHEDULE をこれに合わせる。
+# 様子見2枠: 11:00（直近中央値113v・n=10）/ 08:00（同67v・n=9）を拡散枠に割当
+# 導線枠(cta:True)は1日1本のみ（prompts/funnel_rules.md参照。旧2本から減）
 SLOT_PLAN = {
-    "05:00": {"type": "tree",   "cta": False},
-    "06:00": {"type": "tree",   "cta": False},
-    "07:00": {"type": "tree",   "cta": False},
-    "08:00": {"type": "tree",   "cta": True},   # CTA 1（朝）
-    "11:00": {"type": "tree",   "cta": False},
-    "14:00": {"type": "tree",   "cta": False},
-    "16:30": {"type": "tree",   "cta": False},
-    "19:30": {"type": "tree",   "cta": True},   # CTA 2（夕・いいね実績枠）
-    "20:15": {"type": "tree",   "cta": False},
-    "22:00": {"type": "tree",   "cta": False},
+    "06:00": {"type": "tree", "cta": False, "layer": "拡散"},
+    "07:30": {"type": "tree", "cta": False, "layer": "拡散"},
+    "08:00": {"type": "tree", "cta": False, "layer": "拡散"},
+    "11:00": {"type": "tree", "cta": False, "layer": "信頼"},
+    "12:45": {"type": "tree", "cta": False, "layer": "信頼"},
+    "16:45": {"type": "tree", "cta": False, "layer": "信頼"},
+    "17:30": {"type": "tree", "cta": False, "layer": "信頼"},
+    "18:15": {"type": "tree", "cta": False, "layer": "会話"},
+    "21:20": {"type": "tree", "cta": False, "layer": "会話"},
+    "21:40": {"type": "tree", "cta": True,  "layer": "導線"},  # 唯一のCTA（経営の問診）
 }
 
 
