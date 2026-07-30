@@ -20,8 +20,9 @@
    - **その日を含む weekly_plan が無ければ、何もせず終了**（Opus 4.8 の週次セッション未実施日はエラーにしない）
    - プランの `directives`（改善指示）があれば必ず反映する
 3. **重複チェックの準備:** 過去7日分の使用済みキャッチを読む（`load_used_catches(days=7)` 相当。同一フックの7日以内再使用は禁止）
-4. **翌日分の本文を書く（planモード）:** weekly_plan の各 `day_entry`（slot / hook / type / theme / conclusion / cta）について、
-   - **フックは一字も変えない**（Opus 4.8 が週次で確定済み。フックの改変は憲法違反）
+4. **翌日分の本文を書く（planモード）:** weekly_plan の各 `day_entry`（slot / hook / type / theme / conclusion / cta / **layer**）について、
+   - **フックは一字も変えない**（週次企画クラウドルーティンが確定済み。フックの改変は憲法違反）
+   - **`layer`（拡散／信頼／会話／導線）に応じて本文の書き方を変える。** 拡散枠・信頼枠は通常の「投稿の書き方」、会話枠・導線枠は `prompts/funnel_rules.md` の専用ルールに従う（2026-07-30導入。詳細はそちらを参照）
    - 本文（2〜3投稿目）だけを下の「投稿の書き方」に従って執筆する
    - `posts/{date}.json` に slot をキーにして保存（値＝投稿文の配列）
 5. **品質ゲート（独立ステップ）:** 完成した本文だけを渡して Haiku に判定させる（`prompts/gate.md` の6項目）。
@@ -105,5 +106,5 @@
   - 手動再認証した直後だけ `python token_manager.py --seed` で新トークンをDBへ発行する
 - トークン期限が7日以内に迫っていたらヒロさんに再認証を依頼（`python threads_auth.py`）
 - 生成・ゲートは**サブスク完結**。`ANTHROPIC_API_KEY` を環境に残さない（残すとAPI課金側で動く）
-- 週次企画（フック確定）は **Opus 4.8**（毎週月曜05:10・`run_weekly_session.ps1`）、日次の本文執筆は Sonnet、品質ゲートは Haiku。全部 claude_headless（サブスク・API課金ゼロ）
+- **週次のThreadsプラン（フック確定）は2026-07-09以降、claude.aiクラウドルーティン「コンサルThreads 週次企画（Opus 4.8）」（毎週月曜04:03 JST）が担当**（このPC不要）。`run_weekly_session.ps1`（毎週月曜05:10・ローカル）は**IGストーリーの週次プランのみ**を担当し、Threads側は触らない（`weekly_session_prompt.md`参照）。日次の本文執筆は Sonnet（同じくクラウドルーティン。ローカル`content_generator.py`経由の実行は現在無効化済みの予備手段）、品質ゲートは Haiku。全部サブスク完結・API課金ゼロ
 - **Fable 5 は月1回のスキーム見直し（手動）＋品質劣化時のフォールバックのみ**（ホームランが2週連続下落したら `--model opus`→`--model fable` に戻す）

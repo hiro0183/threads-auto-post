@@ -37,6 +37,7 @@ IG_PLAN_DIR = BASE_DIR / "ig_stories" / "plan"
 IG_OUT_DIR = Path(r"C:\Users\tujid\OneDrive\IGストーリー投稿")
 PREVIEW_DIR = Path(r"C:\Users\tujid\OneDrive\Desktop\コンサル投稿確認")
 INSIGHTS_DATA = BASE_DIR / "insights_data.jsonl"
+LINE_MANUAL_FILE = VAULT_CONSUL / "インサイト" / "週次レポート" / "_LINE流入_手動記入.jsonl"
 
 FONT_BOLD = r"C:\Windows\Fonts\NotoSansJP-Bold.ttf"
 FONT_BODY = r"C:\Windows\Fonts\meiryo.ttc"
@@ -266,6 +267,26 @@ def health_status():
     return ("[OK]" in last, last.split(" [")[0])
 
 
+def line_manual_pending():
+    """LINE流入の週次手動記入（_LINE流入_手動記入.jsonl）に記入待ちの週があればその週開始日を返す。
+    2026-07-30追加: 「今日やること」を増やさず、実際に記入漏れがある時だけ司令室に警告を出す。"""
+    if not LINE_MANUAL_FILE.exists():
+        return None
+    entries = []
+    for line in LINE_MANUAL_FILE.read_text(encoding="utf-8").strip().split("\n"):
+        if not line:
+            continue
+        try:
+            entries.append(json.loads(line))
+        except Exception:
+            pass
+    if not entries:
+        return None
+    entries.sort(key=lambda d: d.get("week_start", ""))
+    pending = [e["week_start"] for e in entries if e.get("line_additions") is None]
+    return pending[0] if pending else None
+
+
 def next_monday(today_dt: datetime) -> str:
     days_ahead = (0 - today_dt.weekday()) % 7
     if days_ahead == 0:
@@ -335,7 +356,12 @@ def collect_data():
     if tmr_ok is False:
         todos.append(("⚠️明日分に問題あり（夜までに直せばOK）", f"Claude Codeで「明日分の検品NGを直して」と伝える（{tmr_detail}）", None))
     if now.weekday() == 0:
-        todos.append(("【月曜】自動生成された週次企画を確認（5分）", "05:10にOpus 4.8が自動で企画済み → 作業ログ「週次企画_自動実行」と weekly_plan を一瞥。⚠️があれば対応", None))
+        todos.append(("【月曜】自動生成された週次企画を確認（5分）", "04:03にThreadsプラン(クラウド)・05:10にIGストーリー週次プラン(このPC・Opus 4.8)が自動生成済み → weekly_plan と ig_stories\\plan を一瞥。⚠️があれば対応", None))
+    line_pending = line_manual_pending()
+    if line_pending:
+        todos.append((f"⚠️LINE流入の記入待ち（{line_pending}週）",
+                      "エルメ管理画面の友だち追加数を _LINE流入_手動記入.jsonl に記入してください（未記入だと週次レポートで効果測定ができません）",
+                      _file_url(LINE_MANUAL_FILE)))
 
     # 部門ステータス（HTMLオフィス用）
     gate_today = (POSTS_DIR / "quality_gate" / f"{today}.json").exists()
@@ -481,6 +507,8 @@ def build_md(data: dict) -> str:
     L.append("| 04:30 | このPC | 前日の投稿データをGitHubから回収＋インサイト集計 |")
     L.append("| 04:40 | このPC | フォロワー数を記録 |")
     L.append("| 04:45 | このPC | 投稿パターン分析＋IGストーリー黒バック画像を生成＋**今日分の独立検品（Haiku）** |")
+    L.append("| 月曜 04:03 | claude.ai（クラウド・Opus 4.8） | **Threads週次プラン確定**（フック210本・4層ポートフォリオ・経営の問診導線） |")
+    L.append("| 月曜 05:10 | このPC（Opus 4.8） | **IGストーリー週次プランのみ**生成（Threadsは触らない） |")
     L.append("| 月曜 06:40 | このPC | **IGストーリー1週間分を一括生成** → `OneDrive\\IGストーリー投稿\\今週分\\`（1回DL→毎日1枚アップ） |")
     L.append("| 04:50 | このPC | インサイト集計（保険の二重実行） |")
     L.append("| 04:55 | このPC | 全タスクのヘルスチェック |")
@@ -491,7 +519,7 @@ def build_md(data: dict) -> str:
     L.append("| 月曜 06:30 | このPC | **月曜の空白埋め**: 週次プラン確定後に当日分を生成してpush（他の曜日は何もしない） |")
     L.append("| 23:30 | Render（クラウド） | 投稿ログをGitHubへ保存 |")
     L.append("")
-    L.append("**週次**: 毎週月曜 04:50 週次レポート自動生成 → 05:10 Opus 4.8が翌週分を自動企画（Threadsフック210本＋IGストーリー7日分）→ あなたは確認のみ。※月1回のスキーム見直しだけFable 5セッションを手動起動")
+    L.append("**週次**: 毎週月曜 04:50 週次レポート自動生成 → 04:03クラウドがThreadsフック210本を、05:10このPCがIGストーリー7日分を、それぞれ自動企画 → あなたは確認のみ。※月1回のスキーム見直しだけFable 5セッションを手動起動")
     L.append(f"**次回の月曜セッション**: {data['next_monday']}")
     L.append("")
 
@@ -535,8 +563,8 @@ def build_html(data: dict) -> str:
          "毎朝 04:30〜04:50", "🤖 Python", st(data["fc"] is not None and data["ok_insight"])),
         ("分析部", "Analytics Room", "投稿パターン分析・週次レポート生成（月曜）",
          "毎朝 04:45", "🤖 Python", st(data["ok_insight"])),
-        ("企画戦略部", "Strategy Room", "翌週のThreadsフック210本＋IGストーリー7日分を自動企画（あなたは月曜朝に確認のみ）",
-         "毎週月曜 05:10 自動", "🧠 Opus 4.8（ヘッドレス自動実行）",
+        ("企画戦略部", "Strategy Room", "翌週のThreadsフック210本（04:03クラウド）＋IGストーリー7日分（05:10このPC）を自動企画（あなたは月曜朝に確認のみ）",
+         "毎週月曜 04:03／05:10 自動", "🧠 Opus 4.8（クラウド＋ヘッドレス）",
          st(True, idle_condition=not data["plan_covers_today"])),
         ("執筆部", "Writing Room", "翌日分のThreads本文を生成（フックは一字も変えない）",
          "毎朝 06:00", "🤖 Sonnet（claude.aiクラウドルーティン）", st(data["today_posts_ok"])),
@@ -665,7 +693,7 @@ def build_html(data: dict) -> str:
     <ol>{todos_html}</ol>
   </div>
   <div class="footer">
-    スマホ用カード: OneDriveアプリ → Desktop → HIRAYASU → コンサルThreads → 運用司令室_今朝の状態.png ／ 次回の月曜自動企画: {data['next_monday']} 05:10
+    スマホ用カード: OneDriveアプリ → Desktop → HIRAYASU → コンサルThreads → 運用司令室_今朝の状態.png ／ 次回の月曜自動企画: {data['next_monday']} 04:03(Threads)／05:10(IG)
   </div>
   </div>
 </body></html>"""
