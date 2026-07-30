@@ -1,0 +1,85 @@
+{
+  "account": "コンサル垢",
+  "updated": "2026-07-30 22:59",
+  "todos": [
+    {
+      "title": "IGストーリー投稿（1〜2分）",
+      "detail": "画像あり → スマホのOneDriveアプリ「IGストーリー投稿」から 2026-07-30.png をアップ",
+      "flag": false
+    },
+    {
+      "title": "明日分プレビュー確認（1分）",
+      "detail": "コンサル投稿確認\\2026-07-31.txt（昼12:00の検品時に生成・⚠️だけ注意。朝07:30のメールと同内容）",
+      "flag": false
+    },
+    {
+      "title": "⚠️自動化の失敗対応",
+      "detail": "Claude Codeで「ヘルスチェックが失敗してる、調べて」と伝える",
+      "flag": true
+    },
+    {
+      "title": "⚠️明日分に問題あり（夜までに直せばOK）",
+      "detail": "Claude Codeで「明日分の検品NGを直して」と伝える（昼検品: NG 2件: 16:30, 22:00（中身は posts\\quality_gate\\2026-07-31_inspection.json））",
+      "flag": true
+    },
+    {
+      "title": "⚠️LINE流入の記入待ち（2026-06-29週）",
+      "detail": "エルメ管理画面の友だち追加数を _LINE流入_手動記入.jsonl に記入してください（未記入だと週次レポートで効果測定ができません）",
+      "flag": true
+    }
+  ],
+  "checks": [
+    {
+      "label": "自動タスク全体",
+      "ok": false,
+      "detail": "最終チェック 2026-07-30 04:55"
+    },
+    {
+      "label": "フォロワー記録",
+      "ok": true,
+      "detail": "913人"
+    },
+    {
+      "label": "インサイト収集",
+      "ok": true,
+      "detail": "最新: 2026-07-28"
+    },
+    {
+      "label": "IGストーリー準備",
+      "ok": true,
+      "detail": "画像あり → スマホのOneDriveアプリ「IGストーリー投稿」から 2026-07-30.png をアップ"
+    },
+    {
+      "label": "今日のThreads投稿",
+      "ok": true,
+      "detail": "posts\\2026-07-30.json（07/27 06:10 push済みの新原稿）"
+    },
+    {
+      "label": "投稿時刻と原稿のスロット一致",
+      "ok": true,
+      "detail": "一致"
+    },
+    {
+      "label": "今日分の検品(Haiku)",
+      "ok": true,
+      "detail": "全10スロット合格"
+    },
+    {
+      "label": "明日分の原稿と昼検品",
+      "ok": false,
+      "detail": "昼検品: NG 2件: 16:30, 22:00（中身は posts\\quality_gate\\2026-07-31_inspection.json）"
+    }
+  ],
+  "metrics": [
+    {
+      "value": 913,
+      "unit": "人",
+      "caption": "フォロワー"
+    },
+    {
+      "value": "2026-08-03",
+      "unit": "",
+      "caption": "次回の週次企画"
+    }
+  ]
+}
