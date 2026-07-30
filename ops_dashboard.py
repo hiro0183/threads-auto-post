@@ -727,11 +727,57 @@ def build_html(data: dict) -> str:
 </body></html>"""
 
 
+SNAPSHOT_FILE = BASE_DIR / "status_snapshot.json"
+
+
+def export_snapshot(data: dict) -> Path:
+    """2026-07-30新設: claude.aiのクラウドルーティン（ローカルファイルを読めない）が
+    「運用司令室」の内容を読めるよう、リポジトリ内に軽量JSONで書き出す。
+    毎朝のスマホ用まとめページ（Artifact）を作る材料になる。"""
+    todos = [{"title": t, "detail": d, "flag": t.strip().startswith("⚠️") or t.strip().startswith("🚨")}
+              for (t, d, _link) in data["todos"]]
+    checks = [{"label": label, "ok": ok, "detail": detail} for (label, ok, detail) in data["checks"]]
+    snapshot = {
+        "account": "コンサル垢",
+        "updated": data["now"].strftime("%Y-%m-%d %H:%M"),
+        "todos": todos,
+        "checks": checks,
+        "metrics": [
+            {"value": data["fc"] if data["fc"] else 0, "unit": "人", "caption": "フォロワー"},
+            {"value": data["next_monday"], "unit": "", "caption": "次回の週次企画"},
+        ],
+    }
+    SNAPSHOT_FILE.write_text(json.dumps(snapshot, ensure_ascii=False, indent=2), encoding="utf-8")
+    return SNAPSHOT_FILE
+
+
+def push_snapshot():
+    """status_snapshot.jsonだけを対象にcommit・push（他の変更には触れない）"""
+    try:
+        subprocess.run(["git", "add", "status_snapshot.json"], cwd=BASE_DIR, capture_output=True, timeout=15)
+        diff = subprocess.run(["git", "diff", "--cached", "--quiet"], cwd=BASE_DIR, capture_output=True, timeout=15)
+        if diff.returncode == 0:
+            print("status_snapshot.json: 変更なし（push不要）")
+            return
+        subprocess.run(["git", "commit", "-m", "運用司令室スナップショット自動更新", "--quiet"],
+                       cwd=BASE_DIR, capture_output=True, timeout=15)
+        push = subprocess.run(["git", "push", "origin", "master"], cwd=BASE_DIR, capture_output=True,
+                              timeout=45, text=True)
+        if push.returncode == 0:
+            print("status_snapshot.json: push完了")
+        else:
+            print(f"status_snapshot.json: push失敗（次回リトライ）: {push.stderr}")
+    except Exception as e:
+        print(f"status_snapshot.json: push処理でエラー: {e}")
+
+
 def main():
     data = collect_data()
     card = render_status_card(data)
     OUT_FILE.write_text(build_md(data), encoding="utf-8")
     HTML_FILE.write_text(build_html(data), encoding="utf-8")
+    export_snapshot(data)
+    push_snapshot()
     print(f"運用司令室を更新: {OUT_FILE}")
     print(f"ステータスカード: {card}")
     print(f"自動化オフィス(HTML): {HTML_FILE}")
