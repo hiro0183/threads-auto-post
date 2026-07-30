@@ -1,6 +1,6 @@
 {
   "account": "コンサル垢",
-  "updated": "2026-07-30 22:59",
+  "updated": "2026-07-30 23:26",
   "todos": [
     {
       "title": "IGストーリー投稿（1〜2分）",
@@ -15,11 +15,6 @@
     {
       "title": "⚠️自動化の失敗対応",
       "detail": "Claude Codeで「ヘルスチェックが失敗してる、調べて」と伝える",
-      "flag": true
-    },
-    {
-      "title": "⚠️明日分に問題あり（夜までに直せばOK）",
-      "detail": "Claude Codeで「明日分の検品NGを直して」と伝える（昼検品: NG 2件: 16:30, 22:00（中身は posts\\quality_gate\\2026-07-31_inspection.json））",
       "flag": true
     },
     {
@@ -66,8 +61,8 @@
     },
     {
       "label": "明日分の原稿と昼検品",
-      "ok": false,
-      "detail": "昼検品: NG 2件: 16:30, 22:00（中身は posts\\quality_gate\\2026-07-31_inspection.json）"
+      "ok": true,
+      "detail": "昼検品: 全10スロット合格"
     }
   ],
   "metrics": [
