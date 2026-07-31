@@ -1,20 +1,30 @@
 {
   "account": "コンサル垢",
-  "updated": "2026-07-30 23:56",
+  "updated": "2026-08-01 06:31",
   "todos": [
     {
       "title": "IGストーリー投稿（1〜2分）",
-      "detail": "画像あり → スマホのOneDriveアプリ「IGストーリー投稿」から 2026-07-30.png をアップ",
+      "detail": "画像あり → スマホのOneDriveアプリ「IGストーリー投稿」から 2026-08-01.png をアップ",
       "flag": false
     },
     {
       "title": "明日分プレビュー確認（1分）",
-      "detail": "コンサル投稿確認\\2026-07-31.txt（昼12:00の検品時に生成・⚠️だけ注意。朝07:30のメールと同内容）",
+      "detail": "コンサル投稿確認\\2026-08-02.txt（昼12:00の検品時に生成・⚠️だけ注意。朝07:30のメールと同内容）",
       "flag": false
     },
     {
       "title": "⚠️自動化の失敗対応",
       "detail": "Claude Codeで「ヘルスチェックが失敗してる、調べて」と伝える",
+      "flag": true
+    },
+    {
+      "title": "⚠️今日分の検品でNGあり",
+      "detail": "Claude Codeで「検品NGを見せて」と伝える（NG 3件: 14:00, 19:30, 22:00（中身は posts\\quality_gate\\2026-08-01_inspection.json））",
+      "flag": true
+    },
+    {
+      "title": "⚠️明日分に問題あり（夜までに直せばOK）",
+      "detail": "Claude Codeで「明日分の検品NGを直して」と伝える（昼検品: NG 5件: 07:00, 08:00, 11:00, 16:30, 19:30（中身は posts\\quality_gate\\2026-08-02_inspection.json））",
       "flag": true
     },
     {
@@ -31,23 +41,23 @@
     },
     {
       "label": "フォロワー記録",
-      "ok": true,
-      "detail": "913人"
+      "ok": false,
+      "detail": "今日分が未記録"
     },
     {
       "label": "インサイト収集",
-      "ok": true,
+      "ok": false,
       "detail": "最新: 2026-07-28"
     },
     {
       "label": "IGストーリー準備",
       "ok": true,
-      "detail": "画像あり → スマホのOneDriveアプリ「IGストーリー投稿」から 2026-07-30.png をアップ"
+      "detail": "画像あり → スマホのOneDriveアプリ「IGストーリー投稿」から 2026-08-01.png をアップ"
     },
     {
       "label": "今日のThreads投稿",
       "ok": true,
-      "detail": "posts\\2026-07-30.json（07/27 06:10 push済みの新原稿）"
+      "detail": "posts\\2026-08-01.json（07/29 06:05 push済みの新原稿）"
     },
     {
       "label": "投稿時刻と原稿のスロット一致",
@@ -56,18 +66,18 @@
     },
     {
       "label": "今日分の検品(Haiku)",
-      "ok": true,
-      "detail": "全10スロット合格"
+      "ok": false,
+      "detail": "NG 3件: 14:00, 19:30, 22:00（中身は posts\\quality_gate\\2026-08-01_inspection.json）"
     },
     {
       "label": "明日分の原稿と昼検品",
-      "ok": true,
-      "detail": "昼検品: 全10スロット合格"
+      "ok": false,
+      "detail": "昼検品: NG 5件: 07:00, 08:00, 11:00, 16:30, 19:30（中身は posts\\quality_gate\\2026-08-02_inspection.json）"
     }
   ],
   "metrics": [
     {
-      "value": 913,
+      "value": 0,
       "unit": "人",
       "caption": "フォロワー"
     },
