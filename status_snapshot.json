@@ -1,11 +1,16 @@
 {
   "account": "コンサル垢",
-  "updated": "2026-08-03 05:54",
+  "updated": "2026-08-03 06:00",
   "todos": [
     {
       "title": "IGストーリー投稿（1〜2分）",
-      "detail": "今日のプランなし（月曜のFable5セッションで作成）",
+      "detail": "プランはあるが画像未生成（IG_StoryRenderタスクを確認）",
       "flag": false
+    },
+    {
+      "title": "⚠️自動化の失敗対応",
+      "detail": "Claude Codeで「ヘルスチェックが失敗してる、調べて」と伝える",
+      "flag": true
     },
     {
       "title": "⚠️Threads原稿の鮮度異常",
@@ -26,23 +31,23 @@
   "checks": [
     {
       "label": "自動タスク全体",
-      "ok": true,
-      "detail": "最終チェック 2026-08-01 06:31"
+      "ok": false,
+      "detail": "最終チェック 2026-08-03 05:54"
     },
     {
       "label": "フォロワー記録",
-      "ok": false,
-      "detail": "今日分が未記録"
+      "ok": true,
+      "detail": "913人"
     },
     {
       "label": "インサイト収集",
       "ok": true,
-      "detail": "最新: 2026-07-31"
+      "detail": "最新: 2026-08-01"
     },
     {
       "label": "IGストーリー準備",
       "ok": false,
-      "detail": "今日のプランなし（月曜のFable5セッションで作成）"
+      "detail": "プランはあるが画像未生成（IG_StoryRenderタスクを確認）"
     },
     {
       "label": "今日のThreads投稿",
@@ -67,7 +72,7 @@
   ],
   "metrics": [
     {
-      "value": 0,
+      "value": 913,
       "unit": "人",
       "caption": "フォロワー"
     },
