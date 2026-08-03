@@ -1,10 +1,10 @@
 {
   "account": "コンサル垢",
-  "updated": "2026-08-03 06:00",
+  "updated": "2026-08-04 05:58",
   "todos": [
     {
       "title": "IGストーリー投稿（1〜2分）",
-      "detail": "プランはあるが画像未生成（IG_StoryRenderタスクを確認）",
+      "detail": "画像あり → スマホのOneDriveアプリ「IGストーリー投稿」から 2026-08-04.png をアップ",
       "flag": false
     },
     {
@@ -14,13 +14,8 @@
     },
     {
       "title": "⚠️Threads原稿の鮮度異常",
-      "detail": "Claude Codeで「今日の投稿が古い/未pushと出てる、調べて」と伝える（posts\\2026-08-03.json がありません（生成されていない））",
+      "detail": "Claude Codeで「今日の投稿が古い/未pushと出てる、調べて」と伝える（posts\\2026-08-04.json がありません（生成されていない））",
       "flag": true
-    },
-    {
-      "title": "【月曜】自動生成された週次企画を確認（5分）",
-      "detail": "04:03にThreadsプラン(クラウド)・05:10にIGストーリー週次プラン(このPC・Opus 4.8)が自動生成済み → weekly_plan と ig_stories\\plan を一瞥。⚠️があれば対応",
-      "flag": false
     },
     {
       "title": "⚠️LINE流入の記入待ち（2026-06-29週）",
@@ -36,8 +31,8 @@
     },
     {
       "label": "フォロワー記録",
-      "ok": true,
-      "detail": "913人"
+      "ok": false,
+      "detail": "今日分が未記録"
     },
     {
       "label": "インサイト収集",
@@ -46,13 +41,13 @@
     },
     {
       "label": "IGストーリー準備",
-      "ok": false,
-      "detail": "プランはあるが画像未生成（IG_StoryRenderタスクを確認）"
+      "ok": true,
+      "detail": "画像あり → スマホのOneDriveアプリ「IGストーリー投稿」から 2026-08-04.png をアップ"
     },
     {
       "label": "今日のThreads投稿",
       "ok": false,
-      "detail": "posts\\2026-08-03.json がありません（生成されていない）"
+      "detail": "posts\\2026-08-04.json がありません（生成されていない）"
     },
     {
       "label": "投稿時刻と原稿のスロット一致",
@@ -72,12 +67,12 @@
   ],
   "metrics": [
     {
-      "value": 913,
+      "value": 0,
       "unit": "人",
       "caption": "フォロワー"
     },
     {
-      "value": "2026-08-03",
+      "value": "2026-08-10",
       "unit": "",
       "caption": "次回の週次企画"
     }
