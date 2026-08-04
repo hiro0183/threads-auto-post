@@ -18,7 +18,7 @@
       {"slot": "12:45", "hook": "回数券の提案は、施術が終わる前に済ませておきます", "type": "常識破壊型", "theme": "売上・成約", "conclusion": "堀式クロージング順番（提案→体験→最後に一言）", "cta": false, "layer": "信頼"},
       {"slot": "16:45", "hook": "値上げで去る患者様を、僕は追いかけないと決めています", "type": "断言型", "theme": "単価・値上げ", "conclusion": "値上げ＝選ぶ行為（堀式本質の言い換え）", "cta": false, "layer": "信頼"},
       {"slot": "17:30", "hook": "ホットペッパーは、プランよりTOP画像で差がつきます", "type": "常識破壊型", "theme": "集客・HPB", "conclusion": "PV3要素（TOP画像/口コミキーワード/施術者情報）", "cta": false, "layer": "信頼"},
-      {"slot": "18:15", "hook": "予約表がスカスカの日、最初に何をしますか", "type": "質問型", "theme": "一人経営", "conclusion": "孤独共感→即答の選択肢", "cta": false, "layer": "会話"},
+      {"slot": "18:15", "hook": "予約表がスカスカの日、最初にやっておくべきことがあります", "type": "断言型", "theme": "一人経営", "conclusion": "孤独共感→やるべきことの言い切り", "cta": false, "layer": "会話"},
       {"slot": "21:20", "hook": "今日の施術で、患者様は何回『ほんとだ』と言いましたか", "type": "質問型", "theme": "リピート", "conclusion": "施術中の体感言語化の問い", "cta": false, "layer": "会話"},
       {"slot": "21:40", "hook": "忙しさと売上が釣り合わない院を、数字で見立てます", "type": "数字具体型", "theme": "数字系", "conclusion": "問診CTA・売上軸（本文で月商300万×10年）", "cta": true, "layer": "導線"}
     ],
@@ -30,12 +30,12 @@
       {"slot": "12:45", "hook": "初回カウンセリングは、質問の順番で成約率が変わります", "type": "断言型", "theme": "売上・成約", "conclusion": "悩み確認→提案許可の一言の台本", "cta": false, "layer": "信頼"},
       {"slot": "16:45", "hook": "販促費を増やす前に、失客の穴を塞ぐほうが安く済みます", "type": "常識破壊型", "theme": "数字系・リピート", "conclusion": "穴の空いたバケツ。維持コストの優位", "cta": false, "layer": "信頼"},
       {"slot": "17:30", "hook": "Googleの口コミは、書いてもらう言葉まで設計できます", "type": "知的好奇心型", "theme": "集客・MEO", "conclusion": "症状キーワードが入る依頼の仕方（堀式SEO）", "cta": false, "layer": "信頼"},
-      {"slot": "18:15", "hook": "家族に、院の売上の話をどこまでしていますか", "type": "質問型", "theme": "一人経営", "conclusion": "孤独共感（家族に理解されない）", "cta": false, "layer": "会話"},
+      {"slot": "18:15", "hook": "経営の不安を家族に話せない院長は、僕だけではありません", "type": "失敗談型", "theme": "一人経営", "conclusion": "孤独共感（家族ではなく経営者同士で分け合う）", "cta": false, "layer": "会話"},
       {"slot": "21:20", "hook": "回数券を勧める時、一番緊張するのはどの瞬間ですか", "type": "質問型", "theme": "売上", "conclusion": "提案の心理ハードル共有", "cta": false, "layer": "会話"},
       {"slot": "21:40", "hook": "その値付けで手元に残るのか、3分の問診で分かります", "type": "数字具体型", "theme": "数字系", "conclusion": "問診CTA・売上軸", "cta": true, "layer": "導線"}
     ],
     "2026-08-12": [
-      {"slot": "06:00", "hook": "予約の空きを埋める値引きが、院の空きを増やしています", "type": "常識破壊型", "theme": "売上・値引き", "conclusion": "値引きの逆効果構造", "cta": false, "layer": "拡散"},
+      {"slot": "06:00", "hook": "予約の空きを埋める値引きが、院の空き時間を増やしています", "type": "常識破壊型", "theme": "売上・値引き", "conclusion": "値引きの逆効果構造", "cta": false, "layer": "拡散"},
       {"slot": "07:30", "hook": "僕は週3日休んで、営業日の密度で月商を守っています", "type": "数字具体型", "theme": "時間", "conclusion": "週休3日実数・密度の話", "cta": false, "layer": "拡散"},
       {"slot": "08:00", "hook": "沈黙に耐えられない院長が、成約を自分で壊しています", "type": "ネガティブ訴求型", "theme": "売上・成約", "conclusion": "提案後の沈黙は考えているサイン（堀式）", "cta": false, "layer": "拡散"},
       {"slot": "11:00", "hook": "カルテの整理をAIに任せて、僕は施術に集中しています", "type": "自分語り型", "theme": "AI×時間", "conclusion": "AI試打（persona用途カルテ整理）", "cta": false, "layer": "信頼"},
@@ -55,7 +55,7 @@
       {"slot": "16:45", "hook": "経費を削る前に、削ってはいけない出費を決めます", "type": "常識破壊型", "theme": "数字系", "conclusion": "投資と浪費の線引き", "cta": false, "layer": "信頼"},
       {"slot": "17:30", "hook": "LINEの返信が遅い院は、それだけで失客しています", "type": "ネガティブ訴求型", "theme": "リピート・LINE", "conclusion": "返信の型を作る", "cta": false, "layer": "信頼"},
       {"slot": "18:15", "hook": "同業の先生を、正直ライバルだと思いますか", "type": "質問型", "theme": "一人経営", "conclusion": "交流の場の思想", "cta": false, "layer": "会話"},
-      {"slot": "21:20", "hook": "開業してから、一番高かった買い物は何ですか", "type": "質問型", "theme": "数字系", "conclusion": "投資の話を引き出す", "cta": false, "layer": "会話"},
+      {"slot": "21:20", "hook": "今の売上を10年前の自分に見せたら、何と言われますか", "type": "質問型", "theme": "数字系", "conclusion": "時系列の振り返りで積み上げを実感", "cta": false, "layer": "会話"},
       {"slot": "21:40", "hook": "月末の通帳を見る前に、月初で分かる数字があります", "type": "数字具体型", "theme": "数字系", "conclusion": "問診CTA・先読み軸", "cta": true, "layer": "導線"}
     ],
     "2026-08-14": [
@@ -66,9 +66,9 @@
       {"slot": "12:45", "hook": "施術中の『ほんとだ』の数が、成約率を決めます", "type": "断言型", "theme": "売上・成約", "conclusion": "体感の言語化を促す聞き方（堀式）", "cta": false, "layer": "信頼"},
       {"slot": "16:45", "hook": "キャンセル規定は、患者様との信頼を守るために作ります", "type": "常識破壊型", "theme": "リピート・運用", "conclusion": "規定＝罰ではなく約束", "cta": false, "layer": "信頼"},
       {"slot": "17:30", "hook": "Googleビジネスの写真は、外観より施術者の顔が効きます", "type": "常識破壊型", "theme": "集客・MEO", "conclusion": "誰から受けるか（堀式・施術者情報PV増）", "cta": false, "layer": "信頼"},
-      {"slot": "18:15", "hook": "値下げしたくなる夜、どうやって踏みとどまっていますか", "type": "質問型", "theme": "単価", "conclusion": "夜の弱気の共有", "cta": false, "layer": "会話"},
-      {"slot": "21:20", "hook": "今週、患者様に一番言われた言葉は何ですか", "type": "質問型", "theme": "あり方", "conclusion": "週の振り返りを引き出す", "cta": false, "layer": "会話"},
-      {"slot": "21:40", "hook": "あと3つの数字を知るだけで、来月の打ち手が決まります", "type": "数字具体型", "theme": "数字系", "conclusion": "問診CTA・打ち手軸", "cta": true, "layer": "導線"}
+      {"slot": "18:15", "hook": "値下げを考えた回数、正直に数えたことはありますか", "type": "質問型", "theme": "単価", "conclusion": "夜の弱気の共有", "cta": false, "layer": "会話"},
+      {"slot": "21:20", "hook": "この一週間、新しい患者様のために何をしましたか", "type": "質問型", "theme": "集客", "conclusion": "週の振り返り→集客行動の棚卸し", "cta": false, "layer": "会話"},
+      {"slot": "21:40", "hook": "経営で見るべき数字は、たった3つです", "type": "数字具体型", "theme": "数字系", "conclusion": "問診CTA・打ち手軸", "cta": true, "layer": "導線"}
     ],
     "2026-08-15": [
       {"slot": "06:00", "hook": "院の空気は、院長の機嫌で決まります", "type": "断言型", "theme": "あり方", "conclusion": "感情＝院の空気（堀式）。機嫌の整え方", "cta": false, "layer": "拡散"},
