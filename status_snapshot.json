@@ -1,15 +1,25 @@
 {
   "account": "コンサル垢",
-  "updated": "2026-08-05 05:56",
+  "updated": "2026-08-06 05:00",
   "todos": [
     {
       "title": "IGストーリー投稿（1〜2分）",
-      "detail": "画像あり → スマホのOneDriveアプリ「IGストーリー投稿」から 2026-08-05.png をアップ",
+      "detail": "画像あり → スマホのOneDriveアプリ「IGストーリー投稿」から 2026-08-06.png をアップ",
+      "flag": false
+    },
+    {
+      "title": "今日分プレビュー確認（1分）",
+      "detail": "コンサル投稿確認\\2026-08-06.txt（昨日の昼検品時に生成・品質ゲート⚠️だけ注意）",
       "flag": false
     },
     {
       "title": "🚨投稿時刻に原稿が無いスロットあり（7件・投稿が抜けます）",
-      "detail": "05:00, 07:00, 14:00, 16:30, 19:30, 20:15, 22:00 が posts\\2026-08-05.json に無い → post_runner.pyのPOST_SCHEDULEをその日の原稿スロットに合わせて至急修正",
+      "detail": "05:00, 07:00, 14:00, 16:30, 19:30, 20:15, 22:00 が posts\\2026-08-06.json に無い → post_runner.pyのPOST_SCHEDULEをその日の原稿スロットに合わせて至急修正",
+      "flag": true
+    },
+    {
+      "title": "⚠️自動化の失敗対応",
+      "detail": "Claude Codeで「ヘルスチェックが失敗してる、調べて」と伝える",
       "flag": true
     },
     {
@@ -21,28 +31,28 @@
   "checks": [
     {
       "label": "自動タスク全体",
-      "ok": true,
-      "detail": "最終チェック 2026-08-04 05:58"
+      "ok": false,
+      "detail": "最終チェック 2026-08-06 04:55"
     },
     {
       "label": "フォロワー記録",
-      "ok": false,
-      "detail": "今日分が未記録"
+      "ok": true,
+      "detail": "916人"
     },
     {
       "label": "インサイト収集",
-      "ok": true,
+      "ok": false,
       "detail": "最新: 2026-08-02"
     },
     {
       "label": "IGストーリー準備",
       "ok": true,
-      "detail": "画像あり → スマホのOneDriveアプリ「IGストーリー投稿」から 2026-08-05.png をアップ"
+      "detail": "画像あり → スマホのOneDriveアプリ「IGストーリー投稿」から 2026-08-06.png をアップ"
     },
     {
       "label": "今日のThreads投稿",
       "ok": true,
-      "detail": "posts\\2026-08-05.json（08/04 15:50 push済みの新原稿）"
+      "detail": "posts\\2026-08-06.json（08/04 15:56 push済みの新原稿）"
     },
     {
       "label": "投稿時刻と原稿のスロット一致",
@@ -52,7 +62,7 @@
     {
       "label": "今日分の検品(Haiku)",
       "ok": null,
-      "detail": "検品対象外（未生成）: posts/2026-08-05.json が存在せず、posts/weekly_plan/ にも2026-08-05を含む週間プランが無い（週次プランは202"
+      "detail": "検品対象外（未生成）: posts/2026-08-06.json が存在せず、posts/weekly_plan/ にも2026-08-06を含む週間プランが無い（週次プランは202"
     },
     {
       "label": "明日分の原稿と昼検品",
@@ -62,7 +72,7 @@
   ],
   "metrics": [
     {
-      "value": 0,
+      "value": 916,
       "unit": "人",
       "caption": "フォロワー"
     },
