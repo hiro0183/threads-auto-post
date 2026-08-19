@@ -1,11 +1,16 @@
 {
   "account": "コンサル垢",
-  "updated": "2026-08-20 05:53",
+  "updated": "2026-08-20 07:38",
   "todos": [
     {
       "title": "IGストーリー投稿（1〜2分）",
-      "detail": "今日のプランなし（月曜のFable5セッションで作成）",
+      "detail": "画像あり → スマホのOneDriveアプリ「IGストーリー投稿」から 2026-08-20.png をアップ",
       "flag": false
+    },
+    {
+      "title": "🚨投稿時刻に原稿が無いスロットあり（7件・投稿が抜けます）",
+      "detail": "05:00, 07:00, 14:00, 16:30, 19:30, 20:15, 22:00 が posts\\2026-08-20.json に無い → post_runner.pyのPOST_SCHEDULEをその日の原稿スロットに合わせて至急修正",
+      "flag": true
     },
     {
       "title": "⚠️自動化の失敗対応",
@@ -13,8 +18,13 @@
       "flag": true
     },
     {
-      "title": "⚠️PCの同期遅れ（投稿は正常・追いつくだけ）",
-      "detail": "Claude Codeで「PCをGitHubに同期して」と伝える（GitHubには生成済み・このPCが同期遅れです（投稿は正常。Claude Codeで「PCをGitHubに同期して」と伝えれば追いつきます））",
+      "title": "⚠️今日分の検品でNGあり",
+      "detail": "Claude Codeで「検品NGを見せて」と伝える（NG 5件: 07:30, 16:45, 17:30, 21:20, 21:40（中身は posts\\quality_gate\\2026-08-20_inspection.json））",
+      "flag": true
+    },
+    {
+      "title": "⚠️明日分に問題あり（夜までに直せばOK）",
+      "detail": "Claude Codeで「明日分の検品NGを直して」と伝える（昼検品: NG 6件: 07:30, 08:00, 12:45, 16:45, 17:30, 21:40（中身は posts\\quality_gate\\2026-08-21_inspection.json））",
       "flag": true
     },
     {
@@ -27,7 +37,7 @@
     {
       "label": "自動タスク全体",
       "ok": false,
-      "detail": "最終チェック 2026-08-18 05:45"
+      "detail": "最終チェック 2026-08-20 05:53"
     },
     {
       "label": "フォロワー記録",
@@ -41,28 +51,28 @@
     },
     {
       "label": "IGストーリー準備",
-      "ok": false,
-      "detail": "今日のプランなし（月曜のFable5セッションで作成）"
+      "ok": true,
+      "detail": "画像あり → スマホのOneDriveアプリ「IGストーリー投稿」から 2026-08-20.png をアップ"
     },
     {
       "label": "今日のThreads投稿",
-      "ok": false,
-      "detail": "GitHubには生成済み・このPCが同期遅れです（投稿は正常。Claude Codeで「PCをGitHubに同期して」と伝えれば追いつきます）"
+      "ok": true,
+      "detail": "posts\\2026-08-20.json（08/17 06:06 push済みの新原稿）"
     },
     {
       "label": "投稿時刻と原稿のスロット一致",
-      "ok": true,
-      "detail": "確認できず"
+      "ok": false,
+      "detail": "ズレあり: 05:00, 07:00, 14:00, 16:30, 19:30, 20:15, 22:00 に原稿が無い"
     },
     {
       "label": "今日分の検品(Haiku)",
-      "ok": null,
-      "detail": "未実施（毎朝04:45に自動実行）"
+      "ok": false,
+      "detail": "NG 5件: 07:30, 16:45, 17:30, 21:20, 21:40（中身は posts\\quality_gate\\2026-08-20_inspection.json）"
     },
     {
       "label": "明日分の原稿と昼検品",
-      "ok": null,
-      "detail": "週次プラン待ち（月曜分は当日朝06:30に自動生成）"
+      "ok": false,
+      "detail": "昼検品: NG 6件: 07:30, 08:00, 12:45, 16:45, 17:30, 21:40（中身は posts\\quality_gate\\2026-08-21_inspection.json）"
     }
   ],
   "metrics": [
