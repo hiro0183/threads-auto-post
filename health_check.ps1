@@ -64,8 +64,20 @@ foreach ($name in $tasks) {
         # 以前はこれを❌と数えて総合判定が毎回赤くなる誤報が出ていた（2026-07-21修正）。
         $running = ($result -eq 0x41301) -or ($task.State -eq "Running")
         $ok = ($result -eq 0) -and (-not $disabled)
-        if (-not $ok -and ($weeklyTasks -notcontains $name) -and (-not $isBackup) -and (-not $neverRan) -and (-not $running)) { $allOk = $false }
-        # 週次タスクは日次の総合判定から除外（結果自体は表示する）
+        $isWeekly = ($weeklyTasks -contains $name)
+        # 週次タスクは平常時（前回実行から4日超）は日次判定から除外するが、
+        # 直近4日以内に失敗していれば「今週分がまだ壊れたまま」なので日次判定に含める。
+        # 2026-08-20: Threads_WeeklySessionが強制終了(C000013A)しても常に除外されていたため
+        # 11日間IGストーリーが空白のまま総合判定が✅のままになっていた事故の再発防止。
+        $weeklyRecentFailure = $false
+        if ($isWeekly -and (-not $ok) -and (-not $isBackup) -and (-not $neverRan) -and (-not $running)) {
+            try {
+                $daysSince = (New-TimeSpan -Start $info.LastRunTime -End (Get-Date)).TotalDays
+                if ($daysSince -le 4) { $weeklyRecentFailure = $true }
+            } catch { $weeklyRecentFailure = $true }
+        }
+        if (-not $ok -and (-not $isWeekly) -and (-not $isBackup) -and (-not $neverRan) -and (-not $running)) { $allOk = $false }
+        if ($weeklyRecentFailure) { $allOk = $false }
         $mark = if ($isBackup -and $disabled) { "⏸" } elseif ($ok) { "✅" } elseif ($disabled) { "⛔" } elseif ($neverRan) { "⏸" } elseif ($running) { "🔄" } else { "❌" }
         $lines += "| $name | $($task.State) | $($info.LastRunTime) | $hex | $mark |"
         $summary += "$name=$hex"

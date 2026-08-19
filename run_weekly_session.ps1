@@ -13,18 +13,20 @@ Remove-Item Env:ANTHROPIC_API_KEY -ErrorAction SilentlyContinue
 
 $logFile = "C:\Users\tujid\threads_tool\weekly_session.log"
 $now = Get-Date -Format "yyyy-MM-dd HH:mm"
-Add-Content -Path $logFile -Value "===== $now 週次企画セッション開始 ====="
+# 2026-08-20: -Encoding未指定だとWindows PowerShellのAdd-Contentは既定でcp932(Shift-JIS)
+# 書き込みになり、UTF-8のログと混在して過去ログが文字化けしていた。utf8を明示して統一する。
+Add-Content -Path $logFile -Value "===== $now 週次企画セッション開始 =====" -Encoding utf8
 
 $prompt = Get-Content "C:\Users\tujid\threads_tool\weekly_session_prompt.md" -Raw -Encoding UTF8
 
 # --permission-mode acceptEdits: ファイルの読み書きは自動許可（Bash等は不可のまま）
 & claude --model opus --permission-mode acceptEdits -p $prompt 2>&1 |
-    Tee-Object -Variable output | Add-Content -Path $logFile
+    Tee-Object -Variable output | Add-Content -Path $logFile -Encoding utf8
 
 $now2 = Get-Date -Format "yyyy-MM-dd HH:mm"
-Add-Content -Path $logFile -Value "===== $now2 終了 (exit=$LASTEXITCODE) ====="
+Add-Content -Path $logFile -Value "===== $now2 終了 (exit=$LASTEXITCODE) =====" -Encoding utf8
 
 # 司令室を最新化（企画結果を反映）
-& "C:\Users\tujid\AppData\Local\Programs\Python\Python312\python.exe" "C:\Users\tujid\threads_tool\ops_dashboard.py" 2>&1 | Add-Content -Path $logFile
+& "C:\Users\tujid\AppData\Local\Programs\Python\Python312\python.exe" "C:\Users\tujid\threads_tool\ops_dashboard.py" 2>&1 | Add-Content -Path $logFile -Encoding utf8
 
 exit $LASTEXITCODE

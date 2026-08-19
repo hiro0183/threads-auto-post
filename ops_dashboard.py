@@ -80,8 +80,27 @@ def follower_today(today: str):
     return None
 
 
+def ig_plan_latest_date() -> str | None:
+    """ig_stories/plan/配下の全JSONを見て、プランがカバーしている最新の日付(YYYY-MM-DD)を返す。
+    プランが1つも無ければNone。"""
+    latest = None
+    if IG_PLAN_DIR.exists():
+        for f in IG_PLAN_DIR.glob("*.json"):
+            try:
+                data = json.loads(f.read_text(encoding="utf-8"))
+                for d in (data.get("days") or {}):
+                    if latest is None or d > latest:
+                        latest = d
+            except Exception:
+                pass
+    return latest
+
+
 def ig_story_today(today: str):
-    """今日のIGストーリー状態: (種別, 人間向け説明)"""
+    """今日のIGストーリー状態: (種別, 人間向け説明)。
+    2026-08-20: プラン未作成が『今日だけ』か『何日も続いているか』を区別しないと、
+    週次セッションが落ちて11日間空白でも「今日のプランなし（正常な待機文言）」としか
+    出ず実害が隠れる事故が起きたため、欠落日数を数えて3日以上なら🚨に格上げする。"""
     png = IG_OUT_DIR / f"{today}.png"
     note = IG_OUT_DIR / f"{today}_やること.txt"
     if png.exists():
@@ -96,6 +115,13 @@ def ig_story_today(today: str):
                     return ("pending", "プランはあるが画像未生成（IG_StoryRenderタスクを確認）")
             except Exception:
                 pass
+    latest = ig_plan_latest_date()
+    if latest is not None:
+        gap = (datetime.strptime(today, "%Y-%m-%d") - datetime.strptime(latest, "%Y-%m-%d")).days
+        if gap >= 3:
+            return (None, f"🚨{gap}日間プラン未作成が続いています（最新プランは{latest}まで。"
+                          f"週次セッション(Threads_WeeklySession)が失敗している可能性・"
+                          f"Claude Codeで「IGストーリーの週次セッションを確認して」と伝える）")
     return (None, "今日のプランなし（月曜のFable5セッションで作成）")
 
 
@@ -356,7 +382,8 @@ def collect_data():
     ig_week_dir = IG_OUT_DIR / "今週分"
     ig_link = _file_url(ig_week_dir if ig_week_dir.exists() else IG_OUT_DIR)
     todos = []
-    todos.append(("IGストーリー投稿（1〜2分）", ig_detail, ig_link))
+    ig_todo_title = "🚨IGストーリー週次セッションが止まっています" if "🚨" in ig_detail else "IGストーリー投稿（1〜2分）"
+    todos.append((ig_todo_title, ig_detail, ig_link))
     # 明日分プレビューは毎日12:00の昼検品（Threads_NoonInspection）が書き出す。
     # それより前の時間帯は前日に出力済みの今日分を案内する（2026-07-23改修）
     preview_tomorrow = PREVIEW_DIR / f"{tomorrow}.txt"
