@@ -1,30 +1,25 @@
 {
   "account": "コンサル垢",
-  "updated": "2026-08-21 05:00",
+  "updated": "2026-08-22 05:00",
   "todos": [
     {
       "title": "IGストーリー投稿（1〜2分）",
-      "detail": "画像あり → スマホのOneDriveアプリ「IGストーリー投稿」から 2026-08-21.png をアップ",
+      "detail": "画像あり → スマホのOneDriveアプリ「IGストーリー投稿」から 2026-08-22.png をアップ",
+      "flag": false
+    },
+    {
+      "title": "今日分プレビュー確認（1分）",
+      "detail": "コンサル投稿確認\\2026-08-22.txt（昨日の昼検品時に生成・品質ゲート⚠️だけ注意）",
       "flag": false
     },
     {
       "title": "🚨投稿時刻に原稿が無いスロットあり（7件・投稿が抜けます）",
-      "detail": "05:00, 07:00, 14:00, 16:30, 19:30, 20:15, 22:00 が posts\\2026-08-21.json に無い → post_runner.pyのPOST_SCHEDULEをその日の原稿スロットに合わせて至急修正",
-      "flag": true
-    },
-    {
-      "title": "⚠️自動化の失敗対応",
-      "detail": "Claude Codeで「ヘルスチェックが失敗してる、調べて」と伝える",
+      "detail": "05:00, 07:00, 14:00, 16:30, 19:30, 20:15, 22:00 が posts\\2026-08-22.json に無い → post_runner.pyのPOST_SCHEDULEをその日の原稿スロットに合わせて至急修正",
       "flag": true
     },
     {
       "title": "⚠️今日分の検品でNGあり",
-      "detail": "Claude Codeで「検品NGを見せて」と伝える（NG 6件: 07:30, 08:00, 12:45, 16:45, 17:30, 21:40（中身は posts\\quality_gate\\2026-08-21_inspection.json））",
-      "flag": true
-    },
-    {
-      "title": "⚠️明日分に問題あり（夜までに直せばOK）",
-      "detail": "Claude Codeで「明日分の検品NGを直して」と伝える（昼検品: NG 5件: 07:30, 11:00, 18:15, 21:20, 21:40（中身は posts\\quality_gate\\2026-08-22_inspection.json））",
+      "detail": "Claude Codeで「検品NGを見せて」と伝える（NG 5件: 07:30, 11:00, 18:15, 21:20, 21:40（中身は posts\\quality_gate\\2026-08-22_inspection.json））",
       "flag": true
     },
     {
@@ -36,8 +31,8 @@
   "checks": [
     {
       "label": "自動タスク全体",
-      "ok": false,
-      "detail": "最終チェック 2026-08-21 04:55"
+      "ok": true,
+      "detail": "最終チェック 2026-08-22 04:55"
     },
     {
       "label": "フォロワー記録",
@@ -52,12 +47,12 @@
     {
       "label": "IGストーリー準備",
       "ok": true,
-      "detail": "画像あり → スマホのOneDriveアプリ「IGストーリー投稿」から 2026-08-21.png をアップ"
+      "detail": "画像あり → スマホのOneDriveアプリ「IGストーリー投稿」から 2026-08-22.png をアップ"
     },
     {
       "label": "今日のThreads投稿",
       "ok": true,
-      "detail": "posts\\2026-08-21.json（08/18 06:06 push済みの新原稿）"
+      "detail": "posts\\2026-08-22.json（08/19 06:04 push済みの新原稿）"
     },
     {
       "label": "投稿時刻と原稿のスロット一致",
@@ -67,12 +62,12 @@
     {
       "label": "今日分の検品(Haiku)",
       "ok": false,
-      "detail": "NG 6件: 07:30, 08:00, 12:45, 16:45, 17:30, 21:40（中身は posts\\quality_gate\\2026-08-21_inspection.json）"
+      "detail": "NG 5件: 07:30, 11:00, 18:15, 21:20, 21:40（中身は posts\\quality_gate\\2026-08-22_inspection.json）"
     },
     {
       "label": "明日分の原稿と昼検品",
-      "ok": false,
-      "detail": "昼検品: NG 5件: 07:30, 11:00, 18:15, 21:20, 21:40（中身は posts\\quality_gate\\2026-08-22_inspection.json）"
+      "ok": null,
+      "detail": "原稿あり・12:00に検品予定"
     }
   ],
   "metrics": [
