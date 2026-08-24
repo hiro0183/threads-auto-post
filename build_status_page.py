@@ -22,84 +22,116 @@ ACCENT = {
     "ラポール垢": ("var(--rapport)", "var(--rapport-soft)"),
 }
 
+FONT_LINK = '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Maru+Gothic:wght@500;700&display=swap">'
+
 CSS = """
   :root{
-    --paper:#eef1ec; --surface:#ffffff; --ink:#1d2420; --ink-soft:#586158; --line:#d9ded7;
-    --consult:#2c3e6b; --consult-soft:#e7eaf3; --rapport:#8b4a5f; --rapport-soft:#f3e6ea;
-    --ok:#2f855a; --ok-soft:#e4f2ea; --warn:#b7791f; --warn-soft:#faf1de;
-    --critical:#c0392b; --critical-soft:#fbe7e4;
+    --paper:#fff3d6; --paper-dot:#f5c400; --surface:#ffffff; --ink:#241832; --ink-soft:#7a6f8c; --line:#e7d9a8;
+    --consult:#5b3a8e; --consult-soft:#ece3fa; --rapport:#1f9e64; --rapport-soft:#e1f6ea;
+    --ok:#1f9e64; --ok-soft:#e1f6ea; --warn:#e08a00; --warn-soft:#fff0d6;
+    --critical:#e63950; --critical-soft:#fde3e6;
   }
   @media (prefers-color-scheme: dark){
     :root{
-      --paper:#15181a; --surface:#1d2124; --ink:#e9ece8; --ink-soft:#a3ac9f; --line:#33383a;
-      --consult:#8fa3d6; --consult-soft:#232a3c; --rapport:#d998a9; --rapport-soft:#332529;
-      --ok:#5cc491; --ok-soft:#1c2e26; --warn:#e5b563; --warn-soft:#332a19;
-      --critical:#e2857c; --critical-soft:#3a2320;
+      --paper:#1c1530; --paper-dot:#2c2148; --surface:#251c3d; --ink:#f3ecff; --ink-soft:#b8a9d6; --line:#3d3160;
+      --consult:#b79bf0; --consult-soft:#332a55; --rapport:#7be3ac; --rapport-soft:#1f3d2c;
+      --ok:#7be3ac; --ok-soft:#1f3d2c; --warn:#ffc266; --warn-soft:#3d3016;
+      --critical:#ff8a9b; --critical-soft:#452230;
     }
   }
   :root[data-theme="dark"]{
-    --paper:#15181a; --surface:#1d2124; --ink:#e9ece8; --ink-soft:#a3ac9f; --line:#33383a;
-    --consult:#8fa3d6; --consult-soft:#232a3c; --rapport:#d998a9; --rapport-soft:#332529;
-    --ok:#5cc491; --ok-soft:#1c2e26; --warn:#e5b563; --warn-soft:#332a19;
-    --critical:#e2857c; --critical-soft:#3a2320;
+    --paper:#1c1530; --paper-dot:#2c2148; --surface:#251c3d; --ink:#f3ecff; --ink-soft:#b8a9d6; --line:#3d3160;
+    --consult:#b79bf0; --consult-soft:#332a55; --rapport:#7be3ac; --rapport-soft:#1f3d2c;
+    --ok:#7be3ac; --ok-soft:#1f3d2c; --warn:#ffc266; --warn-soft:#3d3016;
+    --critical:#ff8a9b; --critical-soft:#452230;
   }
   :root[data-theme="light"]{
-    --paper:#eef1ec; --surface:#ffffff; --ink:#1d2420; --ink-soft:#586158; --line:#d9ded7;
-    --consult:#2c3e6b; --consult-soft:#e7eaf3; --rapport:#8b4a5f; --rapport-soft:#f3e6ea;
-    --ok:#2f855a; --ok-soft:#e4f2ea; --warn:#b7791f; --warn-soft:#faf1de;
-    --critical:#c0392b; --critical-soft:#fbe7e4;
+    --paper:#fff3d6; --paper-dot:#f5c400; --surface:#ffffff; --ink:#241832; --ink-soft:#7a6f8c; --line:#e7d9a8;
+    --consult:#5b3a8e; --consult-soft:#ece3fa; --rapport:#1f9e64; --rapport-soft:#e1f6ea;
+    --ok:#1f9e64; --ok-soft:#e1f6ea; --warn:#e08a00; --warn-soft:#fff0d6;
+    --critical:#e63950; --critical-soft:#fde3e6;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{
-    background:var(--paper); color:var(--ink);
-    font-family:"Yu Gothic","YuGothic","Hiragino Sans","Noto Sans JP",-apple-system,sans-serif;
+    background-color:var(--paper);
+    background-image:radial-gradient(var(--paper-dot) 1.2px, transparent 1.2px);
+    background-size:14px 14px;
+    color:var(--ink);
+    font-family:"Zen Maru Gothic","Hiragino Maru Gothic Pro","Yu Gothic",sans-serif;
     line-height:1.6; -webkit-text-size-adjust:100%; min-height:100vh;
   }
   .page{ max-width:640px; margin:0 auto; padding:20px 16px 56px; display:flex; flex-direction:column; gap:18px; }
   .masthead{ display:flex; flex-direction:column; gap:10px; }
   .masthead h1{
-    font-family:"Yu Mincho","YuMincho","Hiragino Mincho ProN",serif;
-    font-size:1.5rem; font-weight:600; letter-spacing:.04em; margin:0; text-wrap:balance;
+    font-family:"Dela Gothic One",sans-serif;
+    font-size:1.4rem; font-weight:400; letter-spacing:.02em; margin:0; text-wrap:balance;
+    color:var(--consult);
   }
-  .masthead .date{ font-size:.82rem; color:var(--ink-soft); font-variant-numeric:tabular-nums; }
-  .banner{ display:flex; align-items:center; gap:10px; padding:12px 14px; border-radius:10px; font-size:.92rem; font-weight:600; }
+  .masthead .date{ font-size:.82rem; color:var(--ink-soft); font-variant-numeric:tabular-nums; font-weight:700; }
+  .banner{ display:flex; align-items:center; gap:10px; padding:13px 16px; border-radius:999px; font-size:.92rem; font-weight:700;
+           border:3px solid var(--ink); box-shadow:4px 4px 0 var(--ink); }
   .banner.attn{ background:var(--warn-soft); color:var(--warn); }
   .banner.calm{ background:var(--ok-soft); color:var(--ok); }
   .banner .dot{ width:9px;height:9px;border-radius:50%; background:currentColor; flex:none; }
-  .card{ background:var(--surface); border:1px solid var(--line); border-radius:14px; overflow:hidden; }
-  .card-head{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; padding:16px 18px 12px; border-left:4px solid var(--accent); }
+  .card{ background:var(--surface); border:3px solid var(--ink); border-radius:20px; overflow:hidden;
+         box-shadow:6px 6px 0 var(--ink); }
+  .card-head{ display:flex; align-items:center; gap:12px; padding:16px 18px 12px; background:var(--accent-soft); }
+  .card-head .mascot{ flex:none; }
   .card-head h2{
-    font-family:"Yu Mincho","YuMincho","Hiragino Mincho ProN",serif;
-    font-size:1.15rem; font-weight:600; margin:0; color:var(--accent); letter-spacing:.02em;
+    font-family:"Dela Gothic One",sans-serif;
+    font-size:1.05rem; font-weight:400; margin:0; color:var(--accent); letter-spacing:.01em;
   }
-  .card-head .updated{ font-size:.72rem; color:var(--ink-soft); white-space:nowrap; font-variant-numeric:tabular-nums; }
-  .card-body{ padding:0 18px 18px; border-left:4px solid var(--accent); display:flex; flex-direction:column; gap:16px; }
-  .section-label{ font-size:.7rem; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-soft); margin:0 0 8px; }
+  .card-head .updated{ font-size:.72rem; color:var(--ink-soft); white-space:nowrap; font-variant-numeric:tabular-nums; margin-left:auto; font-weight:700; }
+  .card-body{ padding:16px 18px 18px; display:flex; flex-direction:column; gap:16px; }
+  .section-label{ font-size:.72rem; font-weight:700; letter-spacing:.06em; color:var(--ink-soft); margin:0 0 8px; }
   .todos{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px; }
-  .todo{ display:flex; gap:10px; align-items:flex-start; padding:10px 12px; border-radius:9px; background:var(--paper); font-size:.9rem; }
-  .todo.flag{ background:var(--warn-soft); }
-  .todo .mark{ flex:none; width:20px;height:20px; border-radius:50%; display:flex;align-items:center;justify-content:center; font-size:.68rem; font-weight:700; margin-top:1px; }
+  .todo{ display:flex; gap:10px; align-items:flex-start; padding:10px 12px; border-radius:12px; background:var(--paper); font-size:.9rem;
+         border:2px solid var(--line); }
+  .todo.flag{ background:var(--warn-soft); border-color:var(--warn); }
+  .todo .mark{ flex:none; width:22px;height:22px; border-radius:50%; display:flex;align-items:center;justify-content:center; font-size:.7rem; font-weight:700; margin-top:1px;
+               border:2px solid var(--ink); }
   .todo .mark.plain{ background:var(--consult-soft); color:var(--accent); }
-  .todo.flag .mark{ background:var(--warn); color:var(--surface); }
-  .todo .txt b{ font-weight:600; }
+  .todo.flag .mark{ background:var(--warn); color:#fff; }
+  .todo .txt b{ font-weight:700; }
   .todo .txt span{ display:block; color:var(--ink-soft); font-size:.82rem; margin-top:2px; }
   .chips{ display:flex; flex-wrap:wrap; gap:7px; }
-  .chip{ display:inline-flex; align-items:center; gap:6px; padding:5px 10px 5px 8px; border-radius:999px; font-size:.78rem; font-weight:600; white-space:nowrap; }
+  .chip{ display:inline-flex; align-items:center; gap:6px; padding:5px 11px 5px 9px; border-radius:999px; font-size:.78rem; font-weight:700; white-space:nowrap;
+         border:2px solid transparent; }
   .chip .dot{ width:7px;height:7px;border-radius:50%; flex:none; }
-  .chip.ok{ background:var(--ok-soft); color:var(--ok); }
-  .chip.ng{ background:var(--critical-soft); color:var(--critical); }
-  .chip.unknown{ background:rgba(128,128,128,.14); color:#6b7280; }
-  .banner.stale{ background:rgba(245,158,11,.14); color:#b45309; }
-  .reachbar{ display:flex; align-items:center; gap:8px; margin-top:8px; padding:8px 12px; border-radius:10px; font-size:.82rem; font-weight:600; }
-  .reachbar.ok{ background:var(--ok-soft); color:var(--ok); }
-  .reachbar.ng{ background:var(--critical-soft); color:var(--critical); }
+  .chip.ok{ background:var(--ok-soft); color:var(--ok); border-color:var(--ok); }
+  .chip.ng{ background:var(--critical-soft); color:var(--critical); border-color:var(--critical); }
+  .chip.unknown{ background:rgba(128,128,128,.14); color:#6b7280; border-color:rgba(128,128,128,.3); }
+  .banner.stale{ background:var(--warn-soft); color:var(--warn); }
+  .reachbar{ display:flex; align-items:center; gap:8px; margin-top:8px; padding:9px 14px; border-radius:12px; font-size:.82rem; font-weight:700;
+             border:2px solid transparent; }
+  .reachbar.ok{ background:var(--ok-soft); color:var(--ok); border-color:var(--ok); }
+  .reachbar.ng{ background:var(--critical-soft); color:var(--critical); border-color:var(--critical); }
   .metrics{ display:flex; gap:10px; }
-  .metric{ flex:1; background:var(--paper); border-radius:10px; padding:12px 14px; }
-  .metric .num{ font-size:1.5rem; font-weight:700; font-variant-numeric:tabular-nums; line-height:1.1; }
-  .metric .cap{ font-size:.72rem; color:var(--ink-soft); margin-top:3px; }
-  footer.note{ text-align:center; font-size:.76rem; color:var(--ink-soft); padding-top:4px; }
+  .metric{ flex:1; background:var(--paper); border-radius:12px; padding:12px 14px; border:2px solid var(--line); }
+  .metric .num{ font-size:1.4rem; font-weight:700; font-variant-numeric:tabular-nums; line-height:1.1; font-family:"Dela Gothic One",sans-serif; }
+  .metric .cap{ font-size:.72rem; color:var(--ink-soft); margin-top:3px; font-weight:700; }
+  footer.note{ text-align:center; font-size:.76rem; color:var(--ink-soft); padding-top:4px; font-weight:700; }
 """
+
+
+def render_mascot(accent_color: str, mood: str, size: int = 52) -> str:
+    """状態に応じて表情が変わるポップなマスコット（丸っこいブロブ）。
+    mood: "happy"（順調）/ "worried"（要対応）"""
+    if mood == "happy":
+        eyes = '<circle cx="40" cy="46" r="5" fill="#241832"/><circle cx="60" cy="46" r="5" fill="#241832"/>'
+        mouth = '<path d="M40 62 Q50 71 60 62" stroke="#241832" stroke-width="4.5" fill="none" stroke-linecap="round"/>'
+    else:
+        eyes = ('<path d="M35 43 L45 48" stroke="#241832" stroke-width="4.5" stroke-linecap="round"/>'
+                '<path d="M65 43 L55 48" stroke="#241832" stroke-width="4.5" stroke-linecap="round"/>')
+        mouth = '<path d="M40 67 Q50 59 60 67" stroke="#241832" stroke-width="4.5" fill="none" stroke-linecap="round"/>'
+    h = round(size * 90 / 100)
+    return f"""<svg class="mascot" viewBox="0 0 100 90" width="{size}" height="{h}">
+      <ellipse cx="50" cy="52" rx="42" ry="34" fill="{accent_color}" stroke="#241832" stroke-width="4"/>
+      <ellipse cx="34" cy="30" rx="10" ry="7" fill="#ffffff" opacity="0.35"/>
+      {eyes}
+      {mouth}
+    </svg>"""
 
 
 def esc(s) -> str:
@@ -215,13 +247,22 @@ def _age_label(snap: dict) -> str:
     return esc(f"{short}更新")
 
 
+MASCOT_COLOR = {
+    "コンサル垢": "#5B3A8E",
+    "ラポール垢": "#2FA36B",
+}
+
+
 def render_account_card(snap: dict) -> str:
     account = snap.get("account", "")
-    accent, _soft = ACCENT.get(account, ("var(--consult)", "var(--consult-soft)"))
-    updated = esc(snap.get("updated", ""))
+    accent, soft = ACCENT.get(account, ("var(--consult)", "var(--consult-soft)"))
+    is_ok = not (any(t.get("flag") for t in snap.get("todos", []))
+                 or any(c.get("ok") is False for c in snap.get("checks", [])))
+    mascot = render_mascot(MASCOT_COLOR.get(account, "#5B3A8E"), "happy" if is_ok else "worried")
     return f"""
-  <section class="card" style="--accent:{accent}">
+  <section class="card" style="--accent:{accent};--accent-soft:{soft}">
     <div class="card-head">
+      {mascot}
       <h2>{esc(account)}</h2>
       <div class="updated">{_age_label(snap)}</div>
     </div>
@@ -269,6 +310,7 @@ def build(snapshots: list) -> str:
 
     return f"""<title>運用司令室</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+{FONT_LINK}
 <style>{CSS}</style>
 
 <div class="page">
