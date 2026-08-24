@@ -88,6 +88,7 @@ CSS = """
   .chip .dot{ width:7px;height:7px;border-radius:50%; flex:none; }
   .chip.ok{ background:var(--ok-soft); color:var(--ok); }
   .chip.ng{ background:var(--critical-soft); color:var(--critical); }
+  .chip.unknown{ background:rgba(128,128,128,.14); color:#6b7280; }
   .metrics{ display:flex; gap:10px; }
   .metric{ flex:1; background:var(--paper); border-radius:10px; padding:12px 14px; }
   .metric .num{ font-size:1.5rem; font-weight:700; font-variant-numeric:tabular-nums; line-height:1.1; }
@@ -118,7 +119,9 @@ def render_chips(checks: list) -> str:
     out = []
     for c in checks:
         ok = c.get("ok")
-        cls = "chip ok" if ok else "chip ng"
+        # ok は True / False / None（=確認できず）の3値。
+        # None を False と同じ赤にすると「判定できていない」ことが「異常」として出てしまうため分ける。
+        cls = "chip ok" if ok is True else ("chip ng" if ok is False else "chip unknown")
         out.append(f'<span class="{cls}"><span class="dot"></span>{esc(c.get("label", ""))}</span>')
     return "\n".join(out)
 
@@ -170,7 +173,7 @@ def render_account_card(snap: dict) -> str:
 def build(snapshots: list) -> str:
     n_flagged_accounts = []
     for snap in snapshots:
-        if any(t.get("flag") for t in snap.get("todos", [])) or any(not c.get("ok") for c in snap.get("checks", [])):
+        if any(t.get("flag") for t in snap.get("todos", [])) or any(c.get("ok") is False for c in snap.get("checks", [])):
             n_flagged_accounts.append(snap.get("account", ""))
 
     if n_flagged_accounts:
