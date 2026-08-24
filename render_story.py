@@ -25,12 +25,53 @@ from PIL import Image, ImageDraw, ImageFont
 
 BASE_DIR = Path(__file__).parent
 PLAN_DIR = BASE_DIR / "ig_stories" / "plan"
-OUT_DIR = Path(r"C:\Users\tujid\OneDrive\IGストーリー投稿")
+_ONEDRIVE_OUT = Path(r"C:\Users\tujid\OneDrive\IGストーリー投稿")
+# クラウド（OneDriveが無い環境）ではリポジトリ内の ig_stories/out へ書き出す
+OUT_DIR = _ONEDRIVE_OUT if _ONEDRIVE_OUT.parent.exists() else Path(__file__).parent / "ig_stories" / "out"
 
 W, H = 1080, 1920
 MARGIN_X = 90
-HOOK_FONT_PATH = r"C:\Windows\Fonts\NotoSansJP-Bold.ttf"
-BODY_FONT_PATH = r"C:\Windows\Fonts\meiryo.ttc"
+# ── フォント（2026-08-24: リポジトリ同梱へ変更） ──────────────
+# 以前は Windows のシステムフォント（NotoSansJP-Bold / meiryo）を直接指していたため、
+# 画像生成がこのPCでしか動かず、IGストーリーだけPC依存が残っていた。
+# OFLライセンスの Noto Sans JP をリポジトリに同梱し、クラウドからも同じ絵が出るようにする。
+# Meiryo は再配布できないため、本文も Noto Sans JP（Regular）に統一した。
+FONT_DIR = Path(__file__).parent / "assets" / "fonts"
+HOOK_FONT_PATH = str(FONT_DIR / "NotoSansJP-Bold.ttf")
+BODY_FONT_PATH = str(FONT_DIR / "NotoSansJP-VF.ttf")
+BODY_FONT_VARIATION = "Regular"  # 可変フォントから取り出す太さ
+
+_SYSTEM_FALLBACK = {
+    "NotoSansJP-Bold.ttf": r"C:\Windows\Fonts\NotoSansJP-Bold.ttf",
+    "NotoSansJP-VF.ttf": r"C:\Windows\Fonts\NotoSansJP-VF.ttf",
+}
+
+
+def _load_font(path: str, size: int, variation: str | None = None):
+    """フォントを読む。可変フォントなら太さを指定する。
+
+    同梱フォントが見つからない場合だけ Windows のシステムフォントへ退避する
+    （このPCでの後方互換。クラウドには同梱フォントしか無い）。
+    """
+    candidates = [path]
+    fb = _SYSTEM_FALLBACK.get(Path(path).name)
+    if fb:
+        candidates.append(fb)
+
+    last = None
+    for cand in candidates:
+        try:
+            font = ImageFont.truetype(cand, size)
+        except Exception as e:
+            last = e
+            continue
+        if variation:
+            try:
+                font.set_variation_by_name(variation)
+            except Exception:
+                pass  # 可変非対応の環境では既定（Regular相当）のまま使う
+        return font
+    raise RuntimeError(f"フォントを読み込めません: {candidates} ({last})")
 
 BG_COLOR = (10, 10, 10)
 HOOK_COLOR = (255, 255, 255)
@@ -79,8 +120,8 @@ def render_text_story(date_str: str, hook: str, body: str) -> Path:
 
     # 収まらなければ本文フォントを段階的に縮小
     while body_size >= 34:
-        hook_font = ImageFont.truetype(HOOK_FONT_PATH, hook_size)
-        body_font = ImageFont.truetype(BODY_FONT_PATH, body_size, index=0)
+        hook_font = _load_font(HOOK_FONT_PATH, hook_size)
+        body_font = _load_font(BODY_FONT_PATH, body_size, BODY_FONT_VARIATION)
 
         hook_lines = wrap_text(hook, hook_font, max_text_width)
         body_lines = wrap_text(body, body_font, max_text_width)
