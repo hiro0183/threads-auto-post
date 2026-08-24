@@ -1,25 +1,20 @@
 {
   "account": "コンサル垢",
-  "updated": "2026-08-22 05:00",
+  "updated": "2026-08-23 06:03",
   "todos": [
     {
       "title": "IGストーリー投稿（1〜2分）",
-      "detail": "画像あり → スマホのOneDriveアプリ「IGストーリー投稿」から 2026-08-22.png をアップ",
+      "detail": "画像あり → スマホのOneDriveアプリ「IGストーリー投稿」から 2026-08-23.png をアップ",
       "flag": false
     },
     {
       "title": "今日分プレビュー確認（1分）",
-      "detail": "コンサル投稿確認\\2026-08-22.txt（昨日の昼検品時に生成・品質ゲート⚠️だけ注意）",
+      "detail": "コンサル投稿確認\\2026-08-23.txt（昨日の昼検品時に生成・品質ゲート⚠️だけ注意）",
       "flag": false
     },
     {
       "title": "🚨投稿時刻に原稿が無いスロットあり（7件・投稿が抜けます）",
-      "detail": "05:00, 07:00, 14:00, 16:30, 19:30, 20:15, 22:00 が posts\\2026-08-22.json に無い → post_runner.pyのPOST_SCHEDULEをその日の原稿スロットに合わせて至急修正",
-      "flag": true
-    },
-    {
-      "title": "⚠️今日分の検品でNGあり",
-      "detail": "Claude Codeで「検品NGを見せて」と伝える（NG 5件: 07:30, 11:00, 18:15, 21:20, 21:40（中身は posts\\quality_gate\\2026-08-22_inspection.json））",
+      "detail": "05:00, 07:00, 14:00, 16:30, 19:30, 20:15, 22:00 が posts\\2026-08-23.json に無い → post_runner.pyのPOST_SCHEDULEをその日の原稿スロットに合わせて至急修正",
       "flag": true
     },
     {
@@ -36,8 +31,8 @@
     },
     {
       "label": "フォロワー記録",
-      "ok": true,
-      "detail": "911人"
+      "ok": false,
+      "detail": "今日分が未記録"
     },
     {
       "label": "インサイト収集",
@@ -47,12 +42,12 @@
     {
       "label": "IGストーリー準備",
       "ok": true,
-      "detail": "画像あり → スマホのOneDriveアプリ「IGストーリー投稿」から 2026-08-22.png をアップ"
+      "detail": "画像あり → スマホのOneDriveアプリ「IGストーリー投稿」から 2026-08-23.png をアップ"
     },
     {
       "label": "今日のThreads投稿",
       "ok": true,
-      "detail": "posts\\2026-08-22.json（08/19 06:04 push済みの新原稿）"
+      "detail": "posts\\2026-08-23.json（08/20 06:04 push済みの新原稿）"
     },
     {
       "label": "投稿時刻と原稿のスロット一致",
@@ -61,18 +56,18 @@
     },
     {
       "label": "今日分の検品(Haiku)",
-      "ok": false,
-      "detail": "NG 5件: 07:30, 11:00, 18:15, 21:20, 21:40（中身は posts\\quality_gate\\2026-08-22_inspection.json）"
+      "ok": null,
+      "detail": "未実施（毎朝04:45に自動実行）"
     },
     {
       "label": "明日分の原稿と昼検品",
       "ok": null,
-      "detail": "原稿あり・12:00に検品予定"
+      "detail": "週次プラン待ち（月曜分は当日朝06:30に自動生成）"
     }
   ],
   "metrics": [
     {
-      "value": 911,
+      "value": 0,
       "unit": "人",
       "caption": "フォロワー"
     },
