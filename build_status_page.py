@@ -14,6 +14,7 @@ claude.aiのクラウドルーティン（毎朝07:15）が両リポジトリを
 
 import argparse
 import json
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 ACCENT = {
@@ -89,6 +90,10 @@ CSS = """
   .chip.ok{ background:var(--ok-soft); color:var(--ok); }
   .chip.ng{ background:var(--critical-soft); color:var(--critical); }
   .chip.unknown{ background:rgba(128,128,128,.14); color:#6b7280; }
+  .banner.stale{ background:rgba(245,158,11,.14); color:#b45309; }
+  .reachbar{ display:flex; align-items:center; gap:8px; margin-top:8px; padding:8px 12px; border-radius:10px; font-size:.82rem; font-weight:600; }
+  .reachbar.ok{ background:var(--ok-soft); color:var(--ok); }
+  .reachbar.ng{ background:var(--critical-soft); color:var(--critical); }
   .metrics{ display:flex; gap:10px; }
   .metric{ flex:1; background:var(--paper); border-radius:10px; padding:12px 14px; }
   .metric .num{ font-size:1.5rem; font-weight:700; font-variant-numeric:tabular-nums; line-height:1.1; }
@@ -140,6 +145,76 @@ def render_metrics(metrics: list) -> str:
     return "\n".join(out)
 
 
+
+JST = timezone(timedelta(hours=9))
+STALE_HOURS = 28  # 毎朝更新されるので、28時間を超えたら「PCが動いていない」とみなす
+
+
+def _parse_updated(text: str):
+    for fmt in ("%Y-%m-%d %H:%M", "%Y-%m-%d %H:%M:%S"):
+        try:
+            return datetime.strptime(text.strip(), fmt).replace(tzinfo=JST)
+        except Exception:
+            continue
+    return None
+
+
+def snapshot_age_hours(snap: dict):
+    """スナップショットの古さ（時間）。判定できなければNone。
+
+    2026-08-24追加: このページの元データ（status_snapshot.json）はなりあいさんのPCが
+    毎朝作っている。PCが起動していない日は前日以前の内容がそのまま表示され、
+    実際には異常が起きていても「すべて順調です」と出てしまう。
+    22日間の投稿欠落を見逃した構造とまったく同じなので、古さを必ず顔に出す。
+    """
+    dt = _parse_updated(snap.get("updated", ""))
+    if dt is None:
+        return None
+    return (datetime.now(JST) - dt).total_seconds() / 3600
+
+
+def load_reach_status():
+    """クラウド発の到達率（reach_status.json）を読む。
+
+    PCの状態に関係なく、Renderとクラウドルーティンが毎朝更新する唯一の実測。
+    スナップショットが古くても、ここだけは信用できる。
+    """
+    f = Path(__file__).parent / "reach_status.json"
+    if not f.exists():
+        return None
+    try:
+        return json.loads(f.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+
+
+def render_reachbar() -> str:
+    st = load_reach_status()
+    if not st:
+        return ""
+    y = st.get("yesterday") or {}
+    if not y:
+        return ""
+    rate = y.get("rate", 0)
+    cls = "ok" if rate >= 100 else "ng"
+    if rate >= 100:
+        txt = f"投稿は出ています（{y.get('date')} {y.get('actual')}/{y.get('expected')}枠）"
+    else:
+        streak = st.get("miss_streak") or 0
+        txt = (f"🚨 投稿が出ていません（{y.get('date')} {y.get('actual')}/{y.get('expected')}枠"
+               f"・{streak}日連続）")
+    return f'<div class="reachbar {cls}"><span class="dot"></span>{esc(txt)}　<span style="font-weight:500;opacity:.75">実物のThreadsを確認した結果です</span></div>'
+
+
+def _age_label(snap: dict) -> str:
+    updated = snap.get("updated", "")
+    age = snapshot_age_hours(snap)
+    short = updated.split(" ")[-1] if " " in updated else updated
+    if age is not None and age > STALE_HOURS:
+        return esc(f"⚠️{updated} から更新なし")
+    return esc(f"{short}更新")
+
+
 def render_account_card(snap: dict) -> str:
     account = snap.get("account", "")
     accent, _soft = ACCENT.get(account, ("var(--consult)", "var(--consult-soft)"))
@@ -148,7 +223,7 @@ def render_account_card(snap: dict) -> str:
   <section class="card" style="--accent:{accent}">
     <div class="card-head">
       <h2>{esc(account)}</h2>
-      <div class="updated">{updated.split(" ")[-1] if " " in updated else updated}更新</div>
+      <div class="updated">{_age_label(snap)}</div>
     </div>
     <div class="card-body">
       <div>
@@ -176,7 +251,15 @@ def build(snapshots: list) -> str:
         if any(t.get("flag") for t in snap.get("todos", [])) or any(c.get("ok") is False for c in snap.get("checks", [])):
             n_flagged_accounts.append(snap.get("account", ""))
 
-    if n_flagged_accounts:
+    # 元データが古い＝PCが動いていない。中身が緑でも信用してはいけない
+    stale = [s2.get("account", "") for s2 in snapshots
+             if (snapshot_age_hours(s2) or 0) > STALE_HOURS]
+
+    if stale:
+        banner = ('<div class="banner stale"><span class="dot"></span>'
+                  f'{"・".join(stale)}の情報が{STALE_HOURS}時間以上更新されていません'
+                  '（PCが起動していない可能性。下の緑は古い情報かもしれません）</div>')
+    elif n_flagged_accounts:
         banner = f'<div class="banner attn"><span class="dot"></span>{"・".join(n_flagged_accounts)}に対応が必要な項目があります</div>'
     else:
         banner = '<div class="banner calm"><span class="dot"></span>すべて順調です</div>'
@@ -193,6 +276,7 @@ def build(snapshots: list) -> str:
     <h1>運用司令室</h1>
     <div class="date">{esc(latest_updated)} 時点</div>
     {banner}
+    {render_reachbar()}
   </div>
 {cards}
   <footer class="note">毎朝更新されます（コンサル垢 5:00・ラポール垢 6:45）</footer>

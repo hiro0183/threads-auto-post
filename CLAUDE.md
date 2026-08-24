@@ -158,5 +158,5 @@
   - 手動再認証した直後だけ `python token_manager.py --seed` で新トークンをDBへ発行する
 - トークン期限が7日以内に迫っていたらヒロさんに再認証を依頼（`python threads_auth.py`）
 - 生成・ゲートは**サブスク完結**。`ANTHROPIC_API_KEY` を環境に残さない（残すとAPI課金側で動く）
-- **週次のThreadsプラン（フック確定）は2026-07-09以降、claude.aiクラウドルーティン「コンサルThreads 週次企画（Opus 4.8）」（毎週月曜04:03 JST）が担当**（このPC不要）。`run_weekly_session.ps1`（毎週月曜05:10・ローカル）は**IGストーリーの週次プランのみ**を担当し、Threads側は触らない（`weekly_session_prompt.md`参照）。日次の本文執筆は Sonnet（同じくクラウドルーティン。ローカル`content_generator.py`経由の実行は現在無効化済みの予備手段）、品質ゲートは Haiku。全部サブスク完結・API課金ゼロ
+- **週次のThreadsプラン（フック確定）は2026-07-09以降、claude.aiクラウドルーティン「コンサルThreads 週次企画（Opus 4.8）」が担当**（このPC不要）。**2026-08-24に実行タイミングを月曜04:03→日曜04:06へ前倒し**（日曜06:00の日次執筆が月曜分を書ける時点でプランが無い、という穴の再発防止。上のPDCA節参照）。**IGストーリーの週次プランも2026-08-24にクラウドへ移設**（「コンサルIGストーリー 週次プラン（Opus 4.8）」・日曜04:20 JST・ルールは `prompts/ig_story_rules.md`）。ローカルの `run_weekly_session.ps1` / `Threads_WeeklySession` は**無効化済み**（PCが落ちていると作られず、8/17週・8/24週と2週連続で未作成になったため）。PNG生成だけは日本語フォントの都合でこのPC（`IG_StoryRender`）に残る。日次の本文執筆・品質ゲートともに Sonnet（同じくクラウドルーティン。ローカル`content_generator.py`経由の実行は現在無効化済みの予備手段）。全部サブスク完結・API課金ゼロ
 - **Fable 5 は月1回のスキーム見直し（手動）＋品質劣化時のフォールバックのみ**（ホームランが2週連続下落したら `--model opus`→`--model fable` に戻す）
