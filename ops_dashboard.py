@@ -798,7 +798,7 @@ def build_html(data: dict) -> str:
     <ol>{todos_html}</ol>
   </div>
   <div class="footer">
-    スマホ用カード: OneDriveアプリ → Desktop → HIRAYASU → コンサルThreads → 運用司令室_今朝の状態.png ／ 次回の月曜自動企画: {data['next_monday']} 04:03(Threads)／05:10(IG)
+    スマホ用カード: OneDriveアプリ → Desktop → HIRAYASU → コンサルThreads → 運用司令室_今朝の状態.png ／ 次回の自動企画: Threadsは日曜04:06・IGストーリーは{data['next_monday']} 05:10
   </div>
   </div>
 </body></html>"""

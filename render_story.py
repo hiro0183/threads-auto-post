@@ -222,8 +222,31 @@ def render_week(monday_arg: str | None):
     print(f"アップ順リスト: {WEEK_DIR / '_今週のアップ順.txt'}")
 
 
+def _pull_latest_plan():
+    """描画の前に origin/master を取り込む（2026-08-24追加）。
+
+    IGストーリーの週次プランは 2026-08-24 からクラウドルーティン
+    「コンサルIGストーリー 週次プラン」（日曜04:20 JST）が作る。
+    このPCがpullしないと、クラウドが作ったプランが手元に無く
+    「プランがありません」と言って何も描かない事故になるため、
+    描画のたびに最新を取り込む（オフラインでも落とさない）。
+    """
+    import subprocess
+    try:
+        r = subprocess.run(
+            ["git", "pull", "--ff-only", "origin", "master"],
+            cwd=Path(__file__).parent, capture_output=True, text=True, timeout=120,
+        )
+        if r.returncode != 0:
+            print(f"[INFO] git pull をスキップしました（{r.stderr.strip()[:80]}）")
+    except Exception as e:
+        print(f"[INFO] git pull をスキップしました（{e}）")
+
+
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
+
+    _pull_latest_plan()
 
     if args and args[0] == "week":
         render_week(args[1] if len(args) > 1 else None)
