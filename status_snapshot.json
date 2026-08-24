@@ -1,10 +1,15 @@
 {
   "account": "コンサル垢",
-  "updated": "2026-08-24 23:18",
+  "updated": "2026-08-25 08:29",
   "todos": [
     {
       "title": "IGストーリー投稿（1〜2分）",
-      "detail": "今日のプランなし（月曜のFable5セッションで作成）",
+      "detail": "画像あり → スマホのOneDriveアプリ「IGストーリー投稿」から 2026-08-25.png をアップ",
+      "flag": false
+    },
+    {
+      "title": "明日分プレビュー確認（1分）",
+      "detail": "コンサル投稿確認\\2026-08-26.txt（昼12:00の検品時に生成・⚠️だけ注意。朝07:30のメールと同内容）",
       "flag": false
     },
     {
@@ -16,16 +21,6 @@
       "title": "⚠️自動化の失敗対応",
       "detail": "Claude Codeで「ヘルスチェックが失敗してる、調べて」と伝える",
       "flag": true
-    },
-    {
-      "title": "⚠️Threads原稿の鮮度異常",
-      "detail": "Claude Codeで「今日の投稿が古い/未pushと出てる、調べて」と伝える（posts\\2026-08-24.json がありません（生成されていない））",
-      "flag": true
-    },
-    {
-      "title": "【月曜】自動生成されたIGストーリー週次プランを確認（5分）",
-      "detail": "05:10にこのPC(Opus 4.8)がIGストーリー週次プランを自動生成済み → ig_stories\\plan を一瞥。⚠️があれば対応",
-      "flag": false
     },
     {
       "title": "⚠️LINE流入の記入待ち（2026-06-29週）",
@@ -46,8 +41,8 @@
     },
     {
       "label": "フォロワー記録",
-      "ok": true,
-      "detail": "909人"
+      "ok": false,
+      "detail": "今日分が未記録"
     },
     {
       "label": "インサイト収集",
@@ -56,23 +51,23 @@
     },
     {
       "label": "IGストーリー準備",
-      "ok": false,
-      "detail": "今日のプランなし（月曜のFable5セッションで作成）"
+      "ok": true,
+      "detail": "画像あり → スマホのOneDriveアプリ「IGストーリー投稿」から 2026-08-25.png をアップ"
     },
     {
       "label": "今日のThreads投稿",
-      "ok": false,
-      "detail": "posts\\2026-08-24.json がありません（生成されていない）"
+      "ok": true,
+      "detail": "posts\\2026-08-25.json（08/24 06:08 push済みの新原稿）"
     },
     {
       "label": "投稿時刻と原稿のスロット一致",
-      "ok": null,
-      "detail": "確認できず（今日の原稿が無い）"
+      "ok": true,
+      "detail": "一致"
     },
     {
       "label": "今日分の検品(Haiku)",
-      "ok": null,
-      "detail": "検品対象外（未生成）"
+      "ok": true,
+      "detail": "全10スロット合格"
     },
     {
       "label": "明日分の原稿と昼検品",
@@ -82,12 +77,12 @@
   ],
   "metrics": [
     {
-      "value": 909,
+      "value": 0,
       "unit": "人",
       "caption": "フォロワー"
     },
     {
-      "value": "2026-08-24",
+      "value": "2026-08-31",
       "unit": "",
       "caption": "次回の週次企画"
     }
