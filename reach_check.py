@@ -55,16 +55,33 @@ def fetch_recent_posts(token: str, limit: int = 100) -> list:
     return posts[:limit]
 
 
-def _match_slot(jst_dt: datetime, slots: list) -> str | None:
-    """投稿時刻に最も近いスロットを返す（SLOT_MATCH_MINUTES以内・同日のみ）"""
-    minutes = jst_dt.hour * 60 + jst_dt.minute
-    best, best_diff = None, None
-    for s in slots:
-        h, m = map(int, s.split(":"))
-        diff = abs(minutes - (h * 60 + m))
-        if best_diff is None or diff < best_diff:
-            best, best_diff = s, diff
-    return best if best_diff is not None and best_diff <= SLOT_MATCH_MINUTES else None
+def _assign_slots(posts: list, slots: list) -> tuple[dict, list]:
+    """投稿をスロットへ1対1（貪欲法・投稿の古い順）で割り当てる。
+
+    2026-08-24の事故の教訓は「ファイルの存在で緑を出さない」ことだったが、
+    旧実装は複数の投稿が同じ最近傍スロットにマッチしても matched は1件しか
+    増えない一方 actual は生の投稿件数のままだったため、
+    『重複投稿1件＋本当の欠落1件』が起きると件数だけ帳尻が合って
+    到達率100%に見えてしまう＝同じ種類の誤検知を再現しかねない構造だった。
+    ここでスロットを使い切り制にし、1スロット=1投稿の対応を保証する。
+    戻り値: (slot -> post の割当dict, どのスロットにもマッチしなかった投稿のリスト)"""
+    remaining = list(slots)
+    assigned: dict = {}
+    extra: list = []
+    for p in sorted(posts, key=lambda x: x["jst"]):
+        minutes = p["jst"].hour * 60 + p["jst"].minute
+        best, best_diff = None, None
+        for s in remaining:
+            h, m = map(int, s.split(":"))
+            diff = abs(minutes - (h * 60 + m))
+            if diff <= SLOT_MATCH_MINUTES and (best_diff is None or diff < best_diff):
+                best, best_diff = s, diff
+        if best:
+            assigned[best] = p
+            remaining.remove(best)
+        else:
+            extra.append(p)
+    return assigned, extra
 
 
 def daily_reach(days: int = 7, token: str | None = None) -> list:
@@ -96,19 +113,18 @@ def daily_reach(days: int = 7, token: str | None = None) -> list:
     result = []
     for d in target_dates:
         rows = by_date[d]
-        matched = set()
-        for p in rows:
-            s = _match_slot(p["jst"], slots)
-            if s:
-                matched.add(s)
-        actual = len(rows)
+        assigned, extra = _assign_slots(rows, slots)
+        actual = len(assigned)
         result.append({
             "date": d,
             "expected": expected,
             "actual": actual,
             "rate": round(actual / expected * 100, 1) if expected else 0.0,
-            "matched": sorted(matched),
-            "missing": [s for s in slots if s not in matched],
+            "matched": sorted(assigned.keys()),
+            "missing": [s for s in slots if s not in assigned],
+            # スロットにマッチしなかった投稿（手動投稿・重複投稿・想定外時刻など）。
+            # actual/rateには含めない＝スロット被覆率を歪ませない。
+            "unmatched_posts": len(extra),
         })
     return result
 

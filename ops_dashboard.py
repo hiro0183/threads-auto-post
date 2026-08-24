@@ -452,8 +452,10 @@ def collect_data():
         todos.append(("⚠️今日分の検品でNGあり", f"Claude Codeで「検品NGを見せて」と伝える（{insp_detail}）", None))
     if tmr_ok is False:
         todos.append(("⚠️明日分に問題あり（夜までに直せばOK）", f"Claude Codeで「明日分の検品NGを直して」と伝える（{tmr_detail}）", None))
+    if now.weekday() == 6:
+        todos.append(("【日曜】自動生成されたThreads週次企画を確認（5分）", "04:06にThreadsプラン(クラウド・フック70本)が自動生成済み → weekly_plan を一瞥。⚠️があれば対応", None))
     if now.weekday() == 0:
-        todos.append(("【月曜】自動生成された週次企画を確認（5分）", "04:03にThreadsプラン(クラウド)・05:10にIGストーリー週次プラン(このPC・Opus 4.8)が自動生成済み → weekly_plan と ig_stories\\plan を一瞥。⚠️があれば対応", None))
+        todos.append(("【月曜】自動生成されたIGストーリー週次プランを確認（5分）", "05:10にこのPC(Opus 4.8)がIGストーリー週次プランを自動生成済み → ig_stories\\plan を一瞥。⚠️があれば対応", None))
     line_pending = line_manual_pending()
     if line_pending:
         todos.append((f"⚠️LINE流入の記入待ち（{line_pending}週）",
@@ -480,6 +482,7 @@ def collect_data():
         "today_posts_ok": today_posts_ok, "gate_today": gate_today,
         "insp_ok": insp_ok,
         "plan_covers_today": plan_covers_today,
+        "reach_ok": reach_ok,
     }
 
 
@@ -603,21 +606,22 @@ def build_md(data: dict) -> str:
     L.append("|:---|:---|:---|")
     L.append("| 04:30 | このPC | 前日の投稿データをGitHubから回収＋インサイト集計 |")
     L.append("| 04:40 | このPC | フォロワー数を記録 |")
-    L.append("| 04:45 | このPC | 投稿パターン分析＋IGストーリー黒バック画像を生成＋**今日分の独立検品（Haiku）** |")
-    L.append("| 月曜 04:03 | claude.ai（クラウド・Opus 4.8） | **Threads週次プラン確定**（フック210本・4層ポートフォリオ・経営の問診導線） |")
-    L.append("| 月曜 05:10 | このPC（Opus 4.8） | **IGストーリー週次プランのみ**生成（Threadsは触らない） |")
-    L.append("| 月曜 06:40 | このPC | **IGストーリー1週間分を一括生成** → `OneDrive\\IGストーリー投稿\\今週分\\`（1回DL→毎日1枚アップ） |")
+    L.append("| 04:45 | このPC | 投稿パターン分析＋IGストーリー黒バック画像を生成 |")
     L.append("| 04:50 | このPC | インサイト集計（保険の二重実行） |")
     L.append("| 04:55 | このPC | 全タスクのヘルスチェック |")
     L.append("| 05:00 | このPC | この司令室ノート＋ステータスカード画像を更新（**原稿の鮮度もここで検査**）→ 起床時に全部揃っている |")
-    L.append("| 05:00〜22:00 | Render（クラウド） | Threadsへ自動投稿（1日約10本・PCが寝ていても動く） |")
-    L.append("| 06:00 | claude.ai（クラウド・Sonnet） | 明日分のThreads本文生成→自己チェック→GitHubへpush |")
-    L.append("| 12:00 | このPC | **明日分の昼検品（Haiku）**: NGなら午後〜夜のうちに直す（時間の余裕を作る主役の検品） |")
-    L.append("| 月曜 06:30 | このPC | **月曜の空白埋め**: 週次プラン確定後に当日分を生成してpush（他の曜日は何もしない） |")
+    L.append("| 06:00〜21:40 | Render（クラウド） | Threadsへ自動投稿（SLOT_PLANの10枠・PCが寝ていても動く） |")
+    L.append("| 06:00 | claude.ai（クラウド・Sonnet） | 明日・2日後・3日後分のThreads本文生成→自己チェック→GitHubへpush |")
+    L.append("| 07:00 | Render | **到達率チェック**: 前日ぶんが実際にThreadsへ出たかをAPIで確認（**2026-08-24新設**） |")
+    L.append("| 07:30 | claude.ai（クラウド） | **到達率チェックと実測取り込み**: Renderの実測をリポジトリへ取り込み、出ていなければ🚨（**2026-08-24新設**） |")
+    L.append("| **日曜 04:06** | claude.ai（クラウド・Opus 4.8） | **Threads週次プラン確定**（フック70本。**2026-08-24に月曜から前倒し**） |")
+    L.append("| 月曜 05:10 | このPC（Opus 4.8） | **IGストーリー週次プランのみ**生成（Threadsは触らない） |")
+    L.append("| 月曜 06:40 | このPC | **IGストーリー1週間分を一括生成** → `OneDrive\\IGストーリー投稿\\今週分\\`（1回DL→毎日1枚アップ） |")
+    L.append("| 12:00 | claude.ai（クラウド） | **毎日の検品**: 3日先までを生成AIとは別セッションで検品（これが事故ゼロの肝） |")
     L.append("| 23:30 | Render（クラウド） | 投稿ログをGitHubへ保存 |")
     L.append("")
-    L.append("**週次**: 毎週月曜 04:50 週次レポート自動生成 → 04:03クラウドがThreadsフック210本を、05:10このPCがIGストーリー7日分を、それぞれ自動企画 → あなたは確認のみ。※月1回のスキーム見直しだけFable 5セッションを手動起動")
-    L.append(f"**次回の月曜セッション**: {data['next_monday']}")
+    L.append("**週次**: 日曜04:06にクラウドがThreadsフック70本を、月曜05:10にこのPCがIGストーリー7日分を、それぞれ自動企画 → あなたは確認のみ。※月1回のスキーム見直しだけFable 5セッションを手動起動")
+    L.append(f"**次回の月曜セッション（IGストーリー）**: {data['next_monday']}")
     L.append("")
 
     L.append("## 📂 どこに何があるか")
@@ -659,18 +663,21 @@ def build_html(data: dict) -> str:
     depts = [
         ("データ収集部", "Insight Room", "前日の投稿データ回収・フォロワー記録・インサイト集計",
          "毎朝 04:30〜04:50", "🤖 Python", st(data["fc"] is not None and data["ok_insight"])),
-        ("分析部", "Analytics Room", "投稿パターン分析・週次レポート生成（月曜）",
+        ("分析部", "Analytics Room", "投稿パターン分析・週次レポート生成（日曜・週次企画ルーティン内でweekly_report.pyを実行）",
          "毎朝 04:45", "🤖 Python", st(data["ok_insight"])),
-        ("企画戦略部", "Strategy Room", "翌週のThreadsフック210本（04:03クラウド）＋IGストーリー7日分（05:10このPC）を自動企画（あなたは月曜朝に確認のみ）",
-         "毎週月曜 04:03／05:10 自動", "🧠 Opus 4.8（クラウド＋ヘッドレス）",
+        ("企画戦略部", "Strategy Room", "翌週のThreadsフック70本（日曜04:06クラウド）＋IGストーリー7日分（月曜05:10このPC）を自動企画（あなたは日曜/月曜朝に確認のみ）",
+         "日曜 04:06／月曜 05:10 自動", "🧠 Opus 4.8（クラウド＋ヘッドレス）",
          st(True, idle_condition=not data["plan_covers_today"])),
-        ("執筆部", "Writing Room", "翌日分のThreads本文を生成（フックは一字も変えない）",
+        ("執筆部", "Writing Room", "翌日・2日後・3日後分のThreads本文を生成（フックは一字も変えない）",
          "毎朝 06:00", "🤖 Sonnet（claude.aiクラウドルーティン）", st(data["today_posts_ok"])),
-        ("品質管理部", "Quality Gate", "昼12:00に明日分・朝04:45に今日分を、執筆部と独立してHaikuが検品・NGは司令室に赤表示",
-         "毎日 12:00＋04:45", "🤖 Haiku 4.5（サブスク実行・別呼び出し）",
+        ("品質管理部", "Quality Gate", "3日先までを、執筆部と独立してSonnetが検品・NGは司令室に赤表示",
+         "毎日 12:00", "🤖 Sonnet 5（サブスク実行・別呼び出し）",
          st(data["insp_ok"], idle_condition=data["insp_ok"] is None)),
-        ("投稿部", "Posting Room", "Threadsへ自動投稿（1日約10本・PCが寝ていても動く）",
-         "毎日 05:00〜22:00", "☁️ Render", st(data["today_posts_ok"])),
+        ("到達率監視部", "Reach Room", "「原稿があるか」ではなく「実際にThreadsへ出たか」をAPIで直接確認（2026-08-24新設）",
+         "毎朝 07:00（Render）／07:30（クラウド取り込み）", "☁️ Render + クラウド",
+         st(data.get("reach_ok"), idle_condition=data.get("reach_ok") is None)),
+        ("投稿部", "Posting Room", "Threadsへ自動投稿（SLOT_PLANの10枠・PCが寝ていても動く）",
+         "毎日 06:00〜21:40", "☁️ Render", st(data["today_posts_ok"])),
         ("IGクリエイティブ部", "Story Studio", "黒バック長文ストーリー画像を自動生成（月曜に1週間分を一括→「今週分」フォルダにまとめ）",
          "毎朝 04:45＋毎週月曜 06:40", "🤖 Python", st(data["ig_ok"], idle_condition=not data["plan_covers_today"] and not data["ig_ok"])),
         ("監査部", "Audit Room", "全部門の成否チェック・この司令室の自動更新",
@@ -776,7 +783,7 @@ def build_html(data: dict) -> str:
   <div class="main">
   <div class="header">
     <h1>ダッシュボード</h1>
-    <span class="sub">更新: {data['now'].strftime('%Y-%m-%d %H:%M')}（毎朝05:00・毎晩21:30すぎ・月曜05:10すぎに自動更新／この画面も10分ごとに自動再読込）</span>
+    <span class="sub">更新: {data['now'].strftime('%Y-%m-%d %H:%M')}（毎朝05:00・月曜05:10すぎに自動更新／この画面も10分ごとに自動再読込）</span>
   </div>
   <div class="stats">
     <div class="stat"><div class="num">{n_active}<span style="font-size:14px">/{len(depts)}</span></div><div class="label">稼働部門</div></div>
