@@ -293,6 +293,36 @@ def health_status():
     return ("[OK]" in last, last.split(" [")[0])
 
 
+def reach_status_check():
+    """到達率モニタ（reach_check.py）の結果を司令室用に読む。
+
+    「原稿ファイルがある＝OK」ではなく「Threads APIに実物が出ている＝OK」を見る。
+    2026-08-03〜08-24の事故は、すべての社内書類が緑のまま10枠中7枠が22日間
+    出ていなかったもので、この検査だけが唯一それを捕まえられる。
+    """
+    f = BASE_DIR / "reach_status.json"
+    if not f.exists():
+        return (None, "未計測（`python reach_check.py` を実行）")
+    try:
+        st = json.loads(f.read_text(encoding="utf-8"))
+    except Exception as e:
+        return (None, f"読み込み失敗: {e}")
+
+    y = st.get("yesterday") or {}
+    updated = st.get("updated", "?")
+    if not y:
+        return (None, f"データ不足（更新 {updated}）")
+
+    rate = y.get("rate", 0)
+    if rate >= 100:
+        return (True, f"前日 {y.get('date')} は {y.get('actual')}/{y.get('expected')}枠すべて投稿（更新 {updated}）")
+
+    streak = st.get("miss_streak") or 0
+    miss = ", ".join(y.get("missing", []))
+    return (False, f"🚨前日 {y.get('date')} は {y.get('actual')}/{y.get('expected')}枠しか出ていません"
+                   f"（{streak}日連続）。出なかった枠: {miss}")
+
+
 def slot_schedule_mismatch(date_str: str):
     """POST_SCHEDULE（Renderが実際に投稿する時刻）と、その日のposts/{date}.json（実際に
     書かれた原稿のスロット）がズレていないか確認する。2026-07-30新設: POST_SCHEDULEだけ
@@ -363,15 +393,23 @@ def collect_data():
     tmr_ok, tmr_detail = tomorrow_status(tomorrow, now)
     missing_slots, slot_check_skipped = slot_schedule_mismatch(today)
 
+    reach_ok, reach_detail = reach_status_check()
+
     # チェック項目: (ラベル, ok(None=灰色), 詳細)
     checks = [
         ("自動タスク全体", hc_ok, f"最終チェック {hc_time}" if hc_ok is not None else "ヘルスチェック未実施"),
+        # ★最上位: 原稿があるかではなく「実際にThreadsへ出たか」。2026-08-24新設。
+        # 8/3〜8/24の22日間、原稿もプランも検品も緑のまま10枠中7枠が出ていなかった事故を受けて、
+        # 実物（Threads API）を見る検査を司令室の一番上に置く。
+        ("実際に投稿されたか（到達率）", reach_ok, reach_detail),
         ("フォロワー記録", fc is not None, f"{fc:,}人" if fc else "今日分が未記録"),
         ("インサイト収集", ok_insight, f"最新: {li}"),
         ("IGストーリー準備", ig_ok, ig_detail if ig_ok else ig_detail),
         ("今日のThreads投稿", today_posts_ok, posts_detail),
-        ("投稿時刻と原稿のスロット一致", slot_check_skipped or not missing_slots,
-         "確認できず" if slot_check_skipped else ("一致" if not missing_slots else f"ズレあり: {', '.join(missing_slots)} に原稿が無い")),
+        # 確認できない場合は「灰色(None)」にする。旧実装は skipped を True（緑）にしており、
+        # 原稿が無い日ほど「一致OK」と表示される逆転が起きていた（8/24に確認）。
+        ("投稿時刻と原稿のスロット一致", None if slot_check_skipped else (not missing_slots),
+         "確認できず（今日の原稿が無い）" if slot_check_skipped else ("一致" if not missing_slots else f"ズレあり: {', '.join(missing_slots)} に原稿が無い")),
         ("今日分の検品(Haiku)", insp_ok, insp_detail),
         ("明日分の原稿と昼検品", tmr_ok, tmr_detail),
     ]
@@ -392,10 +430,14 @@ def collect_data():
         todos.append(("明日分プレビュー確認（1分）", f"コンサル投稿確認\\{tomorrow}.txt（昼12:00の検品時に生成・⚠️だけ注意。朝07:30のメールと同内容）", _file_url(preview_tomorrow)))
     elif preview_today.exists():
         todos.append(("今日分プレビュー確認（1分）", f"コンサル投稿確認\\{today}.txt（昨日の昼検品時に生成・品質ゲート⚠️だけ注意）", _file_url(preview_today)))
+    if reach_ok is False:
+        todos.append(("🚨投稿が実際に出ていません（最優先）",
+                      f"{reach_detail} → Claude Codeで「投稿が出ていない、調べて」と伝えてください。"
+                      "中身の改善より先に、出る状態に戻すのが先です", None))
     if missing_slots:
         todos.append((f"🚨投稿時刻に原稿が無いスロットあり（{len(missing_slots)}件・投稿が抜けます）",
-                      f"{', '.join(missing_slots)} が posts\\{today}.json に無い → post_runner.pyのPOST_SCHEDULEを"
-                      "その日の原稿スロットに合わせて至急修正", None))
+                      f"{', '.join(missing_slots)} が posts\\{today}.json に無い → SLOT_PLAN（post_runner.py）と"
+                      "その日の原稿スロットが食い違っています", None))
     if hc_ok is False:
         todos.append(("⚠️自動化の失敗対応", "Claude Codeで「ヘルスチェックが失敗してる、調べて」と伝える", None))
     if today_posts_ok is False:

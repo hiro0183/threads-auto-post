@@ -122,38 +122,92 @@ def write_obsidian(date_str: str, rows: list):
     print(f"Obsidian保存: {md_file}")
 
 
-def main():
-    force_all = "--all" in sys.argv
+def load_collected_from_insights() -> set:
+    """insights_data.jsonl から集計済みroot_idを復元する。
 
-    if not LOG_FILE.exists():
-        print("投稿ログがありません")
-        return
-
-    from token_manager import check_and_refresh
-    token = check_and_refresh()
-
-    collected_ids = set() if force_all else load_collected_ids()
-    now = datetime.now(JST)
-
-    # ログ読み込み
-    entries = []
-    for line in LOG_FILE.read_text(encoding="utf-8").strip().split("\n"):
+    insights_collected.jsonl はRenderの揮発ディスク上にあり再起動で消えるため、
+    GitHubへ同期される insights_data.jsonl を第二の台帳として併用する。
+    """
+    ids = set()
+    if not INSIGHTS_DATA_FILE.exists():
+        return ids
+    for line in INSIGHTS_DATA_FILE.read_text(encoding="utf-8").splitlines():
         if not line:
             continue
         try:
-            entries.append(json.loads(line))
+            rid = json.loads(line).get("root_id")
         except Exception:
-            pass
-
-    # 24時間以上経過 & 未集計 & 成功した投稿を対象
-    targets = []
-    for entry in entries:
-        if entry.get("status") != "ok":
             continue
-        if not entry.get("post_ids"):
+        if rid:
+            ids.add(rid)
+    return ids
+
+
+def _tree_text_for(date_str: str, slot: str) -> list:
+    """posts/{date}.json から該当スロットのツリー全文を返す（無ければ空）"""
+    f = BASE_DIR / "posts" / f"{date_str}.json"
+    if not f.exists():
+        return []
+    try:
+        return json.loads(f.read_text(encoding="utf-8")).get(slot) or []
+    except Exception:
+        return []
+
+
+def targets_from_api(token: str, collected: set, days: int = 14) -> list:
+    """Threads APIの実投稿を起点に集計対象を組み立てる（2026-08-24新設・こちらが正）。
+
+    従来は post_log.jsonl（Renderの揮発ディスク上のファイル）を起点にしていたため、
+    再起動やPOST_SCHEDULEのズレでログが欠けると計測ごと止まった。実際に
+    2026-08-03〜24はログに成功記録が一件も残らず、実測が8/2で凍結した。
+    Threads API は投稿そのものが台帳なので、この経路は落ちても復元できる。
+    """
+    from reach_check import fetch_recent_posts, _match_slot
+    from post_runner import SLOT_PLAN
+
+    slots = list(SLOT_PLAN.keys())
+    now = datetime.now(JST)
+    posts = fetch_recent_posts(token, limit=100)
+
+    targets = []
+    for p in posts:
+        if p["id"] in collected:
+            continue
+        if (now - p["jst"]).total_seconds() < 86400:  # 24時間未満は数字が固まらない
+            continue
+        if (now - p["jst"]).days > days:
+            continue
+        date_str = p["jst"].date().isoformat()
+        slot = _match_slot(p["jst"], slots) or p["jst"].strftime("%H:%M")
+        tree = _tree_text_for(date_str, slot) or [p["text"]]
+        targets.append({
+            "timestamp": p["jst"].isoformat(),
+            "date": date_str,
+            "slot": slot,
+            "post_type": "tree" if len(tree) > 1 else "single",
+            "posts": tree,
+            "post_ids": [p["id"]],
+        })
+    return targets
+
+
+def targets_from_log(collected: set) -> list:
+    """従来経路: post_log.jsonl の成功投稿から集計対象を組み立てる（補助）"""
+    if not LOG_FILE.exists():
+        return []
+    now = datetime.now(JST)
+    out = []
+    for line in LOG_FILE.read_text(encoding="utf-8").splitlines():
+        if not line:
+            continue
+        try:
+            entry = json.loads(line)
+        except Exception:
+            continue
+        if entry.get("status") != "ok" or not entry.get("post_ids"):
             continue
         root_id = entry["post_ids"][0]
-        if root_id in collected_ids:
+        if root_id in collected:
             continue
         try:
             ts = datetime.fromisoformat(entry["timestamp"])
@@ -161,9 +215,36 @@ def main():
                 ts = ts.replace(tzinfo=JST)
         except Exception:
             continue
-        if (now - ts).total_seconds() < 86400:  # 24時間未満はスキップ
+        if (now - ts).total_seconds() < 86400:
             continue
-        targets.append(entry)
+        entry["date"] = ts.strftime("%Y-%m-%d")
+        out.append(entry)
+    return out
+
+
+def main():
+    force_all = "--all" in sys.argv
+
+    from token_manager import check_and_refresh
+    token = check_and_refresh()
+
+    collected = set()
+    if not force_all:
+        collected = load_collected_ids() | load_collected_from_insights()
+
+    # 1) Threads APIの実投稿を正とする
+    targets = []
+    try:
+        targets = targets_from_api(token, collected)
+    except Exception as e:
+        logging.error(f"API起点の集計に失敗: {e}")
+        print(f"[WARN] Threads APIからの取得に失敗しました（{e}）。post_logにフォールバックします")
+
+    # 2) APIで拾えなかった分をpost_logで補う
+    seen = {t["post_ids"][0] for t in targets}
+    for entry in targets_from_log(collected):
+        if entry["post_ids"][0] not in seen:
+            targets.append(entry)
 
     if not targets:
         print("集計対象の投稿がありません（24時間未満または集計済み）")
@@ -171,17 +252,9 @@ def main():
 
     print(f"集計対象: {len(targets)}件")
 
-    # 日付ごとにグループ化
     by_date = {}
     for entry in targets:
-        try:
-            ts = datetime.fromisoformat(entry["timestamp"])
-            if ts.tzinfo is None:
-                ts = ts.replace(tzinfo=JST)
-        except Exception:
-            continue
-        date_str = ts.strftime("%Y-%m-%d")
-        by_date.setdefault(date_str, []).append(entry)
+        by_date.setdefault(entry["date"], []).append(entry)
 
     for date_str, day_entries in sorted(by_date.items()):
         rows = []
@@ -203,7 +276,6 @@ def main():
             mark_collected(root_id, date_str)
 
         write_obsidian(date_str, rows)
-        # ローカルにも構造化データを保存（パターン分析用）
         with open(INSIGHTS_DATA_FILE, "a", encoding="utf-8") as f:
             for row in rows:
                 f.write(json.dumps({**row, "date": date_str}, ensure_ascii=False) + "\n")

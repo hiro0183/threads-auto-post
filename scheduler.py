@@ -9,8 +9,9 @@ Flask Web Service + APScheduler で全スロットを時刻通り自動投稿
 
 import os
 import logging
+from pathlib import Path
 from datetime import datetime, timezone, timedelta
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from db_state import load_posted_state, save_posted_state, is_posted, try_reserve_slot
@@ -43,6 +44,82 @@ app = Flask(__name__)
 def health():
     now = datetime.now(JST).strftime("%Y-%m-%d %H:%M:%S JST")
     return jsonify({"status": "running", "time": now})
+
+
+ALLOWED_EXPORTS = {
+    "post_log.jsonl",
+    "insights_data.jsonl",
+    "follower_log.jsonl",
+    "insights_collected.jsonl",
+}
+
+
+def _export_authorized() -> bool:
+    """EXPORT_TOKEN が設定されていれば ?key= の一致を要求する（未設定なら誰でも可）"""
+    from flask import request
+    expected = os.environ.get("EXPORT_TOKEN")
+    return (not expected) or request.args.get("key") == expected
+
+
+@app.route("/export/<name>")
+def export_file(name: str):
+    """Renderのディスク上の実測データをHTTPで渡す（2026-08-24新設）。
+
+    従来はRenderからGitHub APIへPATでpushしていたが、PATが2026-08-21頃に
+    期限切れとなり同期が静かに停止した。取りに来てもらう向きに変えることで、
+    Render側から機密情報（PAT）を無くし、失効による沈黙をなくす。
+    クラウドルーティンがこれを取得してリポジトリへcommitする。
+    """
+    from flask import Response
+    if not _export_authorized():
+        return jsonify({"error": "unauthorized"}), 401
+    if name not in ALLOWED_EXPORTS:
+        return jsonify({"error": "not found"}), 404
+    path = Path(__file__).parent / name
+    if not path.exists():
+        return Response("", mimetype="text/plain")
+    return Response(path.read_text(encoding="utf-8"), mimetype="text/plain")
+
+
+@app.route("/reach")
+def reach():
+    """到達率（実際にThreadsへ出た枠 ÷ 予定枠）を返す（2026-08-24新設）。
+
+    ファイルの存在ではなくThreads APIの実投稿を正として測る唯一の窓口。
+    """
+    if not _export_authorized():
+        return jsonify({"error": "unauthorized"}), 401
+    try:
+        days = int(request.args.get("days", 7))
+    except Exception:
+        days = 7
+    try:
+        import reach_check
+        return jsonify(reach_check.build_status(days=max(1, min(days, 30))))
+    except Exception as e:
+        logger.error(f"[REACH] 算出失敗: {e}", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+
+def reach_job():
+    """毎朝7:00 — 前日の到達率を測り、100%未満ならログに残す"""
+    logger.info("[REACH] 到達率チェック開始")
+    try:
+        import reach_check
+        status = reach_check.build_status(days=7)
+        reach_check.save_status(status)
+        y = status.get("yesterday") or {}
+        if status.get("alert"):
+            logger.error(
+                f"[REACH][ALERT] 前日 {y.get('date')} の到達率 {y.get('rate')}%"
+                f"（{y.get('actual')}/{y.get('expected')}枠）"
+                f" 出なかった枠: {','.join(y.get('missing', []))}"
+                f" / {status.get('miss_streak')}日連続"
+            )
+        else:
+            logger.info(f"[REACH] 前日 {y.get('date')} は100%達成（{y.get('actual')}枠）")
+    except Exception as e:
+        logger.error(f"[REACH] チェック失敗: {e}", exc_info=True)
 
 
 def post_slot(slot: str):
@@ -198,6 +275,17 @@ def start_scheduler():
         track_followers_job,
         CronTrigger(hour=6, minute=10, timezone=JST),
         id="track_followers",
+        misfire_grace_time=300,
+        coalesce=True,
+        max_instances=1,
+    )
+
+    # 到達率チェック（毎朝7:00・2026-08-24新設）
+    # 「原稿があるか」ではなく「実際に出たか」を毎日みる唯一の監視。
+    scheduler.add_job(
+        reach_job,
+        CronTrigger(hour=7, minute=0, timezone=JST),
+        id="reach_check",
         misfire_grace_time=300,
         coalesce=True,
         max_instances=1,

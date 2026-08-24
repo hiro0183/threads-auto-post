@@ -1,0 +1,88 @@
+{
+  "_readme": "実験台帳。開く=週次企画(クラウド・日曜) / 埋める=weekly_report・ledger.py --update / 閉じる=人間が月曜にverdictを書く。同時に開けるのは最大3枚。judge_onを過ぎたカードは必ず閉じる（続行/中止/変更）。",
+  "cards": [
+    {
+      "id": "W35-01",
+      "opened": "2026-08-25",
+      "week": "2026-W35",
+      "hypothesis": "投稿到達率を100%に戻せば、週あたりのフォロワー純増が回復する",
+      "action": "POST_SCHEDULEをSLOT_PLANから導出し、10枠すべてを毎日投稿する（2026-08-24修正）",
+      "metric": "followers_delta",
+      "baseline": 1.5,
+      "baseline_note": "2026-07-07→08-24で902→909人。約7週で+7人＝週+1.0〜1.5人。3枠しか出ていなかった期間の実績",
+      "filter": {},
+      "min_sample": 14,
+      "judge_on": "2026-09-21",
+      "result": {
+        "value": null,
+        "sample": 0,
+        "measured_at": "2026-08-24"
+      },
+      "verdict": null,
+      "note": "最重要。10枠フル稼働が新規流入に効くのか、それとも絡み（人間の仕事）が無いと伸びないのかを切り分ける",
+      "due": false,
+      "enough_sample": false
+    },
+    {
+      "id": "W35-02",
+      "opened": "2026-08-25",
+      "week": "2026-W35",
+      "hypothesis": "AI×経営の切り口は保存動機が強く、エンゲージ率が全体を上回る",
+      "action": "11:00の信頼枠にAI切り口を1日1本置く（2026-08-04にヒロさん指示で導入・未検証のまま3週間経過）",
+      "metric": "engagement_rate",
+      "baseline": 6.9,
+      "baseline_note": "直近30日の全投稿ER中央値6.90%（n=82）。導入時に参照した7.96%は旧期間の平均値",
+      "filter": {
+        "slots": [
+          "11:00"
+        ]
+      },
+      "min_sample": 20,
+      "judge_on": "2026-09-21",
+      "result": {
+        "value": null,
+        "sample": 0,
+        "measured_at": "2026-08-24"
+      },
+      "verdict": null,
+      "note": "2026-08-04の「4週間観察」の約束を、ここで正式に開き直す。観察開始は実質2026-08-25から",
+      "due": false,
+      "enough_sample": false
+    },
+    {
+      "id": "W35-03",
+      "opened": "2026-08-25",
+      "week": "2026-W35",
+      "hypothesis": "数字型フック（persona実数入り）は他の型よりエンゲージ率が高い",
+      "action": "hook_rules.mdの「1日に最低1本は数字型」ルールを維持し、実測で妥当性を検証する",
+      "metric": "engagement_rate",
+      "baseline": 6.9,
+      "baseline_note": "直近30日の全投稿ER中央値6.90%（n=82）",
+      "filter": {
+        "keywords": [
+          "8,500",
+          "35,000",
+          "300万",
+          "500万",
+          "1,500",
+          "40時間",
+          "14年",
+          "46歳",
+          "週3",
+          "週休3日"
+        ]
+      },
+      "min_sample": 20,
+      "judge_on": "2026-09-21",
+      "result": {
+        "value": null,
+        "sample": 0,
+        "measured_at": "2026-08-24"
+      },
+      "verdict": null,
+      "note": "ルール自体の検証。下回るなら「1日最低1本」の必須化を見直す材料にする（改定は月次スキーム見直しで）",
+      "due": false,
+      "enough_sample": false
+    }
+  ]
+}

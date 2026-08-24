@@ -1,41 +1,38 @@
 """
 GitHubのsync/フォルダからpost_log.jsonlとinsights_data.jsonlを取得してローカルにマージ
-Renderが23:30にpushした内容を翌朝PCで引き取る用
+Renderがpushした内容をPCで引き取る用
+
+2026-08-24: GitHub API + Personal Access Token（PAT）での取得を廃止し、git経由に変更。
+  旧方式はPATが2026-08-21頃に期限切れとなり401で静かに失敗し、post_log.jsonlが
+  8/3で止まり、そこを起点にしていたインサイト集計まで連鎖的に停止した（実測が3週間凍結）。
+  gitの認証情報はCredential Managerが保持しており別系統のため、この経路なら巻き込まれない。
 
 使い方:
   python pull_insights.py          # マージ後に自動でinsights集計も実行
   python pull_insights.py --no-collect  # マージのみ（集計しない）
 """
-import os
 import sys
 import json
-import base64
-import requests
+import subprocess
 from pathlib import Path
-from dotenv import load_dotenv
 
-load_dotenv()
-
-GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
-GITHUB_REPO = os.environ.get("GITHUB_REPO", "hiro0183/threads-auto-post")
-GITHUB_API = "https://api.github.com"
 BASE_DIR = Path(__file__).parent
 
 
-def fetch_github_file(repo_path: str) -> bytes | None:
-    if not GITHUB_TOKEN:
-        print("[ERROR] .envにGITHUB_TOKENを設定してください")
-        return None
-    url = f"{GITHUB_API}/repos/{GITHUB_REPO}/contents/{repo_path}"
-    headers = {
-        "Authorization": f"token {GITHUB_TOKEN}",
-        "Accept": "application/vnd.github.v3+json",
-    }
-    r = requests.get(url, headers=headers, timeout=15)
-    if r.status_code == 200:
-        return base64.b64decode(r.json().get("content", ""))
-    else:
-        print(f"[ERROR] {repo_path} 取得失敗: {r.status_code}")
+def fetch_repo_file(repo_path: str) -> bytes | None:
+    """origin/master の最新内容をgit経由で読む（PAT不要・作業ツリーを汚さない）"""
+    try:
+        subprocess.run(
+            ["git", "fetch", "origin", "master"],
+            cwd=BASE_DIR, check=True, capture_output=True, timeout=120,
+        )
+        r = subprocess.run(
+            ["git", "show", f"origin/master:{repo_path}"],
+            cwd=BASE_DIR, check=True, capture_output=True, timeout=120,
+        )
+        return r.stdout
+    except Exception as e:
+        print(f"[ERROR] {repo_path} 取得失敗: {e}")
         return None
 
 
@@ -113,16 +110,16 @@ def merge_insights_data(remote_content: bytes) -> int:
 def main():
     no_collect = "--no-collect" in sys.argv
 
-    print("GitHubからデータ取得中...")
+    print("GitHub(origin/master)からデータ取得中...")
 
-    data = fetch_github_file("sync/post_log.jsonl")
+    data = fetch_repo_file("sync/post_log.jsonl")
     if data:
         added = merge_post_log(data)
         print(f"post_log.jsonl: {added}件追加")
     else:
         print("post_log.jsonl: スキップ（まだGitHubに存在しない可能性あり）")
 
-    data = fetch_github_file("sync/insights_data.jsonl")
+    data = fetch_repo_file("sync/insights_data.jsonl")
     if data:
         added = merge_insights_data(data)
         print(f"insights_data.jsonl: {added}件追加")

@@ -135,15 +135,24 @@ def median(values):
 
 
 def build_slot_table(rows: list) -> list:
+    """スロット別成績。
+
+    2026-08-24: 削除候補の判定を「median<100」の固定しきい値から**全体medianとの相対**へ変更。
+    このアカウントの全期間medianは52viewsで、固定100だと全スロットが🚩になり
+    「全部が削除候補」という判断材料にならない表になっていた（実際W34は全枠🚩）。
+    n<5 のスロットは母数不足として旗を立てない。
+    """
     by_slot = defaultdict(list)
     for r in rows:
         by_slot[r.get("slot", "??")].append(r.get("views", 0))
+    overall = median([r.get("views", 0) for r in rows]) or 0
     result = []
     for slot, vs in sorted(by_slot.items()):
+        m = median(vs)
         result.append({
-            "slot": slot, "n": len(vs), "median": median(vs),
+            "slot": slot, "n": len(vs), "median": m,
             "avg": int(sum(vs) / len(vs)), "max": max(vs),
-            "flag": median(vs) < 100,
+            "flag": bool(overall and len(vs) >= 5 and m < overall * 0.5),
         })
     return result
 
@@ -290,6 +299,92 @@ def five_state(value: float, baseline_median: float) -> str:
     return f"バースト圏（{ratio:.2f}倍）"
 
 
+def engagement_rate(r: dict):
+    """1投稿のエンゲージ率(%) = (いいね+リプ+リポスト+引用) / views * 100"""
+    v = r.get("views") or 0
+    if not v:
+        return None
+    eng = sum(r.get(k) or 0 for k in ("likes", "replies", "reposts", "quotes"))
+    return eng / v * 100
+
+
+def load_reach_status() -> dict:
+    """到達率モニタ（reach_check.py）の出力を読む。無ければ空dict"""
+    f = BASE_DIR / "reach_status.json"
+    if not f.exists():
+        return {}
+    try:
+        return json.loads(f.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def follower_delta(start, end) -> tuple:
+    """期間の実測フォロワー増減を (増減, 期首, 期末) で返す"""
+    f = FOLLOWER_LOG_FILE
+    if not f.exists():
+        return (None, None, None)
+    pts = []
+    for line in f.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        try:
+            d = json.loads(line)
+        except Exception:
+            continue
+        date = str(d.get("date", ""))[:10]
+        cnt = d.get("count")
+        if isinstance(cnt, int) and start.isoformat() <= date <= end.isoformat():
+            pts.append((date, cnt))
+    if len(pts) < 2:
+        return (None, None, None)
+    pts.sort()
+    return (pts[-1][1] - pts[0][1], pts[0][1], pts[-1][1])
+
+
+def build_kpi_block(last_week_rows: list, all_rows: list, last_start, last_end) -> list:
+    """0. 経営指標 — 週に一度これだけ見れば良い3つ（2026-08-24新設）。
+
+    従来のレポートは views の表が9章続く一方、「そもそも投稿が出たのか」を
+    示す指標が1つも無かった。2026-08-03〜24に10枠中7枠が22日間出ていなかった
+    事故を、このレポートは最後まで検知できなかった。到達率を最上位に置く。
+    """
+    L = []
+    L.append("## 0. 経営指標（まずここだけ見る）\n")
+    L.append("| 指標 | 先週 | 見かた |")
+    L.append("|:--|:--|:--|")
+
+    reach = load_reach_status()
+    if reach:
+        wr = reach.get("week_rate")
+        streak = reach.get("miss_streak") or 0
+        mark = "✅" if wr and wr >= 100 else "🔴"
+        note = "100%が当たり前。割れたら中身の話より先に配管を直す"
+        if streak:
+            note += f"（{streak}日連続で100%未満）"
+        L.append(f"| **到達率**（出た枠÷予定枠） | {mark} {wr}% | {note} |")
+    else:
+        L.append("| **到達率**（出た枠÷予定枠） | 未計測 | `python reach_check.py` を実行 |")
+
+    ers = [x for x in (engagement_rate(r) for r in last_week_rows) if x is not None]
+    all_ers = [x for x in (engagement_rate(r) for r in all_rows) if x is not None]
+    if ers:
+        L.append(f"| **エンゲージ率**（中央値） | {median(ers):.2f}% | 全期間 {median(all_ers):.2f}%。"
+                 "viewsより先にこちらを見る（閲覧が増えても反応が薄い型がある） |")
+    else:
+        L.append("| **エンゲージ率**（中央値） | データなし | — |")
+
+    d, s, e = follower_delta(last_start, last_end)
+    if d is None:
+        L.append("| **フォロワー純増** | 記録不足 | 最終KPI。ここが動かなければ他の数字は前哨戦 |")
+    else:
+        L.append(f"| **フォロワー純増** | {d:+d}人（{s}→{e}） | 最終KPI。"
+                 "投稿改善だけで動かない場合は絡み（人間の仕事）を疑う |")
+
+    L.append("")
+    return L
+
+
 def build_report() -> str:
     all_rows = load_insights()
     if not all_rows:
@@ -321,8 +416,11 @@ def build_report() -> str:
     if not last_week_rows:
         L.append("⚠️ 先週分のデータがありません（未収集または投稿なし）。以下は全期間集計のみです。\n")
 
+    # 0. 経営指標（2026-08-24新設・最上位）
+    L.extend(build_kpi_block(last_week_rows, all_rows, last_start, last_end))
+
     # 1. スロット別
-    L.append("## 1. スロット別成績（median<100は削除候補）\n")
+    L.append("## 1. スロット別成績（全体medianの半分未満が削除候補・n≥5のみ）\n")
     for label, rows in [("先週", last_week_rows), ("全期間", all_rows)]:
         L.append(f"### {label}\n")
         L.append("| スロット | 件数 | median | 平均 | 最大 | 削除候補 |")
@@ -427,6 +525,17 @@ def build_report() -> str:
     L.append(f"- 全期間median: {baseline_median:,}v")
     L.append(f"- 先週平均views: {last_week_avg:,}v")
     L.append(f"- 判定: **{state}**")
+
+    # 10. 実験台帳（2026-08-24新設）— 開いた仮説を必ず閉じるための欄
+    L.append("")
+    try:
+        import ledger
+        data = ledger.update(ledger.load())
+        ledger.save(data)
+        L.append(ledger.render_markdown(data).replace("## 実験台帳", "## 10. 実験台帳", 1))
+    except Exception as e:
+        L.append("## 10. 実験台帳\n")
+        L.append(f"> 読み込みに失敗しました: {e}")
 
     return "\n".join(L)
 
