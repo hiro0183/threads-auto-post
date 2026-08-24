@@ -28,20 +28,30 @@ OBSIDIAN_THREADS_DIR = Path(os.environ.get("OBSIDIAN_DIR", r"C:\Users\tujid\OneD
 
 from db_state import load_posted_state, save_posted_state, is_posted
 
-# 投稿スケジュール（JST）
-# 2026-07-30緊急revert: 新スロット案(SLOT_PLAN参照)は今週分のweekly_plan/posts/{date}.jsonが
-# まだ旧スロットのまま生成済み（次回の週次企画=8/3月曜まで）のため、POST_SCHEDULEだけ新スロットに
-# 変えるとRenderが「中身の無い時刻」を探しに行き投稿が抜ける事故になる（同日発覚・即revert）。
-# 新スロットへの切替は、weekly_plan/2026-08-03.json が新スロットで生成されるのを確認してから
-# POST_SCHEDULE = list(SLOT_PLAN.keys()) に揃えて反映する（SLOT_PLANは既に新設計へ更新済み）。
+# ── スロット設計（JST）: ここが唯一の正 ───────────────────────
+# 2026-08-24: POST_SCHEDULE と SLOT_PLAN の二重管理を廃止。
+# 【事故の記録】7/30に SLOT_PLAN だけ新設計へ更新し POST_SCHEDULE を旧10枠のまま残した結果、
+# 8/3の週次企画から原稿が新スロットで生成され、Renderは旧スロットを探しに行って空振り。
+# 一致していた 06:00/08:00/11:00 の3枠しか投稿されず、8/3〜8/24の22日間で約150枠を失った。
+# 【再発防止】POST_SCHEDULE は SLOT_PLAN から機械的に導出する。時刻の変更は SLOT_PLAN だけを編集すること。
 #
-# 2026-07-12: エンゲージ回復のため 50→10スロットへ削減。
-# 過剰投稿による自己リーチ共食い＋低エンゲージのアルゴ抑制を解除する狙い。
-# 残す10枠は直近30日の中央値views・いいね実績・時間帯の散らしで選定。
-POST_SCHEDULE = [
-    "05:00", "06:00", "07:00", "08:00", "11:00",
-    "14:00", "16:30", "19:30", "20:15", "22:00",
-]
+# 2026-07-30: 4層ポートフォリオ（拡散→信頼→会話→導線）へ更新。導線枠(cta:True)は1日1本のみ。
+# 2026-07-12: エンゲージ回復のため 50→10スロットへ削減（自己リーチ共食いの解除）。
+SLOT_PLAN = {
+    "06:00": {"type": "tree", "cta": False, "layer": "拡散"},
+    "07:30": {"type": "tree", "cta": False, "layer": "拡散"},
+    "08:00": {"type": "tree", "cta": False, "layer": "拡散"},
+    "11:00": {"type": "tree", "cta": False, "layer": "信頼"},
+    "12:45": {"type": "tree", "cta": False, "layer": "信頼"},
+    "16:45": {"type": "tree", "cta": False, "layer": "信頼"},
+    "17:30": {"type": "tree", "cta": False, "layer": "信頼"},
+    "18:15": {"type": "tree", "cta": False, "layer": "会話"},
+    "21:20": {"type": "tree", "cta": False, "layer": "会話"},
+    "21:40": {"type": "tree", "cta": True,  "layer": "導線"},  # 唯一のCTA（経営の問診）
+}
+
+# Renderが投稿しに行く時刻。SLOT_PLANから導出するため、両者がズレることは構造上ありえない。
+POST_SCHEDULE = list(SLOT_PLAN.keys())
 
 def find_target_slot() -> str | None:
     """投稿すべきスロットを返す。
@@ -200,23 +210,7 @@ def show_recent_logs(n: int = 10):
 # 2026-07-07: taboo.md #5「CTA付き投稿は1日2〜3本まで」に合わせて12→3件へ修正
 # （旧12件設定はCTA過多でリーチ壊滅の実測知見に反していた）
 
-# 2026-07-30: _提案_スキーム全面見直し_2026-07-17.md §3の4層ポートフォリオ + 様子見2枠へ更新。
-# ⚠️ POST_SCHEDULEはまだ旧スロットのまま（上のrevertコメント参照）。次回8/3週次企画で
-# weekly_plan/posts が新スロットで生成されるのを確認してから POST_SCHEDULE をこれに合わせる。
-# 様子見2枠: 11:00（直近中央値113v・n=10）/ 08:00（同67v・n=9）を拡散枠に割当
-# 導線枠(cta:True)は1日1本のみ（prompts/funnel_rules.md参照。旧2本から減）
-SLOT_PLAN = {
-    "06:00": {"type": "tree", "cta": False, "layer": "拡散"},
-    "07:30": {"type": "tree", "cta": False, "layer": "拡散"},
-    "08:00": {"type": "tree", "cta": False, "layer": "拡散"},
-    "11:00": {"type": "tree", "cta": False, "layer": "信頼"},
-    "12:45": {"type": "tree", "cta": False, "layer": "信頼"},
-    "16:45": {"type": "tree", "cta": False, "layer": "信頼"},
-    "17:30": {"type": "tree", "cta": False, "layer": "信頼"},
-    "18:15": {"type": "tree", "cta": False, "layer": "会話"},
-    "21:20": {"type": "tree", "cta": False, "layer": "会話"},
-    "21:40": {"type": "tree", "cta": True,  "layer": "導線"},  # 唯一のCTA（経営の問診）
-}
+# SLOT_PLAN / POST_SCHEDULE はファイル冒頭で定義（単一の正）
 
 
 def get_slot_info(slot: str) -> dict:
