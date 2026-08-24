@@ -1,21 +1,21 @@
 {
   "account": "コンサル垢",
-  "updated": "2026-08-23 06:03",
+  "updated": "2026-08-24 09:22",
   "todos": [
     {
       "title": "IGストーリー投稿（1〜2分）",
-      "detail": "画像あり → スマホのOneDriveアプリ「IGストーリー投稿」から 2026-08-23.png をアップ",
+      "detail": "今日のプランなし（月曜のFable5セッションで作成）",
       "flag": false
     },
     {
-      "title": "今日分プレビュー確認（1分）",
-      "detail": "コンサル投稿確認\\2026-08-23.txt（昨日の昼検品時に生成・品質ゲート⚠️だけ注意）",
-      "flag": false
-    },
-    {
-      "title": "🚨投稿時刻に原稿が無いスロットあり（7件・投稿が抜けます）",
-      "detail": "05:00, 07:00, 14:00, 16:30, 19:30, 20:15, 22:00 が posts\\2026-08-23.json に無い → post_runner.pyのPOST_SCHEDULEをその日の原稿スロットに合わせて至急修正",
+      "title": "⚠️Threads原稿の鮮度異常",
+      "detail": "Claude Codeで「今日の投稿が古い/未pushと出てる、調べて」と伝える（posts\\2026-08-24.json がありません（生成されていない））",
       "flag": true
+    },
+    {
+      "title": "【月曜】自動生成された週次企画を確認（5分）",
+      "detail": "04:03にThreadsプラン(クラウド)・05:10にIGストーリー週次プラン(このPC・Opus 4.8)が自動生成済み → weekly_plan と ig_stories\\plan を一瞥。⚠️があれば対応",
+      "flag": false
     },
     {
       "title": "⚠️LINE流入の記入待ち（2026-06-29週）",
@@ -27,12 +27,12 @@
     {
       "label": "自動タスク全体",
       "ok": true,
-      "detail": "最終チェック 2026-08-22 04:55"
+      "detail": "最終チェック 2026-08-24 09:17"
     },
     {
       "label": "フォロワー記録",
-      "ok": false,
-      "detail": "今日分が未記録"
+      "ok": true,
+      "detail": "909人"
     },
     {
       "label": "インサイト収集",
@@ -41,18 +41,18 @@
     },
     {
       "label": "IGストーリー準備",
-      "ok": true,
-      "detail": "画像あり → スマホのOneDriveアプリ「IGストーリー投稿」から 2026-08-23.png をアップ"
+      "ok": false,
+      "detail": "今日のプランなし（月曜のFable5セッションで作成）"
     },
     {
       "label": "今日のThreads投稿",
-      "ok": true,
-      "detail": "posts\\2026-08-23.json（08/20 06:04 push済みの新原稿）"
+      "ok": false,
+      "detail": "posts\\2026-08-24.json がありません（生成されていない）"
     },
     {
       "label": "投稿時刻と原稿のスロット一致",
-      "ok": false,
-      "detail": "ズレあり: 05:00, 07:00, 14:00, 16:30, 19:30, 20:15, 22:00 に原稿が無い"
+      "ok": true,
+      "detail": "確認できず"
     },
     {
       "label": "今日分の検品(Haiku)",
@@ -67,7 +67,7 @@
   ],
   "metrics": [
     {
-      "value": 0,
+      "value": 909,
       "unit": "人",
       "caption": "フォロワー"
     },
