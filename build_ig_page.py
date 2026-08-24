@@ -15,6 +15,7 @@ IGストーリー 今週の1枚ページを生成する（2026-08-24新設）
 """
 
 import argparse
+import os
 import base64
 import json
 from datetime import datetime, timedelta, timezone
@@ -27,8 +28,14 @@ WEEKDAY_JP = ["月", "火", "水", "木", "金", "土", "日"]
 
 
 def _out_dir() -> Path:
-    onedrive = Path(r"C:\Users\tujid\OneDrive\IGストーリー投稿")
-    return onedrive if onedrive.exists() else BASE_DIR / "ig_stories" / "out"
+    """画像の置き場。render_story.py と同じ判定にそろえる。
+
+    ★存在チェックでなくOSで判定する: Linuxでは "C:\\Users\\..." が区切り文字を
+    含まない単なるファイル名になり、判定が壊れる（2026-08-24に実測）。
+    """
+    if os.name == "nt":
+        return Path(r"C:\Users\tujid\OneDrive\IGストーリー投稿")
+    return BASE_DIR / "ig_stories" / "out"
 
 
 def esc(s: str) -> str:

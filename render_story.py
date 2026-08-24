@@ -15,6 +15,7 @@ OneDriveの「IGストーリー投稿」フォルダに保存する。
   python render_story.py week 2026-07-20  # 指定した月曜の週を一括生成
 """
 
+import os
 import sys
 import json
 import shutil
@@ -26,8 +27,11 @@ from PIL import Image, ImageDraw, ImageFont
 BASE_DIR = Path(__file__).parent
 PLAN_DIR = BASE_DIR / "ig_stories" / "plan"
 _ONEDRIVE_OUT = Path(r"C:\Users\tujid\OneDrive\IGストーリー投稿")
-# クラウド（OneDriveが無い環境）ではリポジトリ内の ig_stories/out へ書き出す
-OUT_DIR = _ONEDRIVE_OUT if _ONEDRIVE_OUT.parent.exists() else Path(__file__).parent / "ig_stories" / "out"
+# クラウド（Linux）ではリポジトリ内の ig_stories/out へ書き出す。
+# ★Windowsパスの存在チェックで判定してはいけない: Linuxでは "C:\Users\..." が
+#   区切り文字を含まない単なるファイル名として扱われ、.parent が "." になって
+#   常に存在することになり、リポジトリ内に文字化けしたフォルダが作られる（2026-08-24に実測）。
+OUT_DIR = _ONEDRIVE_OUT if os.name == "nt" else Path(__file__).parent / "ig_stories" / "out"
 
 W, H = 1080, 1920
 MARGIN_X = 90
