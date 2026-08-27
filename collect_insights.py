@@ -162,12 +162,27 @@ def targets_from_api(token: str, collected: set, days: int = 14) -> list:
     2026-08-03〜24はログに成功記録が一件も残らず、実測が8/2で凍結した。
     Threads API は投稿そのものが台帳なので、この経路は落ちても復元できる。
     """
-    from reach_check import fetch_recent_posts, _match_slot
+    from collections import defaultdict
+
+    from reach_check import fetch_recent_posts, _assign_slots
     from post_runner import SLOT_PLAN
 
     slots = list(SLOT_PLAN.keys())
     now = datetime.now(JST)
     posts = fetch_recent_posts(token, limit=100)
+
+    # 日付ごとに「1スロット=1投稿」で割り当てる（reach_check と同じ貪欲法）。
+    # 旧実装は reach_check._match_slot を呼んでいたが、同関数は _assign_slots へ
+    # 置き換えられて存在せず、ImportError で毎回 post_log フォールバックに落ちていた
+    # ＝2026-08-24に「計測をAPI起点にした」修理が実際には効いていなかった。
+    slot_of = {}
+    posts_by_date = defaultdict(list)
+    for p in posts:
+        posts_by_date[p["jst"].date().isoformat()].append(p)
+    for _date, day_posts in posts_by_date.items():
+        assigned, _extra = _assign_slots(day_posts, slots)
+        for s, ap in assigned.items():
+            slot_of[ap["id"]] = s
 
     targets = []
     for p in posts:
@@ -178,7 +193,7 @@ def targets_from_api(token: str, collected: set, days: int = 14) -> list:
         if (now - p["jst"]).days > days:
             continue
         date_str = p["jst"].date().isoformat()
-        slot = _match_slot(p["jst"], slots) or p["jst"].strftime("%H:%M")
+        slot = slot_of.get(p["id"]) or p["jst"].strftime("%H:%M")
         tree = _tree_text_for(date_str, slot) or [p["text"]]
         targets.append({
             "timestamp": p["jst"].isoformat(),

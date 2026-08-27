@@ -35,19 +35,43 @@ from db_state import load_posted_state, save_posted_state, is_posted
 # 一致していた 06:00/08:00/11:00 の3枠しか投稿されず、8/3〜8/24の22日間で約150枠を失った。
 # 【再発防止】POST_SCHEDULE は SLOT_PLAN から機械的に導出する。時刻の変更は SLOT_PLAN だけを編集すること。
 #
-# 2026-07-30: 4層ポートフォリオ（拡散→信頼→会話→導線）へ更新。導線枠(cta:True)は1日1本のみ。
+# 2026-08-27: 10→24スロットへ拡張（20〜25本へ戻す・なりあいさん判断）。
+#   根拠: 1日47本だった5〜6月は月100〜160万views、10本の8月は月0.4万views。実測は「34.6万views→フォロワー+11人」
+#   ＝約3.1万viewsごとに1人なので、本数はフォロワー増に直結する。垢バンリスクは低い（5〜6月に47本/日を
+#   2ヶ月継続して制限なし。Threads APIの上限は24時間250投稿で、24ツリー×3投稿=72に収まる）。
+#   ただし7/12に50→10へ減らしたのは「自己リーチ共食いの解除」が目的で、実際に1本あたりのviews中央値は
+#   約45→約80へ倍増していた。そこで**全スロットの間隔を30分以上あける**設計にし、共食いを抑えつつ本数を戻す。
+#   時刻は50枠時代のスロット別実測（views中央値）の上位から、30分間隔を満たす順に採用した。
+#   ★2週間（〜2026-09-10）は固定して、1本あたりのviewsが落ちないかを観察する。
+# 2026-07-30: 4層ポートフォリオ（拡散→信頼→会話→導線）へ更新。導線枠(cta:True)はCTA上限に従い1日3本まで。
 # 2026-07-12: エンゲージ回復のため 50→10スロットへ削減（自己リーチ共食いの解除）。
 SLOT_PLAN = {
+    # 拡散=金額/N選/期間型で作る（「僕」「セリフ」「疑問形」「感情語」は入れない）／信頼=保存もの／
+    # 会話=疑問形の書き出しを許可する唯一の層・viewsで評価しない／導線=CTA。詳細は prompts/funnel_rules.md
     "06:00": {"type": "tree", "cta": False, "layer": "拡散"},
     "07:30": {"type": "tree", "cta": False, "layer": "拡散"},
     "08:00": {"type": "tree", "cta": False, "layer": "拡散"},
-    "11:00": {"type": "tree", "cta": False, "layer": "信頼"},
+    "09:00": {"type": "tree", "cta": False, "layer": "拡散"},
+    "10:00": {"type": "tree", "cta": False, "layer": "信頼"},
+    "10:30": {"type": "tree", "cta": False, "layer": "信頼"},
+    "11:00": {"type": "tree", "cta": False, "layer": "信頼"},  # AI×経営はここに1本（毎日1本のまま継続）
+    "12:00": {"type": "tree", "cta": False, "layer": "拡散"},  # 50枠時代のviews中央値178で全枠トップ
     "12:45": {"type": "tree", "cta": False, "layer": "信頼"},
-    "16:45": {"type": "tree", "cta": False, "layer": "信頼"},
-    "17:30": {"type": "tree", "cta": False, "layer": "信頼"},
+    "13:15": {"type": "tree", "cta": False, "layer": "信頼"},
+    "14:00": {"type": "tree", "cta": False, "layer": "信頼"},
+    "14:30": {"type": "tree", "cta": False, "layer": "信頼"},
+    "15:00": {"type": "tree", "cta": False, "layer": "信頼"},
+    "16:00": {"type": "tree", "cta": False, "layer": "信頼"},
+    "16:30": {"type": "tree", "cta": False, "layer": "拡散"},
+    "17:00": {"type": "tree", "cta": False, "layer": "信頼"},
+    "17:30": {"type": "tree", "cta": False, "layer": "会話"},
     "18:15": {"type": "tree", "cta": False, "layer": "会話"},
+    "18:45": {"type": "tree", "cta": False, "layer": "会話"},
+    "19:30": {"type": "tree", "cta": True,  "layer": "導線"},
+    "20:00": {"type": "tree", "cta": True,  "layer": "導線"},
+    "20:40": {"type": "tree", "cta": False, "layer": "拡散"},
     "21:20": {"type": "tree", "cta": False, "layer": "会話"},
-    "21:40": {"type": "tree", "cta": True,  "layer": "導線"},  # 唯一のCTA（経営の問診）
+    "22:00": {"type": "tree", "cta": True,  "layer": "導線"},  # CTAは3枠まで（taboo #5の上限ちょうど）
 }
 
 # Renderが投稿しに行く時刻。SLOT_PLANから導出するため、両者がズレることは構造上ありえない。

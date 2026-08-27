@@ -84,6 +84,22 @@ def _assign_slots(posts: list, slots: list) -> tuple[dict, list]:
     return assigned, extra
 
 
+def _slots_for_date(date_str: str) -> list:
+    """その日の原稿 posts/{date}.json に実際に書かれているスロット（空配列は休止として除外）。
+
+    原稿が無ければ空リストを返す（呼び出し側が SLOT_PLAN 全枠にフォールバックする）。
+    """
+    import json
+    f = Path(__file__).resolve().parent / "posts" / f"{date_str}.json"
+    if not f.exists():
+        return []
+    try:
+        data = json.loads(f.read_text(encoding="utf-8"))
+    except Exception:
+        return []
+    return [slot for slot, posts in data.items() if posts]
+
+
 def daily_reach(days: int = 7, token: str | None = None) -> list:
     """直近days日の日別到達率を返す（新しい順）。
 
@@ -95,14 +111,12 @@ def daily_reach(days: int = 7, token: str | None = None) -> list:
         from token_manager import get_access_token
         token = get_access_token()
 
-    slots = list(SLOT_PLAN.keys())
-    expected = len(slots)
+    all_slots = list(SLOT_PLAN.keys())
 
     today = datetime.now(JST).date()
     target_dates = [(today - timedelta(days=i)).isoformat() for i in range(1, days + 1)]
 
-    # 1日10枠×日数 + 余裕
-    posts = fetch_recent_posts(token, limit=min(100, max(30, expected * days + 20)))
+    posts = fetch_recent_posts(token, limit=min(100, max(30, len(all_slots) * days + 20)))
 
     by_date: dict[str, list] = {d: [] for d in target_dates}
     for p in posts:
@@ -113,6 +127,12 @@ def daily_reach(days: int = 7, token: str | None = None) -> list:
     result = []
     for d in target_dates:
         rows = by_date[d]
+        # 期待値はその日の原稿にあるスロット（空配列＝休止は除く）。原稿が無い日は SLOT_PLAN 全枠。
+        # 2026-08-27: SLOT_PLANを10→24枠に拡張したとき、まだ10枠で書かれていた原稿の日が
+        # 10/24＝42%と誤警報になるため。到達率が測るのは「書いた原稿が全部出たか」であって、
+        # 「原稿が書かれたか」は司令室（ops_dashboard）の担当。役割を混ぜない。
+        slots = _slots_for_date(d) or all_slots
+        expected = len(slots)
         assigned, extra = _assign_slots(rows, slots)
         actual = len(assigned)
         result.append({
