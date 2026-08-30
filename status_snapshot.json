@@ -1,30 +1,25 @@
 {
   "account": "コンサル垢",
-  "updated": "2026-08-30 08:04",
+  "updated": "2026-08-31 05:00",
   "todos": [
     {
       "title": "IGストーリー投稿（1〜2分）",
-      "detail": "画像あり → スマホのOneDriveアプリ「IGストーリー投稿」から 2026-08-30.png をアップ",
+      "detail": "画像あり → スマホのOneDriveアプリ「IGストーリー投稿」から 2026-08-31.png をアップ",
       "flag": false
     },
     {
-      "title": "⚠️自動化の失敗対応",
-      "detail": "Claude Codeで「ヘルスチェックが失敗してる、調べて」と伝える",
-      "flag": true
-    },
-    {
-      "title": "⚠️PCの同期遅れ（投稿は正常・追いつくだけ）",
-      "detail": "Claude Codeで「PCをGitHubに同期して」と伝える（GitHubには生成済み・このPCが同期遅れです（投稿は正常。Claude Codeで「PCをGitHubに同期して」と伝えれば追いつきます））",
-      "flag": true
-    },
-    {
       "title": "⚠️今日分の検品でNGあり",
-      "detail": "Claude Codeで「検品NGを見せて」と伝える（NG 7件: 07:30, 08:00, 12:45, 16:45, 18:15, 21:20, 21:40（中身は posts\\quality_gate\\2026-08-30_inspection.json））",
+      "detail": "Claude Codeで「検品NGを見せて」と伝える（NG 12件: 08:00, 10:00, 10:30, 11:00, 12:45, 13:15, 14:30, 15:00, 17:00, 20:00, 21:20, 22:00（中身は posts\\quality_gate\\2026-08-31_inspection.json））",
       "flag": true
     },
     {
-      "title": "【日曜】自動生成されたThreads週次企画を確認（5分）",
-      "detail": "04:06にThreadsプラン(クラウド・フック70本)が自動生成済み → weekly_plan を一瞥。⚠️があれば対応",
+      "title": "⚠️明日分に問題あり（夜までに直せばOK）",
+      "detail": "Claude Codeで「明日分の検品NGを直して」と伝える（昼検品: NG 17件: 06:00, 08:00, 09:00, 10:30, 11:00, 12:00, 13:15, 14:00, 14:30, 16:00, 17:00, 17:30, 18:45, 19:30, 20:00, 21:20, 22:00（中身は posts\\quality_gate\\2026-09-01_inspection.json））",
+      "flag": true
+    },
+    {
+      "title": "【月曜】自動生成されたIGストーリー週次プランを確認（5分）",
+      "detail": "05:10にこのPC(Opus 4.8)がIGストーリー週次プランを自動生成済み → ig_stories\\plan を一瞥。⚠️があれば対応",
       "flag": false
     },
     {
@@ -36,8 +31,8 @@
   "checks": [
     {
       "label": "自動タスク全体",
-      "ok": false,
-      "detail": "最終チェック 2026-08-29 07:16"
+      "ok": true,
+      "detail": "最終チェック 2026-08-31 04:55"
     },
     {
       "label": "実際に投稿されたか（到達率）",
@@ -46,43 +41,43 @@
     },
     {
       "label": "フォロワー記録",
-      "ok": false,
-      "detail": "今日分が未記録"
+      "ok": true,
+      "detail": "908人"
     },
     {
       "label": "インサイト収集",
       "ok": true,
-      "detail": "最新: 2026-08-28"
+      "detail": "最新: 2026-08-29"
     },
     {
       "label": "IGストーリー準備",
       "ok": true,
-      "detail": "画像あり → スマホのOneDriveアプリ「IGストーリー投稿」から 2026-08-30.png をアップ"
+      "detail": "画像あり → スマホのOneDriveアプリ「IGストーリー投稿」から 2026-08-31.png をアップ"
     },
     {
       "label": "今日のThreads投稿",
-      "ok": false,
-      "detail": "GitHubには生成済み・このPCが同期遅れです（投稿は正常。Claude Codeで「PCをGitHubに同期して」と伝えれば追いつきます）"
+      "ok": true,
+      "detail": "posts\\2026-08-31.json（08/30 20:10 push済みの新原稿）"
     },
     {
       "label": "投稿時刻と原稿のスロット一致",
-      "ok": null,
-      "detail": "確認できず（今日の原稿が無い）"
+      "ok": true,
+      "detail": "一致"
     },
     {
       "label": "今日分の検品(Haiku)",
       "ok": false,
-      "detail": "NG 7件: 07:30, 08:00, 12:45, 16:45, 18:15, 21:20, 21:40（中身は posts\\quality_gate\\2026-08-30_inspection.json）"
+      "detail": "NG 12件: 08:00, 10:00, 10:30, 11:00, 12:45, 13:15, 14:30, 15:00, 17:00, 20:00, 21:20, 22:00（中身は posts\\quality_gate\\2026-08-31_inspection.json）"
     },
     {
       "label": "明日分の原稿と昼検品",
-      "ok": null,
-      "detail": "週次プラン待ち（月曜分は当日朝06:30に自動生成）"
+      "ok": false,
+      "detail": "昼検品: NG 17件: 06:00, 08:00, 09:00, 10:30, 11:00, 12:00, 13:15, 14:00, 14:30, 16:00, 17:00, 17:30, 18:45, 19:30, 20:00, 21:20, 22:00（中身は posts\\quality_gate\\2026-09-01_inspection.json）"
     }
   ],
   "metrics": [
     {
-      "value": 0,
+      "value": 908,
       "unit": "人",
       "caption": "フォロワー"
     },
