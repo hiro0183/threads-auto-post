@@ -14,9 +14,10 @@
       "min_sample": 14,
       "judge_on": "2026-09-21",
       "result": {
-        "value": null,
-        "sample": 0,
-        "measured_at": "2026-08-30"
+        "value": -1.2,
+        "sample": 5,
+        "measured_at": "2026-08-31",
+        "vs_baseline": "-80%"
       },
       "verdict": null,
       "note": "最重要。10枠フル稼働が新規流入に効くのか、それとも絡み（人間の仕事）が無いと伸びないのかを切り分ける",
@@ -40,9 +41,10 @@
       "min_sample": 20,
       "judge_on": "2026-09-21",
       "result": {
-        "value": null,
-        "sample": 0,
-        "measured_at": "2026-08-30"
+        "value": 22.22,
+        "sample": 5,
+        "measured_at": "2026-08-31",
+        "vs_baseline": "322%"
       },
       "verdict": null,
       "note": "2026-08-04の「4週間観察」の約束を、ここで正式に開き直す。観察開始は実質2026-08-25から",
@@ -75,14 +77,15 @@
       "min_sample": 20,
       "judge_on": "2026-09-21",
       "result": {
-        "value": null,
-        "sample": 0,
-        "measured_at": "2026-08-30"
+        "value": 10.43,
+        "sample": 24,
+        "measured_at": "2026-08-31",
+        "vs_baseline": "151%"
       },
       "verdict": null,
       "note": "ルール自体の検証。下回るなら「1日最低1本」の必須化を見直す材料にする（改定は月次スキーム見直しで）",
       "due": false,
-      "enough_sample": false
+      "enough_sample": true
     }
   ]
 }
