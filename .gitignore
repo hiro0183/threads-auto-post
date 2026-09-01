@@ -17,3 +17,4 @@ tmp_*.txt
 # 生成物（ページに埋め込むのでリポジトリには保存しない）
 ig_page.html
 ig_stories/out/
+status_page.html
