@@ -1,0 +1,45 @@
+name: 到達率と実測の取り込み
+
+# 【なぜGitHub Actionsなのか】2026-09-02新設
+# 従来はクラウドルーティン「到達率チェック」（毎朝07:30 JST）が ingest_render.py を
+# 実行していたが、2026-08-28頃からその実行環境のネットワークポリシーが Render への
+# 接続を 403（policy denial）で拒否するようになり、reach_status.json が 8/28 08:18 で
+# 止まっていた。監視が「実物を見る」目的で作られたのに、実物を取りに行けない状態。
+#
+# GitHub Actions のランナーは Render へ普通に接続できるので、取り込みだけをここへ移した。
+# 07:30 のルーティンは「取り込む係」から「読んで判断し知らせる係」になる。
+# PCの電源も、クラウドの通信ポリシーも関係なくなる。
+
+on:
+  schedule:
+    - cron: '20 21 * * *'   # 毎日 06:20 JST（07:30のルーティンより前に置く）
+  workflow_dispatch:         # 手動実行も可能
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # ingest_render.py は標準ライブラリだけで動く（pip install 不要）
+      - name: Renderから到達率と実測を取り込む
+        run: python ingest_render.py
+
+      - name: 差分があればコミットする
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git add reach_status.json sync/
+          if git diff --staged --quiet; then
+            echo "変更なし（すでに最新）"
+          else
+            git commit -m "到達率と実測の取り込み: $(TZ='Asia/Tokyo' date +%Y-%m-%d) [skip ci]"
+            git pull --rebase -X ours
+            git push
+          fi
