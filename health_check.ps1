@@ -27,10 +27,13 @@ $weeklyTasks = @("Threads_WeeklyReport", "Threads_WeeklySession", "Threads_Monda
 # 無効でも⏸表示にして総合判定から除外する（⛔❌にしない）
 # 2026-07-28追加: 検品2本もクラウド12:00便（Sonnet）と二重で、しかも弱いモデル(Haiku)の
 # 判定でクラウドの結果ファイルを上書きしていたため停止。誤報の発生源だった
+# 2026-09-03追加: Rapport_StoryWeekly は 2026-09-02 にクラウドルーティン（月曜04:30 JST）へ移設済み。
+# 20分上限で強制終了(0x41306)した古い結果が残り、毎朝の総合判定を[NG]にし続けていたため除外
 $backupTasks = @(
     "Threads_DailyPlanPipeline",
     "Threads_MorningInspection",
-    "Threads_NoonInspection"
+    "Threads_NoonInspection",
+    "Rapport_StoryWeekly"
 )
 
 $outFile = "C:\Users\tujid\OneDrive\Desktop\HIRAYASU\コンサルThreads\インサイト\_自動実行ヘルスチェック.md"

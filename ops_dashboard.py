@@ -838,6 +838,10 @@ def push_snapshot():
             return
         subprocess.run(["git", "commit", "-m", "運用司令室スナップショット自動更新", "--quiet"],
                        cwd=BASE_DIR, capture_output=True, timeout=15)
+        # クラウドが毎日commitするrepoなので、pushの前に必ず取り込む（2026-09-03: 2コミット遅れでpushが毎回失敗し、
+        # 「原稿が古い/未push」の誤報と司令室の鮮度停止を起こしていた）
+        subprocess.run(["git", "pull", "--rebase", "origin", "master"], cwd=BASE_DIR, capture_output=True,
+                       timeout=60, text=True)
         push = subprocess.run(["git", "push", "origin", "master"], cwd=BASE_DIR, capture_output=True,
                               timeout=45, text=True)
         if push.returncode == 0:
