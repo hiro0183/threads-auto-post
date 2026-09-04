@@ -23,6 +23,8 @@ JST = timezone(timedelta(hours=9))
 SYNC_FILES = [
     (BASE_DIR / "post_log.jsonl", "sync/post_log.jsonl"),
     (BASE_DIR / "insights_data.jsonl", "sync/insights_data.jsonl"),
+    (BASE_DIR / "replies_collected.jsonl", "sync/replies_collected.jsonl"),
+    (BASE_DIR / "reply_stats.jsonl", "sync/reply_stats.jsonl"),
     # フォロワー推移（2026-07-23追加）。クラウド週次レポートが sync/ 経由で読む
     (BASE_DIR / "follower_log.jsonl", "sync/follower_log.jsonl"),
 ]

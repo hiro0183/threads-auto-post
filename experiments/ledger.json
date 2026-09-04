@@ -14,10 +14,10 @@
       "min_sample": 14,
       "judge_on": "2026-09-21",
       "result": {
-        "value": -1.2,
-        "sample": 5,
-        "measured_at": "2026-08-31",
-        "vs_baseline": "-80%"
+        "value": -0.7,
+        "sample": 9,
+        "measured_at": "2026-09-04",
+        "vs_baseline": "-47%"
       },
       "verdict": null,
       "note": "最重要。10枠フル稼働が新規流入に効くのか、それとも絡み（人間の仕事）が無いと伸びないのかを切り分ける",
@@ -32,7 +32,7 @@
       "action": "11:00の信頼枠にAI切り口を1日1本置く（2026-08-04にヒロさん指示で導入・未検証のまま3週間経過）",
       "metric": "engagement_rate",
       "baseline": 6.9,
-      "baseline_note": "直近30日の全投稿ER中央値6.90%（n=82）。導入時に参照した7.96%は旧期間の平均値",
+      "baseline_note": "直近30日の全投稿ER中央値6.90%（n=82）。導入時に参照した7.96%は旧期間の平均値　⚠️2026-09-04: この baseline 6.9% は旧エンゲージ率（自分のツリー返信を含む式）で出した値のため無効。修正後の実測は合計ベースで全期間0.07%・直近0.24%。judge_on までに baseline を引き直すこと。result の値も旧式なので比較に使わない。",
       "filter": {
         "slots": [
           "11:00"
@@ -42,14 +42,15 @@
       "judge_on": "2026-09-21",
       "result": {
         "value": 22.22,
-        "sample": 5,
-        "measured_at": "2026-08-31",
+        "sample": 9,
+        "measured_at": "2026-09-04",
         "vs_baseline": "322%"
       },
       "verdict": null,
       "note": "2026-08-04の「4週間観察」の約束を、ここで正式に開き直す。観察開始は実質2026-08-25から",
       "due": false,
-      "enough_sample": false
+      "enough_sample": false,
+      "baseline_invalid": true
     },
     {
       "id": "W35-03",
@@ -59,7 +60,7 @@
       "action": "hook_rules.mdの「1日に最低1本は数字型」ルールを維持し、実測で妥当性を検証する",
       "metric": "engagement_rate",
       "baseline": 6.9,
-      "baseline_note": "直近30日の全投稿ER中央値6.90%（n=82）",
+      "baseline_note": "直近30日の全投稿ER中央値6.90%（n=82）　⚠️2026-09-04: この baseline 6.9% は旧エンゲージ率（自分のツリー返信を含む式）で出した値のため無効。修正後の実測は合計ベースで全期間0.07%・直近0.24%。judge_on までに baseline を引き直すこと。result の値も旧式なので比較に使わない。",
       "filter": {
         "keywords": [
           "8,500",
@@ -77,15 +78,16 @@
       "min_sample": 20,
       "judge_on": "2026-09-21",
       "result": {
-        "value": 10.43,
-        "sample": 24,
-        "measured_at": "2026-08-31",
-        "vs_baseline": "151%"
+        "value": 10.0,
+        "sample": 43,
+        "measured_at": "2026-09-04",
+        "vs_baseline": "145%"
       },
       "verdict": null,
       "note": "ルール自体の検証。下回るなら「1日最低1本」の必須化を見直す材料にする（改定は月次スキーム見直しで）",
       "due": false,
-      "enough_sample": true
+      "enough_sample": true,
+      "baseline_invalid": true
     }
   ]
 }

@@ -186,6 +186,20 @@ def collect_insights_job():
         logger.error(f"[INSIGHTS] 集計失敗: {e}", exc_info=True)
 
 
+def collect_replies_job():
+    """毎朝6:20 — 読者からの返信を集める（2026-09-04新設）
+
+    Threads APIの replies には自分のツリー2〜3投稿目が含まれるため、
+    own/reader を分けて記録する。読者の生の言葉は投稿リサーチの材料になる。
+    """
+    logger.info("[REPLIES] 読者返信の収集開始")
+    try:
+        import collect_replies
+        collect_replies.collect(days=3)
+    except Exception as e:
+        logger.error(f"[REPLIES] 収集失敗: {e}", exc_info=True)
+
+
 def track_followers_job():
     """毎朝6:10 — フォロワー数を記録（2026-07-23にローカルPCから移管）"""
     logger.info("[FOLLOWERS] フォロワー数の記録開始")
@@ -265,6 +279,18 @@ def start_scheduler():
         collect_insights_job,
         CronTrigger(hour=6, minute=5, timezone=JST),
         id="collect_insights",
+        misfire_grace_time=300,
+        coalesce=True,
+        max_instances=1,
+    )
+
+    # 読者返信の収集（毎朝6:20・2026-09-04新設）
+    # get_replies() は前からあったのに一度も呼ばれていなかった。
+    # 読者の生の言葉＝投稿リサーチの材料を毎日ためる。
+    scheduler.add_job(
+        collect_replies_job,
+        CronTrigger(hour=6, minute=20, timezone=JST),
+        id="collect_replies",
         misfire_grace_time=300,
         coalesce=True,
         max_instances=1,

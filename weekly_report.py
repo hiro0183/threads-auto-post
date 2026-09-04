@@ -299,13 +299,49 @@ def five_state(value: float, baseline_median: float) -> str:
     return f"バースト圏（{ratio:.2f}倍）"
 
 
+def own_replies(r: dict) -> int:
+    """自分がツリーとしてぶら下げた投稿の数（＝2投稿目以降）。
+
+    Threads APIが返す replies には、自分のツリー2〜3投稿目が含まれる。
+    2026-09-04の実測では views>=10 の3,440件のうち99%で
+    replies == len(posts)-1、つまり返信の中身は全部自作自演だった。
+    """
+    n = len(r.get("posts") or [])
+    return max(0, n - 1)
+
+
 def engagement_rate(r: dict):
-    """1投稿のエンゲージ率(%) = (いいね+リプ+リポスト+引用) / views * 100"""
+    """1投稿のエンゲージ率(%) = (いいね+読者リプ+リポスト+引用) / views * 100
+
+    2026-09-04修正: 自分のツリー投稿を反応から除く。
+    修正前は「返信2件」が全投稿に固定で乗るため、viewsが減るほどERが上がるという
+    逆向きの指標になっていた（実測: views中央値 3月65→9月12 と落ちる間に、
+    旧ERは 1.53%→16.67% と上がって見えていた）。
+    """
     v = r.get("views") or 0
     if not v:
         return None
-    eng = sum(r.get(k) or 0 for k in ("likes", "replies", "reposts", "quotes"))
+    reader_replies = max(0, (r.get("replies") or 0) - own_replies(r))
+    eng = (r.get("likes") or 0) + reader_replies + (r.get("reposts") or 0) + (r.get("quotes") or 0)
     return eng / v * 100
+
+
+def reader_engagement(r: dict) -> int:
+    """読者からの反応の実数（いいね＋読者リプ＋リポスト＋引用）。自分のツリー返信は除く。"""
+    reader_replies = max(0, (r.get("replies") or 0) - own_replies(r))
+    return (r.get("likes") or 0) + reader_replies + (r.get("reposts") or 0) + (r.get("quotes") or 0)
+
+
+def aggregate_engagement(rows: list) -> float:
+    """合計ベースのエンゲージ率(%) = 総反応 / 総views * 100
+
+    2026-09-04新設。1投稿あたりの中央値は0%に張り付くため（直近のいいね0率は91%）、
+    週の実力は合計で見る。実測: 2026-03〜09を通じて 0.06〜0.26% でほぼ横ばい。
+    """
+    v = sum(r.get("views") or 0 for r in rows)
+    if not v:
+        return 0.0
+    return sum(reader_engagement(r) for r in rows) / v * 100
 
 
 def load_reach_status() -> dict:
@@ -369,10 +405,16 @@ def build_kpi_block(last_week_rows: list, all_rows: list, last_start, last_end) 
     ers = [x for x in (engagement_rate(r) for r in last_week_rows) if x is not None]
     all_ers = [x for x in (engagement_rate(r) for r in all_rows) if x is not None]
     if ers:
-        L.append(f"| **エンゲージ率**（中央値） | {median(ers):.2f}% | 全期間 {median(all_ers):.2f}%。"
-                 "viewsより先にこちらを見る（閲覧が増えても反応が薄い型がある） |")
+        # 2026-09-04: 中央値は全投稿0%に張り付いて指標にならないため、合計ベース（総反応÷総views）を正にした。
+        lw_rate = aggregate_engagement(last_week_rows)
+        all_rate = aggregate_engagement(all_rows)
+        lw_eng = sum(reader_engagement(r) for r in last_week_rows)
+        lw_views = sum(r.get("views") or 0 for r in last_week_rows)
+        L.append(f"| **エンゲージ率**（総反応÷総views・自分のツリー返信を除く） | {lw_rate:.2f}%"
+                 f"（反応{lw_eng}件 / {lw_views:,}views） | 全期間 {all_rate:.2f}%。"
+                 "2026-09-04以前の数値は自分のツリー返信を含んでおり比較不可 |")
     else:
-        L.append("| **エンゲージ率**（中央値） | データなし | — |")
+        L.append("| **エンゲージ率** | データなし | — |")
 
     d, s, e = follower_delta(last_start, last_end)
     if d is None:
