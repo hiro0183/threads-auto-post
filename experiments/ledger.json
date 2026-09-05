@@ -14,10 +14,10 @@
       "min_sample": 14,
       "judge_on": "2026-09-21",
       "result": {
-        "value": -0.7,
-        "sample": 9,
-        "measured_at": "2026-09-04",
-        "vs_baseline": "-47%"
+        "value": 0.0,
+        "sample": 2,
+        "measured_at": "2026-09-06",
+        "vs_baseline": "0%"
       },
       "verdict": null,
       "note": "最重要。10枠フル稼働が新規流入に効くのか、それとも絡み（人間の仕事）が無いと伸びないのかを切り分ける",
@@ -42,8 +42,8 @@
       "judge_on": "2026-09-21",
       "result": {
         "value": 22.22,
-        "sample": 9,
-        "measured_at": "2026-09-04",
+        "sample": 6,
+        "measured_at": "2026-09-06",
         "vs_baseline": "322%"
       },
       "verdict": null,
@@ -79,8 +79,8 @@
       "judge_on": "2026-09-21",
       "result": {
         "value": 10.0,
-        "sample": 43,
-        "measured_at": "2026-09-04",
+        "sample": 37,
+        "measured_at": "2026-09-06",
         "vs_baseline": "145%"
       },
       "verdict": null,
