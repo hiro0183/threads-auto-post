@@ -1,15 +1,10 @@
 {
   "account": "コンサル垢",
-  "updated": "2026-09-05 05:00",
+  "updated": "2026-09-07 06:17",
   "todos": [
     {
       "title": "IGストーリー投稿（1〜2分）",
-      "detail": "画像あり → スマホのOneDriveアプリ「IGストーリー投稿」から 2026-09-05.png をアップ",
-      "flag": false
-    },
-    {
-      "title": "今日分プレビュー確認（1分）",
-      "detail": "コンサル投稿確認\\2026-09-05.txt（昨日の昼検品時に生成・品質ゲート⚠️だけ注意）",
+      "detail": "今日のプランなし（月曜のFable5セッションで作成）",
       "flag": false
     },
     {
@@ -18,9 +13,14 @@
       "flag": true
     },
     {
-      "title": "⚠️Threads原稿の鮮度異常",
-      "detail": "Claude Codeで「今日の投稿が古い/未pushと出てる、調べて」と伝える（古い原稿（09/03コミットのまま・週次プランが反映されていない））",
+      "title": "⚠️PCの同期遅れ（投稿は正常・追いつくだけ）",
+      "detail": "Claude Codeで「PCをGitHubに同期して」と伝える（GitHubには生成済み・このPCが同期遅れです（投稿は正常。Claude Codeで「PCをGitHubに同期して」と伝えれば追いつきます））",
       "flag": true
+    },
+    {
+      "title": "【月曜】自動生成されたIGストーリー週次プランを確認（5分）",
+      "detail": "05:10にこのPC(Opus 4.8)がIGストーリー週次プランを自動生成済み → ig_stories\\plan を一瞥。⚠️があれば対応",
+      "flag": false
     },
     {
       "title": "⚠️LINE流入の記入待ち（2026-06-29週）",
@@ -37,47 +37,47 @@
     {
       "label": "実際に投稿されたか（到達率）",
       "ok": true,
-      "detail": "前日 2026-09-03 は 24/24枠すべて投稿（更新 2026-09-04 08:20）"
+      "detail": "前日 2026-09-04 は 24/24枠すべて投稿（更新 2026-09-05 08:05）"
     },
     {
       "label": "フォロワー記録",
-      "ok": true,
-      "detail": "909人"
+      "ok": false,
+      "detail": "今日分が未記録"
     },
     {
       "label": "インサイト収集",
-      "ok": true,
+      "ok": false,
       "detail": "最新: 2026-09-03"
     },
     {
       "label": "IGストーリー準備",
-      "ok": true,
-      "detail": "画像あり → スマホのOneDriveアプリ「IGストーリー投稿」から 2026-09-05.png をアップ"
+      "ok": false,
+      "detail": "今日のプランなし（月曜のFable5セッションで作成）"
     },
     {
       "label": "今日のThreads投稿",
       "ok": false,
-      "detail": "古い原稿（09/03コミットのまま・週次プランが反映されていない）"
+      "detail": "GitHubには生成済み・このPCが同期遅れです（投稿は正常。Claude Codeで「PCをGitHubに同期して」と伝えれば追いつきます）"
     },
     {
       "label": "投稿時刻と原稿のスロット一致",
-      "ok": true,
-      "detail": "一致"
+      "ok": null,
+      "detail": "確認できず（今日の原稿が無い）"
     },
     {
       "label": "今日分の検品(Haiku)",
-      "ok": true,
-      "detail": "全24スロット合格"
+      "ok": null,
+      "detail": "未実施（毎朝04:45に自動実行）"
     },
     {
       "label": "明日分の原稿と昼検品",
-      "ok": true,
-      "detail": "昼検品: 全24スロット合格"
+      "ok": null,
+      "detail": "週次プラン待ち（月曜分は当日朝06:30に自動生成）"
     }
   ],
   "metrics": [
     {
-      "value": 909,
+      "value": 0,
       "unit": "人",
       "caption": "フォロワー"
     },
