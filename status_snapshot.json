@@ -1,16 +1,11 @@
 {
   "account": "コンサル垢",
-  "updated": "2026-09-07 06:31",
+  "updated": "2026-09-07 06:36",
   "todos": [
     {
       "title": "IGストーリー投稿（1〜2分）",
       "detail": "プランはあるが画像未生成（IG_StoryRenderタスクを確認）",
       "flag": false
-    },
-    {
-      "title": "⚠️自動化の失敗対応",
-      "detail": "Claude Codeで「ヘルスチェックが失敗してる、調べて」と伝える",
-      "flag": true
     },
     {
       "title": "⚠️今日分の検品でNGあり",
@@ -36,8 +31,8 @@
   "checks": [
     {
       "label": "自動タスク全体",
-      "ok": false,
-      "detail": "最終チェック 2026-09-07 06:30"
+      "ok": true,
+      "detail": "最終チェック 2026-09-07 06:35"
     },
     {
       "label": "実際に投稿されたか（到達率）",
