@@ -26,7 +26,7 @@ BASE_DIR = Path(__file__).parent
 POSTS_DIR = BASE_DIR / "posts"
 PROMPTS_DIR = BASE_DIR / "prompts"
 WEEKLY_PLAN_DIR = POSTS_DIR / "weekly_plan"
-MAX_CTA_PER_DAY = 1  # 2026-09-11: taboo.md #5 改定（2〜3本→1本・なりあいさん決定）
+MAX_CTA_PER_DAY = 3
 
 NUMBER_RE = re.compile(r"\d+(?:,\d{3})*(?:\.\d+)?")
 # 「1回」「3つ」のような素朴な計数語は対象外。金額・割合・実績を示す単位が付く数字のみをチェック対象にする

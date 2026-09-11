@@ -1,0 +1,197 @@
+{
+  "date": "2026-09-12",
+  "entries": [
+    {
+      "slot": "06:00",
+      "layer": "拡散",
+      "type": "N選",
+      "hook": "停滞を生む、3つの「ずれ」があります",
+      "source": "stories A-7 3つのずれ",
+      "cta": false
+    },
+    {
+      "slot": "07:30",
+      "layer": "拡散",
+      "type": "金額",
+      "hook": "60分5,000円でなく、20分35,000円を選ぶ院があります",
+      "source": "stories B 未来を売る／C 20分",
+      "cta": false
+    },
+    {
+      "slot": "08:00",
+      "layer": "拡散",
+      "type": "N選",
+      "hook": "信頼が抜けている院に共通する、3つのサイン",
+      "source": "集客の仕組み化 Slide7",
+      "cta": false
+    },
+    {
+      "slot": "09:00",
+      "layer": "拡散",
+      "type": "N選",
+      "hook": "単価は役割・変化・希少性、3つの掛け算です",
+      "source": "stories A-7 単価の方程式",
+      "cta": false
+    },
+    {
+      "slot": "12:00",
+      "layer": "拡散",
+      "type": "N選",
+      "hook": "売れている院ほど、抜けているのは同じ3つです",
+      "source": "Slide9 切れている層を直す／読者定義(2026-08-31)に合わせて再作成",
+      "cta": false
+    },
+    {
+      "slot": "16:30",
+      "layer": "拡散",
+      "type": "金額",
+      "hook": "院長、孫と走りたいという未来に35,000円が払われました",
+      "source": "stories B おばあちゃんの言葉",
+      "cta": false
+    },
+    {
+      "slot": "20:40",
+      "layer": "拡散",
+      "type": "期間",
+      "hook": "3ヶ月で新しい患者様が増えた院の、入口の数",
+      "source": "Slide6 入口を1つ続ける",
+      "cta": false
+    },
+    {
+      "slot": "10:00",
+      "layer": "信頼",
+      "type": "期間",
+      "hook": "売上が下がった原因を書き出すのに、1日かかることがあります",
+      "source": "stories A-7 全部書き出す",
+      "cta": false
+    },
+    {
+      "slot": "10:30",
+      "layer": "信頼",
+      "type": "金額",
+      "hook": "3ヶ月で250万が320万になった院の共通点",
+      "source": "persona クライアント実績／Slide13",
+      "cta": false
+    },
+    {
+      "slot": "11:00",
+      "layer": "信頼",
+      "type": "N選",
+      "hook": "整体・エステ・食事管理・ピラティス、4つを網羅した美容整体があります",
+      "source": "stories A-7 希少性の実体",
+      "cta": false
+    },
+    {
+      "slot": "12:45",
+      "layer": "信頼",
+      "type": "N選",
+      "hook": "カウンセリングで信頼が貯まる、3つの見せ方",
+      "source": "Slide7 信頼を貯める",
+      "cta": false
+    },
+    {
+      "slot": "13:15",
+      "layer": "信頼",
+      "type": "期間",
+      "hook": "院長、1日15分の差は365日で37.8倍になります",
+      "source": "stories A-8 1%の複利",
+      "cta": false
+    },
+    {
+      "slot": "14:00",
+      "layer": "信頼",
+      "type": "N選",
+      "hook": "初回・2回目・3回目、信頼が抜ける瞬間は3つです",
+      "source": "Slide7",
+      "cta": false
+    },
+    {
+      "slot": "14:30",
+      "layer": "信頼",
+      "type": "期間",
+      "hook": "半年、同じ入口を続けた院に新しい患者様が増えました",
+      "source": "Slide6 入口を1つ続ける・三人称",
+      "cta": false
+    },
+    {
+      "slot": "15:00",
+      "layer": "信頼",
+      "type": "期間",
+      "hook": "半年で予約表が変わった院は、信頼の見せ方を変えています",
+      "source": "Slide7 三人称",
+      "cta": false
+    },
+    {
+      "slot": "16:00",
+      "layer": "信頼",
+      "type": "N選",
+      "hook": "単価・役割・時間の使い方、崩れやすいのはこの3つです",
+      "source": "stories A-7 3つのずれ",
+      "cta": false
+    },
+    {
+      "slot": "17:00",
+      "layer": "信頼",
+      "type": "N選",
+      "hook": "患者様の信頼を貯める発信は、3つあります",
+      "source": "Slide7 発信・実績・継続接触",
+      "cta": false
+    },
+    {
+      "slot": "19:30",
+      "layer": "信頼",
+      "type": "期間",
+      "hook": "未来の時間を買おうとして1年1ヶ月、売上が一度下がりました",
+      "source": "stories A-7 時間の使い方のずれ",
+      "cta": false
+    },
+    {
+      "slot": "17:30",
+      "layer": "会話",
+      "type": "あり方",
+      "hook": "時間には、重要度と緊急度で分かれる4つの領域があります",
+      "source": "stories A-8 時間のマトリックス",
+      "cta": false
+    },
+    {
+      "slot": "18:15",
+      "layer": "会話",
+      "type": "あり方",
+      "hook": "月に何度も、院長は時間の4つの領域を見直しています",
+      "source": "stories A-8 本人の習慣",
+      "cta": false
+    },
+    {
+      "slot": "18:45",
+      "layer": "会話",
+      "type": "あり方",
+      "hook": "院長、客単価より先に、選ぶ理由が要ります",
+      "source": "Slide7",
+      "cta": false
+    },
+    {
+      "slot": "20:00",
+      "layer": "会話",
+      "type": "あり方",
+      "hook": "停滞から立て直すまで、1日がかりの書き出しから始まりました",
+      "source": "stories A-7",
+      "cta": false
+    },
+    {
+      "slot": "21:20",
+      "layer": "会話",
+      "type": "あり方",
+      "hook": "売上が一度下がっても、300万は割りませんでした",
+      "source": "stories A-7／persona 300を切ったことがない",
+      "cta": false
+    },
+    {
+      "slot": "22:00",
+      "layer": "導線",
+      "type": "金額",
+      "hook": "300万を割らない院にも、売上が沈む日があります",
+      "source": "stories A-7＋CTA",
+      "cta": true
+    }
+  ]
+}
