@@ -12,6 +12,7 @@
 import json
 import re
 import sys
+from collections import Counter
 from pathlib import Path
 
 BASE = Path(__file__).resolve().parent
@@ -49,6 +50,58 @@ def _floor(ratio: float, n: int) -> int:
 HOOK_MIN_LEN = 10
 HOOK_MAX_LEN = 35
 
+# 2026-09-13追加: 自院の商品価格として使ってよい金額は persona.md の3つだけ。
+# 背景: 2026-09-14週の168フックに「初回価格6,000円」「10,000円台のコース」「7,000円台の
+# 本命コース」「客単価12,000円」が混在していた。どれも本人確認を経ていない架空の価格で、
+# しかも枠ごとに額が食い違っていた（同じ「16:00」が日によって6,000円・7,000円・10,000円）。
+# 原因は金額フックの下限が30%（24枠なら7本）あるのに、承認済みの金額が数えるほどしかなく、
+# 足りない分を生成側が創作していたこと。基準値（広告費・固定費・家賃などの一般的な水準）は
+# hook_rules.md が推奨しているので落とさず、「自院の商品価格」を名指しする言い回しだけを見る。
+OWN_PRICE_CONTEXT = r"(コース|本命|初回価格|価格は|単価|料金|回数券|メニュー)"
+APPROVED_PRICES = ("300円", "15,000円", "35,000円", "5,000円")
+
+
+def check_own_price(hooks) -> list:
+    """自院の商品価格として、persona.md にない金額を名乗っていないか"""
+    ng = []
+    money = re.compile(r"[0-9０-９][0-9０-９,，]*\s*円(台)?")
+    ctx = re.compile(OWN_PRICE_CONTEXT)
+    for s, h, _ in hooks:
+        for m in money.finditer(h):
+            amount = m.group(0).replace("台", "")
+            if amount in APPROVED_PRICES:
+                continue
+            # 金額の前後12字に「コース」「単価」等があれば自院の商品価格とみなす
+            around = h[max(0, m.start() - 12): m.end() + 12]
+            if ctx.search(around):
+                ng.append(f"  ✗ 未承認の自院価格 {s}: 「{m.group(0)}」（persona.mdの承認額は"
+                          f"{'/'.join(APPROVED_PRICES)}のみ）→ {h}")
+    return ng
+
+
+def check_slot_lock(days: dict) -> list:
+    """同じスロットが週をまたいで同じ言い回しに固着していないか（2026-09-13追加）。
+
+    2026-09-12の週次プラン検品で「19:30が6/7日『あなたの…』開始」が見つかり、直したはずが
+    2026-09-14週では18:45が7/7日「〜派、〜派、あなたはどちら」で完全に固着していた。
+    人が毎回読まないと気づけないので機械で数える。CTA枠(22:00)は締めをそろえてよいので除く。
+    """
+    ng = []
+    byslot = {}
+    for d, entries in days.items():
+        for e in entries:
+            byslot.setdefault(e.get("slot"), []).append(e.get("hook") or "")
+    for slot, hooks in sorted(byslot.items()):
+        if slot == "22:00" or len(hooks) < 3:
+            continue
+        c = Counter(h[-6:] for h in hooks if len(h) >= 6)
+        if not c:
+            continue
+        tail, n = c.most_common(1)[0]
+        if n >= 3:
+            ng.append(f"  ✗ 同一スロットの固着 {slot}: 末尾「{tail}」が{n}/{len(hooks)}日")
+    return ng
+
 
 def check_day(date: str, entries: list) -> list:
     """1日分のフックを検査して違反メッセージのリストを返す"""
@@ -79,6 +132,7 @@ def check_day(date: str, entries: list) -> list:
             ng.append(f"  ✗ 字数超過 {s}: {len(h)}字（上限{HOOK_MAX_LEN}字）→ {h[:40]}")
         elif len(h) < HOOK_MIN_LEN:
             ng.append(f"  ✗ 字数不足 {s}: {len(h)}字（下限{HOOK_MIN_LEN}字）→ {h}")
+    ng += check_own_price(hooks)
     return ng
 
 
@@ -99,6 +153,11 @@ def main():
                 print("\n".join(ng))
             else:
                 print(f"{date} OK")
+        lock = check_slot_lock(plan.get("days") or {})
+        if lock:
+            bad += 1
+            print("週全体 NG")
+            print(chr(10).join(lock))
     if bad:
         print(f"\n{bad}日分が下限表を満たしていません（hook_rules.md 最優先原則0）")
     return 1 if bad else 0

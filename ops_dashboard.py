@@ -258,6 +258,16 @@ def inspection_status(date_str: str):
 
     ng = [slot for slot, r in sorted(slots.items()) if not r.get("ok")]
     if ng:
+        # 2026-09-13追加: 検品のあとに原稿を直したなら、この結果はもう古い。
+        # 2026-09-12にNG15件を全部直してpushしたのに、翌朝の司令室が同じ15件を赤で出し続けていた
+        # （司令室は結果ファイルだけを見て、そのあと原稿が直ったかどうかを見ていなかった）。
+        # 「直した＝緑」と勝手に判断はしない。⚠️で「再検品待ち」と出し、人の目を残す。
+        insp_ts = _git_commit_ts(f"posts/quality_gate/{date_str}_inspection.json") or int(f.stat().st_mtime)
+        posts_ts = _git_commit_ts(f"posts/{date_str}.json")
+        if posts_ts and posts_ts > insp_ts:
+            fixed = datetime.fromtimestamp(posts_ts).strftime("%m/%d %H:%M")
+            return (None, f"検品のNG {len(ng)}件は {fixed} の原稿修正より前の結果です"
+                          f"（修正後の再検品がまだです・中身は posts/quality_gate/{date_str}_inspection.json）")
         detail = f"NG {len(ng)}件: {', '.join(ng)}（中身は posts\\quality_gate\\{date_str}_inspection.json）"
         if errored:
             detail += f" ※うち{len(errored)}件は検品自体の実行エラー"
