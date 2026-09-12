@@ -116,7 +116,14 @@ def daily_reach(days: int = 7, token: str | None = None) -> list:
     today = datetime.now(JST).date()
     target_dates = [(today - timedelta(days=i)).isoformat() for i in range(1, days + 1)]
 
-    posts = fetch_recent_posts(token, limit=min(100, max(30, len(all_slots) * days + 20)))
+    # 2026-09-12修正: ここは以前 min(100, ...) で頭打ちになっていた。
+    # 24枠/日になった今、100件は約4日分しか遡れず、5日以上前は必ず「投稿ゼロ＝到達率0%」
+    # と出る。実際に2026-09-05・09-06が0.0%、09-07が13%と記録され、週次レポートの
+    # 到達率が58.8%（誤報）になった。insights_data.jsonl では両日とも24件出ている。
+    # 週次企画ルーティンは「到達率100%未満なら中身より先に配管の異常を書く」ため、
+    # この誤報は毎週まちがった最優先指示を生む。fetch_recent_posts はページングするので
+    # 上限を外してよい（7日×24枠なら2ページ）。
+    posts = fetch_recent_posts(token, limit=max(30, len(all_slots) * days + 20))
 
     by_date: dict[str, list] = {d: [] for d in target_dates}
     for p in posts:

@@ -14,15 +14,15 @@
       "min_sample": 14,
       "judge_on": "2026-09-21",
       "result": {
-        "value": 0.5,
-        "sample": 11,
-        "measured_at": "2026-09-08",
-        "vs_baseline": "33%"
+        "value": 0.8,
+        "sample": 14,
+        "measured_at": "2026-09-12",
+        "vs_baseline": "53%"
       },
       "verdict": null,
       "note": "最重要。10枠フル稼働が新規流入に効くのか、それとも絡み（人間の仕事）が無いと伸びないのかを切り分ける",
       "due": false,
-      "enough_sample": false
+      "enough_sample": true
     },
     {
       "id": "W35-02",
@@ -41,10 +41,10 @@
       "min_sample": 20,
       "judge_on": "2026-09-21",
       "result": {
-        "value": 21.11,
-        "sample": 12,
-        "measured_at": "2026-09-08",
-        "vs_baseline": "306%"
+        "value": 22.22,
+        "sample": 16,
+        "measured_at": "2026-09-12",
+        "vs_baseline": "322%"
       },
       "verdict": null,
       "note": "2026-08-04の「4週間観察」の約束を、ここで正式に開き直す。観察開始は実質2026-08-25から",
@@ -79,8 +79,8 @@
       "judge_on": "2026-09-21",
       "result": {
         "value": 12.5,
-        "sample": 78,
-        "measured_at": "2026-09-08",
+        "sample": 116,
+        "measured_at": "2026-09-12",
         "vs_baseline": "181%"
       },
       "verdict": null,
