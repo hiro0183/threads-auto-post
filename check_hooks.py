@@ -45,6 +45,11 @@ def _floor(ratio: float, n: int) -> int:
     return max(1, round(ratio * n))
 
 
+# フックの字数（hook_rules.md / weekly_plan_routine.md「10〜25字・最大35字」）
+HOOK_MIN_LEN = 10
+HOOK_MAX_LEN = 35
+
+
 def check_day(date: str, entries: list) -> list:
     """1日分のフックを検査して違反メッセージのリストを返す"""
     ng = []
@@ -66,6 +71,14 @@ def check_day(date: str, entries: list) -> list:
         for name, pat in DIFFUSION_BAN.items():
             if re.search(pat, h):
                 ng.append(f"  ✗ 拡散枠 {s} に「{name}」: {h[:30]}")
+    # 2026-09-12追加: フックの字数。hook_rules/weekly_plan_routine は「10〜25字・最大35字」と
+    # 定めているのに、この検査は型の本数だけを見ていて字数を一度も数えていなかった。
+    # 実際に 2026-09-13 の原稿で 46字（18:15）と 36字（16:30）が検査を通り抜けていた。
+    for s, h, _ in hooks:
+        if len(h) > HOOK_MAX_LEN:
+            ng.append(f"  ✗ 字数超過 {s}: {len(h)}字（上限{HOOK_MAX_LEN}字）→ {h[:40]}")
+        elif len(h) < HOOK_MIN_LEN:
+            ng.append(f"  ✗ 字数不足 {s}: {len(h)}字（下限{HOOK_MIN_LEN}字）→ {h}")
     return ng
 
 
