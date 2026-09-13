@@ -41,7 +41,13 @@ INSIGHTS_DATA_FILE = _data_file("insights_data.jsonl")
 POST_LOG_FILE = _data_file("post_log.jsonl")
 FOLLOWER_LOG_FILE = _data_file("follower_log.jsonl")
 OBSIDIAN_REPORT_DIR = Path(r"C:\Users\tujid\OneDrive\Desktop\HIRAYASU\コンサルThreads\インサイト\週次レポート")
-LINE_MANUAL_FILE = OBSIDIAN_REPORT_DIR / "_LINE流入_手動記入.jsonl"
+# 2026-09-13: LINE流入の手動記入先を OneDrive → repo内 state/ へ移設。
+#   理由: ①クラウドルーティン（週次企画）はOneDriveを読めず、6月以降ずっと「未記入」のまま誰も見ていなかった
+#         ②導線の実体はエルメではなくUTAGE（LINE計測リンク mtid=uVqmOIrsLg8j）なので、記入の案内文も直した
+#   旧ファイル（OneDrive）は読み込み時にマージするので、過去の記入は失わない。
+LINE_MANUAL_FILE = BASE_DIR / "state" / "line_inflow_manual.jsonl"
+LINE_MANUAL_FILE_LEGACY = OBSIDIAN_REPORT_DIR / "_LINE流入_手動記入.jsonl"
+LINE_MANUAL_NOTE = "UTAGE→流入経路（mtid=uVqmOIrsLg8j）の当週のLINE登録数を line_additions に記入。Claudeに『8/31週 3人』と言えば代筆します"
 
 JST = timezone(timedelta(hours=9))
 
@@ -221,17 +227,19 @@ def build_cta_table(rows: list) -> list:
 
 def load_line_manual() -> dict:
     """週ごとのLINE流入手動記入（週開始日=key）"""
-    if not LINE_MANUAL_FILE.exists():
-        return {}
     result = {}
-    for line in LINE_MANUAL_FILE.read_text(encoding="utf-8").strip().split("\n"):
-        if not line:
+    # 旧（OneDrive）→ 新（repo）の順に読み、同じ週は新しい方で上書きする
+    for path in (LINE_MANUAL_FILE_LEGACY, LINE_MANUAL_FILE):
+        if not path.exists():
             continue
-        try:
-            d = json.loads(line)
-            result[d["week_start"]] = d
-        except Exception:
-            pass
+        for line in path.read_text(encoding="utf-8").strip().split("\n"):
+            if not line:
+                continue
+            try:
+                d = json.loads(line)
+                result[d["week_start"]] = d
+            except Exception:
+                pass
     return result
 
 
@@ -240,12 +248,12 @@ def ensure_line_manual_entry(week_start: str):
     entries = load_line_manual()
     if week_start in entries:
         return
-    OBSIDIAN_REPORT_DIR.mkdir(parents=True, exist_ok=True)
+    LINE_MANUAL_FILE.parent.mkdir(parents=True, exist_ok=True)
     with open(LINE_MANUAL_FILE, "a", encoding="utf-8") as f:
         f.write(json.dumps({
             "week_start": week_start,
             "line_additions": None,
-            "note": "エルメ管理画面の友だち追加数を手動で記入してください",
+            "note": LINE_MANUAL_NOTE,
         }, ensure_ascii=False) + "\n")
 
 
@@ -544,7 +552,7 @@ def build_report() -> str:
     entry = line_entries.get(week_start_key, {})
     line_val = entry.get("line_additions")
     if line_val is None:
-        L.append(f"⚠️ 未記入。`{LINE_MANUAL_FILE.name}` の `week_start: {week_start_key}` にエルメ管理画面の友だち追加数を手動記入してください。\n")
+        L.append(f"⚠️ 未記入。`state/{LINE_MANUAL_FILE.name}` の `week_start: {week_start_key}` に、UTAGEの流入経路（mtid=uVqmOIrsLg8j）の当週LINE登録数を記入してください（Claudeに数字を言えば代筆）。\n")
     else:
         L.append(f"先週のLINE友だち追加数: **{line_val}人**\n")
         L.append("（月60アクションペース = 週あたり約14人が目安）\n")

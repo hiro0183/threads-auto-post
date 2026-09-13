@@ -37,7 +37,8 @@ IG_PLAN_DIR = BASE_DIR / "ig_stories" / "plan"
 IG_OUT_DIR = Path(r"C:\Users\tujid\OneDrive\IGストーリー投稿")
 PREVIEW_DIR = Path(r"C:\Users\tujid\OneDrive\Desktop\コンサル投稿確認")
 INSIGHTS_DATA = BASE_DIR / "insights_data.jsonl"
-LINE_MANUAL_FILE = VAULT_CONSUL / "インサイト" / "週次レポート" / "_LINE流入_手動記入.jsonl"
+# 2026-09-13: 記入先を repo 内 state/ へ移設（weekly_report.py と同期。クラウドからも見える）
+LINE_MANUAL_FILE = BASE_DIR / "state" / "line_inflow_manual.jsonl"
 
 FONT_BOLD = r"C:\Windows\Fonts\NotoSansJP-Bold.ttf"
 FONT_BODY = r"C:\Windows\Fonts\meiryo.ttc"
@@ -469,7 +470,7 @@ def collect_data():
     line_pending = line_manual_pending()
     if line_pending:
         todos.append((f"⚠️LINE流入の記入待ち（{line_pending}週）",
-                      "エルメ管理画面の友だち追加数を _LINE流入_手動記入.jsonl に記入してください（未記入だと週次レポートで効果測定ができません）",
+                      "UTAGEの流入経路（mtid=uVqmOIrsLg8j）の当週LINE登録数を state/line_inflow_manual.jsonl に記入してください（Claudeに数字を言えば代筆。未記入だと導線の効果測定ができません）",
                       _file_url(LINE_MANUAL_FILE)))
 
     # 部門ステータス（HTMLオフィス用）
