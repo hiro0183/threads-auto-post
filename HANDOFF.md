@@ -22,19 +22,19 @@
 | 検品 | claude.ai ルーティン（Haiku） | 毎日 12:00 JST | 稼働中 |
 | 投稿 | Render `scheduler.py` → `post_runner.py` | `SLOT_PLAN` の24枠（06:00〜22:00） | 稼働中。到達率 9/06〜9/12 は7日とも100% |
 | 到達率・実測の取り込み | GitHub Actions `ingest_render.yml` | 毎日 06:20 JST | 稼働中 |
-| 絡み候補の検索（新設） | GitHub Actions `engage_candidates.yml` | 毎日 06:40 JST | **未push・権限未取得のため候補0件で正常終了する設計** |
+| 絡み候補の検索（新設） | GitHub Actions `engage_candidates.yml` | 毎日 06:40 JST | push済み。**権限未取得のため候補0件で正常終了する**（再認証後に動き出す） |
 | トークン更新 | GitHub Actions `refresh_token.yml` | 毎月1日 | 稼働中。現トークン期限 2026-10-30 |
 
 ## 3. 未push・途中のもの（ここが一番大事）
 
-**ローカル master は origin より 2コミット先行・未push（2026-09-13 22:00時点）**
+**✅ 2026-09-13 22:20 にpush済み（なりあいさん承認）。以後のroot投稿にトピックタグが付く。**
 
 | コミット | 中身 | pushすると何が起きるか |
 |:--|:--|:--|
-| `1b7af90` | 絡み部門（`engage_list.py`・`prompts/engage_rules.md`・`engage/`・workflow）／`threads_auth.py` SCOPES+2／`threads_api.py` keyword_search等／**`post_runner.py` にトピックタグ** | **Renderが再デプロイされ、以後のroot投稿に `整体院経営` のトピックタグが付く**（失敗時はタグ無しで再試行するので投稿は止まらない）。workflowは権限取得まで何もしない |
-| `5230a87` | `docs/…全施策.md`／`prompts/pinned_post.md`（固定ポスト3案・bio v3・症状別CTA7本・告知・DM文＝**提案・未承認**）／`assets/lead_magnet/`（棚卸しシート）／`weekly_report.py`・`ops_dashboard.py` のLINE記入先を `state/line_inflow_manual.jsonl` へ | クラウドの週次企画が `state/line_inflow_manual.jsonl` を読めるようになる。投稿には影響なし |
+| `7ca729f`（旧1b7af90） | 絡み部門（`engage_list.py`・`prompts/engage_rules.md`・`engage/`・workflow）／`threads_auth.py` SCOPES+2／`threads_api.py` keyword_search等／**`post_runner.py` にトピックタグ** | **Renderが再デプロイされ、以後のroot投稿に `整体院経営` のトピックタグが付く**（失敗時はタグ無しで再試行するので投稿は止まらない）。workflowは権限取得まで何もしない |
+| `8d83416`（旧5230a87） | `docs/…全施策.md`／`prompts/pinned_post.md`（固定ポスト3案・bio v3・症状別CTA7本・告知・DM文＝**提案・未承認**）／`assets/lead_magnet/`（棚卸しシート）／`weekly_report.py`・`ops_dashboard.py` のLINE記入先を `state/line_inflow_manual.jsonl` へ | クラウドの週次企画が `state/line_inflow_manual.jsonl` を読めるようになる。投稿には影響なし |
 
-- **push はなりあいさんの判断待ち**（トピックタグが本番に効くため）。OKが出たら `git -c credential.helper= push https://<user>:<token>@github.com/hiro0183/threads-auto-post.git master:master`（Bashからの素の `git push` はGCMのダイアログが出せず止まる）
+- push済み。次回以降のpushは `git -c credential.helper= push https://<user>:<token>@github.com/hiro0183/threads-auto-post.git master:master`（Bashからの素の `git push` はGCMのダイアログが出せず止まる）
 - 未コミット（残してよい）: `engage/2026-09-13.md`（デモ出力・架空候補と明記）／`posts/2026-09-13.json.bak_*`／`prompts/stories.md.bak_20260912`
 - **実験台帳** `experiments/ledger.json` の W35-01〜03 は judge_on **2026-09-21**。02・03は baseline 無効。閉じるのは人間。次に開く3枚の案は `docs/…全施策.md` §5
 
@@ -45,7 +45,7 @@
 3. bio v3 に差し替え（「院長・社長へ」を残すか「院長へ」に絞るかは本人判断）
 4. UTAGE で mtid=`uVqmOIrsLg8j` の週間LINE登録数を教える → `state/line_inflow_manual.jsonl` に記入（Claudeが代筆可）
 5. 棚卸しシートの置き場を決める（UTAGE配布ページ／公開ページ／DMでPDF直送）→ URLを告知文・DM文へ
-6. 未push 2件のpush可否／A4「会話5枠→2枠」の承認
+6. A4「会話5枠→2枠」の承認
 7. （権限取得後）毎朝10分、`engage/YYYY-MM-DD.md` の5件に返信。**送信は必ず人間**
 
 ## 5. 次にAIがやること（承認が出たら）
