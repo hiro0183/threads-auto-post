@@ -126,6 +126,12 @@ def get_user_id(token: str) -> str:
     return resp.json()["id"]
 
 
+# 2026-09-13: root投稿を発見面のトピックフィードに載せる実験。THREADS_TOPIC_TAG（既定=整体院経営）
+# を root（reply_to_id無し）にだけ付ける。空文字なら付けない。仕様が不確かなため、
+# タグ付きでコンテナ作成が失敗したらタグ無しで1回だけ再試行し、本番投稿を止めない。
+TOPIC_TAG = os.environ.get("THREADS_TOPIC_TAG", "整体院経営")
+
+
 def create_container(text: str, token: str, user_id: str, reply_to_id: str = None) -> str:
     """投稿コンテナを作成してcontainer_idを返す"""
     data = {
@@ -135,12 +141,22 @@ def create_container(text: str, token: str, user_id: str, reply_to_id: str = Non
     }
     if reply_to_id:
         data["reply_to_id"] = reply_to_id
+    elif TOPIC_TAG:
+        data["topic_tag"] = TOPIC_TAG
 
     resp = requests.post(
         f"https://graph.threads.net/v1.0/{user_id}/threads",
         data=data,
         timeout=30,
     )
+    if resp.status_code >= 400 and not reply_to_id and TOPIC_TAG and "topic_tag" in data:
+        print(f"[WARN] topic_tag付きコンテナ作成に失敗（{resp.status_code}）、タグ無しで再試行します")
+        data.pop("topic_tag")
+        resp = requests.post(
+            f"https://graph.threads.net/v1.0/{user_id}/threads",
+            data=data,
+            timeout=30,
+        )
     resp.raise_for_status()
     return resp.json()["id"]
 

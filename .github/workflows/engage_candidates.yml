@@ -1,0 +1,44 @@
+name: 絡み部門 候補の自動更新
+
+# 2026-09-13新設。scopeを取るまで候補は0件。再認証後にsecretを差し替えること。
+# threads_keyword_search / threads_profile_discovery のscopeが無い間は
+# GET /keyword_search が500を返す→ engage_list.py --search-only は
+# 「候補0件（scope未取得 or 該当なしのため、正常終了）」と出して正常終了する
+# （エラーにしない・commitもしない）。
+
+on:
+  schedule:
+    - cron: '40 21 * * *'   # 毎日 06:40 JST
+  workflow_dispatch:         # 手動実行も可能
+
+jobs:
+  search:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - run: pip install requests python-dotenv
+
+      - name: 絡み候補を検索する（AI不使用）
+        env:
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+        run: python engage_list.py --search-only
+
+      - name: 差分があればコミットする
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git add engage/candidates/
+          if git diff --staged --quiet; then
+            echo "変更なし（候補0件、または既存と同じ）"
+          else
+            git commit -m "絡み候補の自動更新: $(TZ='Asia/Tokyo' date +%Y-%m-%d) [skip ci]"
+            git pull --rebase -X ours
+            git push
+          fi

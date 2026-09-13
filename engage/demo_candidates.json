@@ -1,0 +1,57 @@
+[
+  {
+    "_dummy": true,
+    "_note": "架空のサンプル。実在の投稿ではありません（scope未取得時の動作確認用）",
+    "id": "demo_0001",
+    "username": "demo_seitai_kaigyo",
+    "text": "一人整体院を開業して2年、患者様は増えてきたのに自分の時間がまったく取れず正直しんどいです。予約管理と施術で1日が終わります。",
+    "like_count": 14,
+    "reply_count": 3,
+    "timestamp": "2026-09-13T02:00:00+0000",
+    "permalink": "https://www.threads.net/@demo_seitai_kaigyo/post/demo0001"
+  },
+  {
+    "_dummy": true,
+    "_note": "架空のサンプル。実在の投稿ではありません（scope未取得時の動作確認用）",
+    "id": "demo_0002",
+    "username": "demo_chiryoin_inchou",
+    "text": "治療院の院長業と施術の両立が本当に難しい。スタッフに任せたくても単価の考え方をどう伝えればいいのか毎回悩みます。",
+    "like_count": 22,
+    "reply_count": 5,
+    "timestamp": "2026-09-13T05:30:00+0000",
+    "permalink": "https://www.threads.net/@demo_chiryoin_inchou/post/demo0002"
+  },
+  {
+    "_dummy": true,
+    "_note": "架空のサンプル。実在の投稿ではありません（scope未取得時の動作確認用）",
+    "id": "demo_0003",
+    "username": "demo_salon_owner",
+    "text": "サロン経営を一人でやっていると、リピートしてくれる患者様への感謝を伝える余裕すらなくなる時期があります。今がまさにそれです。",
+    "like_count": 9,
+    "reply_count": 1,
+    "timestamp": "2026-09-12T20:15:00+0000",
+    "permalink": "https://www.threads.net/@demo_salon_owner/post/demo0003"
+  },
+  {
+    "_dummy": true,
+    "_note": "架空のサンプル。実在の投稿ではありません（scope未取得時の動作確認用）",
+    "id": "demo_0004",
+    "username": "demo_seikotsuin_kaigyo",
+    "text": "整骨院の院長ですが、売上は伸びているのに現場から抜けられず経営に時間を使えていません。社長業とは何なのか考え直しています。",
+    "like_count": 31,
+    "reply_count": 7,
+    "timestamp": "2026-09-13T08:45:00+0000",
+    "permalink": "https://www.threads.net/@demo_seikotsuin_kaigyo/post/demo0004"
+  },
+  {
+    "_dummy": true,
+    "_note": "架空のサンプル。実在の投稿ではありません（scope未取得時の動作確認用）",
+    "id": "demo_0005",
+    "username": "demo_shishi_hitori",
+    "text": "士業を一人でやっていて時間がないのは治療院と同じだなと感じます。予約とスタッフがいない分、全部自分の時間を削っています。",
+    "like_count": 6,
+    "reply_count": 2,
+    "timestamp": "2026-09-12T23:00:00+0000",
+    "permalink": "https://www.threads.net/@demo_shishi_hitori/post/demo0005"
+  }
+]

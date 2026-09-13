@@ -23,7 +23,10 @@ REDIRECT_URI = os.environ.get("THREADS_REDIRECT_URI", "http://localhost:5000/cal
 PORT = 5000
 
 # 必要なスコープ（投稿・読み取り）
-SCOPES = "threads_basic,threads_content_publish,threads_read_replies,threads_manage_replies,threads_manage_insights"
+# 2026-09-13追加。Metaアプリのダッシュボードで該当権限を有効化してから
+# `python threads_auth.py` で再認証→`python token_manager.py --seed` でDBへ発行が必要。
+# GitHub Actionsのsecret THREADS_ACCESS_TOKEN と Renderの環境変数も新トークンに差し替えること。
+SCOPES = "threads_basic,threads_content_publish,threads_read_replies,threads_manage_replies,threads_manage_insights,threads_keyword_search,threads_profile_discovery"
 
 TOKEN_FILE = "tokens.json"
 
