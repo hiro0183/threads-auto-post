@@ -59,9 +59,28 @@ AI_PHRASES = {
 # ── 反復の上限 ────────────────────────────────────────────
 END_NGRAM = 6          # 文末を何字で見るか
 END_CAP = 0.08         # 同一文末が本文の全文数に占める上限
-CLOSING_NGRAM = 10     # ツリー最終行の末尾を何字で見るか
+CLOSING_NGRAM = 7      # ツリー最終行の末尾を何字で見るか
 CLOSING_DUP_CAP = 1    # 同じ締め方は1日1本まで（CTA枠は別勘定）
 QUESTION_CAP = 0.20    # 疑問形で締めるツリーの上限（gate.md #7「10枠中1〜2本」＝10〜20%）
+
+# 2026-09-14追加: 締めの「型」レベルの重複検知。
+# 背景: 9/16の独立検品(12:00)で、10:30と11:00・15:00と16:30がそれぞれ
+# 「〜だと思っています。」「〜より、〜方が効果があります。」という同じ雛形の締めで
+# 終わっていたのに、当時のCLOSING_NGRAM=10（末尾10字の完全一致だけを見る）では
+# 文末の細部（体言・助詞）が毎回少し違うため一致とみなされず素通りしていた。
+# 末尾の文字数を10→7へ下げただけでは語尾のわずかな違い（「〜だと思っています」と
+# 「〜だと感じています」等）まではまだ拾えないため、締めの「型」を正規表現で
+# 直接パターン化し、非CTAツリーで同じ型が2本以上（＝CLOSING_DUP_CAPと同じ上限）
+# 出たらNGにする。
+CLOSING_TEMPLATES = [
+    r"だと思っています$",
+    r"方が効果があります$",
+    r"ではありません$",
+    r"かどうかです$",
+    r"で決まります$",
+    r"から始まります$",
+    r"に変わります$",
+]
 
 CTA_MARK = r"(LINE|ライン|プロフィール|リットリンク|コメント)"
 QUESTION_END = r"(ですか|ますか|ありますか|ませんか|でしょうか)[。？?]?$"
@@ -119,14 +138,23 @@ def check_day(date_str: str, schedule: dict) -> tuple:
 
     # 4. 締め方の重複（CTA枠は定型なので別勘定）
     closings = Counter()
+    closing_norm = {}
     for s, p in trees.items():
         last = p[-1].strip()
         if re.search(CTA_MARK, last):
             continue
         closings[last.rstrip("。！？")[-CLOSING_NGRAM:]] += 1
+        closing_norm[s] = last.rstrip("。！？")
     for c_text, c in closings.most_common(3):
         if c > CLOSING_DUP_CAP:
             ng.append(f"  ✗ 締めの重複「…{c_text}」が{c}本（上限{CLOSING_DUP_CAP}本）")
+
+    # 4.5 締めの「型」の重複（2026-09-14新設。背景はCLOSING_TEMPLATESのコメント参照）
+    for tmpl in CLOSING_TEMPLATES:
+        hit = sorted(s for s, last in closing_norm.items() if re.search(tmpl, last))
+        if len(hit) > CLOSING_DUP_CAP:
+            ng.append(f"  ✗ 締めの型の重複「…{tmpl.rstrip('$')}」が{len(hit)}本"
+                       f"（上限{CLOSING_DUP_CAP}本）→ {', '.join(hit)}")
 
     # 5. 疑問形で締めるツリーの本数
     q = sorted(s for s, p in trees.items()

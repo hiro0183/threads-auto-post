@@ -44,6 +44,11 @@
 - 検品: `check_hooks.py posts/weekly_plan/2026-09-14.json` 終了コード0（全7日OK）／`check_body_style.py` 3日分すべて終了コード0（NG・警告とも0件）
 - `export_preview.py` は3日分実行済み（デスクトップ「コンサル投稿確認」へ出力）。`ops_dashboard.py` は内部で独自にgit commit/pushする作りのため、今回の指定コミットメッセージと衝突するのを避けてスキップ（次回の通常運用サイクルで自動実行される）
 
+**✅ 2026-09-14 再発防止のガード3点を追加・push済み。**
+- `check_hooks.py`: `check_same_day`（同日内の冒頭7字一致・8字/6字以上の共通部分文字列・自院価格の金額重複）と `check_history`（14日以内の類似度0.72・CTA枠のみ0.80／部分文字列11字以上／同じ金額+型が3周目）を新設。金額は「＃」に畳んでから比較（承認済み自院価格が実質2〜4種しかなく、生の金額文字列のままだと毎日誤検知するため）。`python check_hooks.py posts/weekly_plan/2026-09-14.json` は9/14〜9/17が全日OK。9/18〜9/20は合計32枠がNG（あと100万/バックエンド/全部やらなくていい/一番細い場所 等、総まとめ回で意図的に反復している言い回しが大半）。**修正の上限12枠を超えたため未修正のまま**、要人間確認としてセッションまとめに一覧を残した
+- `check_body_style.py`: `CLOSING_NGRAM` を10→7字に短縮し、締めの「型」を正規表現7種でパターン化する `CLOSING_TEMPLATES` を新設（非CTAツリーで同型2本以上ならNG）。9/17 20:40の締め（「〜変えただけで、〜が変わりました」）を本文のみ修正し、9/15・9/16・9/17とも `check_body_style.py` 終了コード0
+- `prompts/daily_writing_routine.md`・`CLAUDE.md`: 独立検品(12:00)が書く `posts/quality_gate/{date}_inspection.json` のうち**本文NGだけ**（`level:"body"`、またはreasonに「フック」等を含まないもの）を日次執筆便が翌朝自動で拾って2〜3投稿目だけ直す手順を新設（フック/事実NGは従来どおり人間確認）。上書き禁止ルールの唯一の例外として明記
+
 ## 4. ⏸ なりあいさん待ち（本人にしかできない・この順で）
 
 1. **Meta for Developers で `threads_keyword_search`・`threads_profile_discovery` を有効化 → `python threads_auth.py` → `python token_manager.py --seed` → GitHub secret `THREADS_ACCESS_TOKEN`・Render環境変数を新トークンに**（これで `engage_list.py` が毎朝「絡みリスト」を出せる）

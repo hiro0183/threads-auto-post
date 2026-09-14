@@ -9,14 +9,17 @@
     python check_hooks.py posts/weekly_plan/2026-08-31.json
 終了コード 1 = 違反あり（週次企画はこれが 0 になるまでフックを直す）
 """
+import difflib
 import json
 import re
 import sys
 from collections import Counter
+from datetime import date, timedelta
 from pathlib import Path
 
 BASE = Path(__file__).resolve().parent
 PLAN_DIR = BASE / "posts" / "weekly_plan"
+POSTS_DIR = BASE / "posts"
 
 # 原則0の実測（2026-03〜08・3,512投稿）。括弧内はホームラン寄与倍率。
 # 下限・上限は「1日の枠数に対する比率」で持つ（2026-08-27にSLOT_PLANを10→24枠へ拡張したため、
@@ -105,6 +108,236 @@ def check_slot_lock(days: dict) -> list:
     return ng
 
 
+# ── 2026-09-14追加: 同日重複・14日重複の機械検査 ──────────────────────
+#
+# 背景: 2026-09-14の独立検品(12:00)で3日分18件のNGが出たが、そのほぼ全部が
+# 「週次プランが同じ承認済み金額(35,000円/15,000円/5,000円)と同じフックの
+# 雛形（『35,000円+値段の前に何かを渡す/伝える/減らす』型等）を14日以内、
+# 時には同日内で使い回していた」ことが原因だった。check_hooks.py はそれまで
+# 1日ぶんの型比率としきい値・同一スロットの週またぎ固着しか見ておらず、
+# 「同じ日の中の重複」「14日以内の言い回し・金額の再訪」を一度も数えていな
+# かった。taboo.md #2（14日重複禁止・同じ日の中でも重複させない）は文書に
+# あったが機械検査が無かったので、週次企画のたびに人間が気づくまで素通りし
+# ていた。以下はそれを埋める。
+
+AMOUNT_RE = re.compile(r"[0-9０-９][0-9０-９,，]*\s*(円|万)")
+KANJI_KATAKANA = re.compile(r"[一-鿿゠-ヿ]")
+CTA_PHRASE = "経営の問診"
+
+# 2026-09-14追加: 「自院の価格」として名乗っている金額だけを見る（check_own_priceの
+# OWN_PRICE_CONTEXTと同じ発想）。広告費・固定費・家賃・人件費などの一般的な水準は
+# hook_rules.mdが推奨する比較材料で、毎回別の額を使ってよいので対象に含めない。
+_PRICE_CTX = re.compile(OWN_PRICE_CONTEXT)
+
+
+def _kanji_windows(h: str, length: int) -> set:
+    """h から長さlengthの部分文字列で、漢字かカタカナを1字以上含むものだけを集める"""
+    return {
+        h[i:i + length]
+        for i in range(len(h) - length + 1)
+        if KANJI_KATAKANA.search(h[i:i + length])
+    }
+
+
+def _amounts(h: str) -> set:
+    return {m.group(0) for m in AMOUNT_RE.finditer(h)}
+
+
+def _own_price_amounts(h: str) -> set:
+    """hの中で「自院の価格」として使われている金額だけを返す（check_own_priceと同じ判定）"""
+    out = set()
+    for m in AMOUNT_RE.finditer(h):
+        around = h[max(0, m.start() - 12): m.end() + 12]
+        if _PRICE_CTX.search(around):
+            out.add(m.group(0))
+    return out
+
+
+def _normalize_amounts(h: str) -> str:
+    """金額の数字部分を1文字のプレースホルダに置き換える（2026-09-14追加）。
+
+    承認済みの自院価格は35,000円/15,000円/300円/5,000円の実質4種しかなく（persona.md）、
+    「◯◯円の」のような数字+助詞の並びは、それだけでほぼ毎日どこかのフックに出てくる。
+    ここを生の文字列のまま部分文字列/類似度の比較に使うと、本当に言い回し（型）が
+    似ているわけではなく単に同じ承認済み金額を使っただけの組み合わせまで大量にNGになる
+    （2026-09-14実測: 素の実装で1日あたり10〜30件の誤検知）。金額を1字に畳んでから
+    比較することで、「型」としての一致だけを見るようにする。
+    """
+    return AMOUNT_RE.sub("＃", h)
+
+
+def check_same_day(entries: list) -> list:
+    """1日の中でのフック重複を検査する（2026-09-14新設。背景は上のコメント参照）。
+
+    - 冒頭7字が同じフックが2本以上
+    - 漢字/カタカナを含む8字以上の部分文字列が2本以上のフックに共通（金額は畳んで比較）
+    - 漢字/カタカナを含む6字以上の部分文字列が3本以上のフックに共通（同上）
+    - 「自院の価格」として使っている金額の文字列（例「35,000円」）が2本以上のフックに共通
+      （広告費・固定費など一般的な水準の金額は対象外。理由は_PRICE_CTXのコメント参照）
+    22:00のCTA枠は、共通部分が「経営の問診」というCTA定型句そのものの場合のみ、
+    部分文字列系の判定から除外する（毎日同じCTA文言を使うのは仕様であって重複事故ではないため）。
+    """
+    ng = []
+    hooks = [(e.get("slot"), e.get("hook") or "") for e in entries]
+
+    # 冒頭7字の一致
+    heads = {}
+    for s, h in hooks:
+        if len(h) < 7:
+            continue
+        heads.setdefault(h[:7], []).append(s)
+    for head, slots in heads.items():
+        if len(slots) >= 2:
+            ng.append(f"  ✗ 同日重複(冒頭7字)「{head}…」: {', '.join(slots)}")
+
+    # 漢字/カタカナを含む部分文字列の一致（8字→2本、6字→3本。金額は畳んで比較）
+    for length, min_hit in ((8, 2), (6, 3)):
+        windows = {}
+        for s, h in hooks:
+            for w in _kanji_windows(_normalize_amounts(h), length):
+                if s == "22:00" and w == CTA_PHRASE:
+                    continue
+                windows.setdefault(w, set()).add(s)
+        seen = set()
+        for w, slots in windows.items():
+            if len(slots) >= min_hit and w not in seen:
+                seen.add(w)
+                ng.append(f"  ✗ 同日重複({length}字以上)「{w}」: {', '.join(sorted(slots))}")
+
+    # 自院の価格として使っている金額が2本以上（一般的な水準の金額は対象外）
+    amounts = {}
+    for s, h in hooks:
+        for a in _own_price_amounts(h):
+            amounts.setdefault(a, set()).add(s)
+    for a, slots in amounts.items():
+        if len(slots) >= 2:
+            ng.append(f"  ✗ 同日重複(自院価格「{a}」): {', '.join(sorted(slots))}")
+    return ng
+
+
+def _load_posts_hooks(date_str: str) -> dict:
+    """posts/{date}.json からスロット別フック（posts[slot][0]の1行目）を読む。無ければ{}"""
+    f = POSTS_DIR / f"{date_str}.json"
+    if not f.exists():
+        return {}
+    try:
+        posts = json.loads(f.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+    out = {}
+    for slot, tree in posts.items():
+        if isinstance(tree, list) and tree:
+            first = str(tree[0]).split("\n")[0].strip()
+            if first:
+                out[slot] = first
+    return out
+
+
+def _build_history(all_days: dict, target_date: str) -> dict:
+    """target_date より前14日分の「投稿済み or 計画済み」フックを {日付: {slot: hook}} で返す。
+
+    posts/{d}.json（実際に書いた原稿）があればそれを優先的な実測として使い、
+    週次プラン自身のより早い日（posts/{d}.jsonがまだ無い9/18以降等）はプランの
+    hookで補う。両方ある日はプラン側（＝直近で確定した値）を優先する。
+    """
+    d0 = date.fromisoformat(target_date)
+    history = {}
+    for k in range(1, 15):
+        dd = (d0 - timedelta(days=k)).isoformat()
+        hooks = _load_posts_hooks(dd)
+        if hooks:
+            history[dd] = hooks
+    for dd, entries in all_days.items():
+        if dd >= target_date:
+            continue
+        dd_date = date.fromisoformat(dd)
+        if (d0 - dd_date).days > 14 or (d0 - dd_date).days < 1:
+            continue
+        day_hist = history.setdefault(dd, {})
+        for e in entries:
+            if e.get("slot") and e.get("hook"):
+                day_hist[e["slot"]] = e["hook"]
+    return history
+
+
+# しきい値（2026-09-14実測でチューニング。根拠は check_history のdocstring）:
+# - 22:00(CTA)は毎日似た言い回しで正常なので、22:00どうしの比較だけ高いしきい値にする
+# - それ以外は素の0.60/8字だと「35,000円の」のような金額直後の助詞の並びだけで
+#   ほぼ毎日ヒットしてしまう（実測: 9/14-17の4日で ratio0.60/8字なら平均約15件/日）。
+#   金額を畳んで(=_normalize_amounts)から比較し、しきい値も0.72・11字に上げることで、
+#   「同じ承認済み金額をまた使った」ではなく「言い回し（型）そのものが似ている」場合
+#   だけを拾うようにした。これでも2026-09-14に人間が実際に手直しした重複型
+#   （taboo.md#2の事例）は検出できることを確認済み。
+HISTORY_RATIO = 0.72
+HISTORY_RATIO_CTA = 0.80
+HISTORY_SUBLEN = 11
+
+
+def check_history(days: dict) -> dict:
+    """14日以内に同系統のフック・金額が再訪していないか検査する（2026-09-14新設）。
+
+    背景: 2026-09-14の独立検品で「35,000円+値段の前に何かを渡す/伝える/減らす」型が
+    9/1・9/7・9/14週と14日以内に3周していた等、check_slot_lock（週またぎの同一スロット
+    固着のみ）ではまったく捕まらない再発が繰り返し見つかった。ここでは実際に投稿された
+    posts/{date}.json（無ければ週次プラン自身のより早い日）を「フックの履歴」として持ち、
+    今回のプランの各フックをその履歴と照合する。
+
+    「同じ金額の3周目」判定について: 承認済みの自院価格が実質2〜3種類しかなく
+    （persona.md）、金額型フックの下限（hook_rules.md原則0）を満たすには14日の間に
+    同じ金額を何度も使わざるを得ない。そのため「金額が2回出てきたら即NG」にすると
+    毎日ほぼ確実にNGになり実用にならない（2026-09-14実測）。ここでは
+    「同じ金額」かつ「型としきい値が同基準で一致する組が2件以上＝3周目」の場合だけを
+    NGにし、単なる金額の再利用ではなく金額+言い回しのセットが繰り返し再訪している
+    ケースに絞った。
+    """
+    result = {}
+    for target_date in sorted(days.keys()):
+        entries = days[target_date]
+        history = _build_history(days, target_date)
+        # 履歴を平坦なリストに（日付, スロット, hook）
+        flat = [(dd, s, h) for dd, hs in history.items() for s, h in hs.items()]
+        ng = []
+        for e in entries:
+            slot, hook = e.get("slot"), e.get("hook") or ""
+            if not hook:
+                continue
+            is_cta = slot == "22:00"
+            ratio_th = HISTORY_RATIO_CTA if is_cta else HISTORY_RATIO
+            nhook = _normalize_amounts(hook)
+            cur_windows = _kanji_windows(nhook, HISTORY_SUBLEN)
+            cur_amounts = _own_price_amounts(hook)
+            ratio_hits = []
+            for dd, s2, h2 in flat:
+                if is_cta and s2 != "22:00":
+                    continue
+                nh2 = _normalize_amounts(h2)
+                ratio = difflib.SequenceMatcher(None, nhook, nh2).ratio()
+                if ratio >= ratio_th:
+                    ng.append(f"  ✗ 14日重複(類似度{ratio:.2f}) {slot}: 「{hook}」"
+                               f" ← {dd} {s2}「{h2}」")
+                    ratio_hits.append((dd, s2, h2, ratio))
+                    continue
+                shared = cur_windows & _kanji_windows(nh2, HISTORY_SUBLEN)
+                shared = {w for w in shared
+                          if not ((is_cta or s2 == "22:00") and w == CTA_PHRASE)}
+                if shared:
+                    ng.append(f"  ✗ 14日重複(部分文字列「{sorted(shared)[0]}」) {slot}: "
+                               f"「{hook}」 ← {dd} {s2}「{h2}」")
+            for a in cur_amounts:
+                hit_dates = [
+                    (dd, s2, h2) for dd, s2, h2 in flat
+                    if a in _own_price_amounts(h2)
+                    and difflib.SequenceMatcher(None, nhook, _normalize_amounts(h2)).ratio() >= ratio_th
+                ]
+                if len(hit_dates) >= 2:
+                    dd, s2, h2 = hit_dates[0]
+                    ng.append(f"  ✗ 同じ金額の3周目「{a}」 {slot}: 「{hook}」"
+                               f" ← {dd} {s2}「{h2}」ほか{len(hit_dates)}件")
+        if ng:
+            result[target_date] = ng
+    return result
+
+
 def check_day(date: str, entries: list) -> list:
     """1日分のフックを検査して違反メッセージのリストを返す"""
     ng = []
@@ -147,8 +380,12 @@ def main():
     for f in files:
         plan = json.loads(f.read_text(encoding="utf-8"))
         print(f"■ {f.name}")
-        for date, entries in sorted((plan.get("days") or {}).items()):
+        days = plan.get("days") or {}
+        history_ng = check_history(days)
+        for date, entries in sorted(days.items()):
             ng = check_day(date, entries)
+            ng += check_same_day(entries)
+            ng += history_ng.get(date, [])
             if ng:
                 bad += 1
                 print(f"{date} NG")
