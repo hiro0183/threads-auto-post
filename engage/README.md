@@ -22,10 +22,11 @@
 ## scope有効化〜再認証の手順
 
 1. Metaアプリのダッシュボードで `threads_keyword_search` と `threads_profile_discovery` を有効化する
-2. `python threads_auth.py` で再認証する（`threads_auth.py` のSCOPESに追加済み）
-3. `python token_manager.py --seed` で新トークンをDBへ発行する
-4. GitHub Actionsのsecret `THREADS_ACCESS_TOKEN` とRenderの環境変数を新トークンに差し替える
-5. それまでは `python engage_list.py --search-only` を実行しても候補0件のまま正常終了する（エラーにはならない）
+2. **先にブラウザで Threads にコンサル垢 `hiro_nariai_salon_`（ヒロ先生）でログインしておく**（別垢でログインしたままだと、その垢に対してトークンが発行される。2026-09-14に産後垢の同意画面が出た実例あり。コンサル専用のChromeプロファイルかシークレットウィンドウ推奨）
+3. `python threads_auth.py` で再認証する（`threads_auth.py` のSCOPESに追加済み）。**同意画面のボタンが「hiro_nariai_salon_として続行」であることを確認してから押す。違う垢名ならキャンセル**
+4. `python token_manager.py --seed` で新トークンをDBへ発行する
+5. GitHub Actionsのsecret `THREADS_ACCESS_TOKEN` とRenderの環境変数を新トークンに差し替える
+6. それまでは `python engage_list.py --search-only` を実行しても候補0件のまま正常終了する（エラーにはならない）
 
 ## NG（禁じ手・詳細は prompts/engage_rules.md）
 

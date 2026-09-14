@@ -38,6 +38,12 @@
 - 未コミット（残してよい）: `engage/2026-09-13.md`（デモ出力・架空候補と明記）／`posts/2026-09-13.json.bak_*`／`prompts/stories.md.bak_20260912`
 - **実験台帳** `experiments/ledger.json` の W35-01〜03 は judge_on **2026-09-21**。02・03は baseline 無効。閉じるのは人間。次に開く3枚の案は `docs/…全施策.md` §5
 
+**✅ 2026-09-14 検品NG18件を修正・push済み（コミット `2a1c583`）。**
+- 対象: `posts/2026-09-15.json`・`posts/2026-09-16.json`・`posts/2026-09-17.json`・`posts/weekly_plan/2026-09-14.json`・`prompts/stories.md`・`prompts/persona.md`
+- 内容: 14日以内の重複フック7枠（35,000円/15,000円/60分5,000円vs20分35,000円パターンの反復・cleft文の反復・同日内「任せたい気持ち」3回・「予約先を1つに絞る」2日前との重複・「あなたの院の次の一歩は、」の同日内重複・9/17 22:00導線枠の9/15との重複）を別の承認済み角度で作り直し。未取材（❓）の「15,000円時代に説明の順番を変えた」逸話を使っていた2枠（9/15 10:30・9/17 12:45）を差し替え。本文のみの修正3件（同日内の締め重複2件・同日内の技法重複2件）。17:00の「10連休」は本文はそのまま、出典（BNIプレゼン原稿・2026-09-11提出）付きで `stories.md` A-12・`persona.md` に承認済み事実として新規登録（追記のみ・上書きなし）。
+- 検品: `check_hooks.py posts/weekly_plan/2026-09-14.json` 終了コード0（全7日OK）／`check_body_style.py` 3日分すべて終了コード0（NG・警告とも0件）
+- `export_preview.py` は3日分実行済み（デスクトップ「コンサル投稿確認」へ出力）。`ops_dashboard.py` は内部で独自にgit commit/pushする作りのため、今回の指定コミットメッセージと衝突するのを避けてスキップ（次回の通常運用サイクルで自動実行される）
+
 ## 4. ⏸ なりあいさん待ち（本人にしかできない・この順で）
 
 1. **Meta for Developers で `threads_keyword_search`・`threads_profile_discovery` を有効化 → `python threads_auth.py` → `python token_manager.py --seed` → GitHub secret `THREADS_ACCESS_TOKEN`・Render環境変数を新トークンに**（これで `engage_list.py` が毎朝「絡みリスト」を出せる）
@@ -68,6 +74,8 @@
 - 手元で直しても **pushして初めてクラウドのルールが変わる**（8/21〜9/1に10日間届かなかった実例）
 - 司令室の赤は「古い検品結果」「PCスリープ明けの追いかけ実行」のことがある。まず `reach_status.json`（実物）を見る
 - **Codexに触らせない場所:** Render・クラウド定期便・`post_runner.py`／`scheduler.py` の投稿経路・トークン。Codexは読み取り・分析・提案・レビューまで（今回もそう使った）
+
+- **🔴 再認証（`python threads_auth.py`）は、ブラウザで先にコンサル垢 `hiro_nariai_salon_`（ヒロ先生）にログインしてから。** 同意画面はブラウザに今ログインしている垢で出る。2026-09-14に産後垢（rapport.sango）でログインしたまま開いてしまい「rapport.sangoとして続行」が表示された（押す前に止めた・被害なし）。**同意画面の青いボタンが「hiro_nariai_salon_として続行」でなければ必ずキャンセル。** Metaアプリはコンサル=`自動投稿Threadsコンサル`／産後=`骨盤-8cm` で別物だが、産後垢がコンサルアプリに過去リンクした履歴が残っているので画面上は通ってしまう。安全策＝コンサル専用のChromeプロファイルかシークレットウィンドウで行う
 
 ## 7. 主要ファイルの地図
 
