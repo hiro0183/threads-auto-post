@@ -49,6 +49,11 @@
 - `check_body_style.py`: `CLOSING_NGRAM` を10→7字に短縮し、締めの「型」を正規表現7種でパターン化する `CLOSING_TEMPLATES` を新設（非CTAツリーで同型2本以上ならNG）。9/17 20:40の締め（「〜変えただけで、〜が変わりました」）を本文のみ修正し、9/15・9/16・9/17とも `check_body_style.py` 終了コード0
 - `prompts/daily_writing_routine.md`・`CLAUDE.md`: 独立検品(12:00)が書く `posts/quality_gate/{date}_inspection.json` のうち**本文NGだけ**（`level:"body"`、またはreasonに「フック」等を含まないもの）を日次執筆便が翌朝自動で拾って2〜3投稿目だけ直す手順を新設（フック/事実NGは従来どおり人間確認）。上書き禁止ルールの唯一の例外として明記
 
+**✅ 2026-09-14 積み残しの9/18〜9/20フック32枠NGを解消・commit待ち。**
+- 上のブロック（同日）で「修正の上限12枠を超えたため未修正」と残っていた `check_hooks.py` の `check_same_day`/`check_history` NG（あと100万/バックエンド/全部やらなくていい/一番細い場所の反復）を全て別の承認済み角度・別の言い回しで作り直し（9/18=8枠・9/19=6枠・9/20=7枠、計21枠。同日重複の連鎖で自動的に解消された分を含む）
+- `posts/2026-09-18.json`〜`2026-09-20.json` はまだクラウドの朝便が書いていないため存在せず（`check_body_style.py` の対象なし）。フックのみ差し替え・本文の上書きは発生していない
+- 検品: `python check_hooks.py posts/weekly_plan/2026-09-14.json` 終了コード**0（9/14〜9/20の全7日OK）**
+
 ## 4. ⏸ なりあいさん待ち（本人にしかできない・この順で）
 
 1. **Meta for Developers で `threads_keyword_search`・`threads_profile_discovery` を有効化 → `python threads_auth.py` → `python token_manager.py --seed` → GitHub secret `THREADS_ACCESS_TOKEN`・Render環境変数を新トークンに**（これで `engage_list.py` が毎朝「絡みリスト」を出せる）
