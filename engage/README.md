@@ -28,6 +28,16 @@
 5. GitHub Actionsのsecret `THREADS_ACCESS_TOKEN` とRenderの環境変数を新トークンに差し替える
 6. それまでは `python engage_list.py --search-only` を実行しても候補0件のまま正常終了する（エラーにはならない）
 
+
+## ⚠️ 2026-09-14 判明: 標準アクセスでは keyword_search は「自分の投稿」しか返さない
+
+再認証は成功した（scope 7つ・`hiro_nariai_salon_`・期限2026-11-13）。しかし実測で **どのキーワードでも返るのは自分の投稿だけ**（整体院/院長/経営者 各25件中 自分25・他人0）。`profile_lookup` は「Application does not have permission」。
+= このアプリの権限は「テスト準備完了」（標準アクセス）で、**他人の公開投稿の検索には Meta の App Review で Advanced Access を取る必要がある**（ビジネス認証・プライバシーポリシー・スクリーンキャスト提出）。
+
+**当面の運用（API待ちの間）:** Chrome拡張でコンサル垢にログインした状態の threads.com の検索結果を読み、候補5件と返信下書きを作る（Claude Codeのセッション内・PC必要）。`engage_candidates.yml`（GitHub Actions）は動かしても候補0件のまま。GitHub secret の更新も現時点では不要。
+
+**トークンの取り方（この方法が最短）:** Metaダッシュボード → アプリ「自動投稿Threadsコンサル」→ ユースケース → Threads API「カスタマイズ」→ 設定タブ → **ユーザートークン生成ツール → hiro_nariai_salon_ の「アクセストークンを生成」**（Threadsの同意だけ・アプリシークレット不要）。表示されたトークンをコピーして `tokens.json` へ（Claudeに貼れば代筆）。`.env` の `THREADS_APP_SECRET` は古く、`threads_auth.py` のコード交換は通らない（2026-09-14実測）。
+
 ## NG（禁じ手・詳細は prompts/engage_rules.md）
 
 - 定型文のコピペ

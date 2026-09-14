@@ -66,19 +66,17 @@ def load_keywords() -> list[str]:
 
 
 def get_access_token() -> str | None:
-    """THREADS_ACCESS_TOKEN を優先し、無ければ tokens.json（load_tokens）を使う。
+    """tokens.json（ローカルの再認証結果）を優先し、無ければ THREADS_ACCESS_TOKEN（CIのsecret）を使う。
+    2026-09-14: .env の古い種トークンが tokens.json より優先されて検索が500になった実例があるため順序を入れ替えた。
     OAuthフローは絶対に起動しない（CIでハングするため）。"""
-    token = os.environ.get("THREADS_ACCESS_TOKEN")
-    if token:
-        return token
     try:
         from threads_auth import load_tokens
         tokens = load_tokens()
     except Exception:
         tokens = None
-    if tokens:
+    if tokens and tokens.get("access_token"):
         return tokens.get("access_token")
-    return None
+    return os.environ.get("THREADS_ACCESS_TOKEN") or None
 
 
 def get_api():

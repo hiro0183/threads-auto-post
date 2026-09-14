@@ -130,7 +130,7 @@ class ThreadsAPI:
             })
             return result.get("data", [])
         except Exception as e:
-            print(f"[WARN] keyword_search失敗（q={q}）: {e}", file=sys.stderr)
+            print(f"[WARN] keyword_search失敗（q={q}）: HTTP {getattr(getattr(e, 'response', None), 'status_code', type(e).__name__)}", file=sys.stderr)
             return []
 
     def profile_lookup(self, username: str) -> dict | None:
@@ -141,7 +141,7 @@ class ThreadsAPI:
                 "fields": "id,username,name,threads_biography,follower_count,is_verified",
             })
         except Exception as e:
-            print(f"[WARN] profile_lookup失敗（username={username}）: {e}", file=sys.stderr)
+            print(f"[WARN] profile_lookup失敗（username={username}）: HTTP {getattr(getattr(e, 'response', None), 'status_code', type(e).__name__)}", file=sys.stderr)
             return None
 
     def get_user_threads(self, user_id: str, limit: int = 10) -> list:
@@ -153,7 +153,7 @@ class ThreadsAPI:
             })
             return result.get("data", [])
         except Exception as e:
-            print(f"[WARN] get_user_threads失敗（user_id={user_id}）: {e}", file=sys.stderr)
+            print(f"[WARN] get_user_threads失敗（user_id={user_id}）: HTTP {getattr(getattr(e, 'response', None), 'status_code', type(e).__name__)}", file=sys.stderr)
             return []
 
 

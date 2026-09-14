@@ -56,7 +56,7 @@
 
 ## 4. ⏸ なりあいさん待ち（本人にしかできない・この順で）
 
-1. **Meta for Developers で `threads_keyword_search`・`threads_profile_discovery` を有効化 → `python threads_auth.py` → `python token_manager.py --seed` → GitHub secret `THREADS_ACCESS_TOKEN`・Render環境変数を新トークンに**（これで `engage_list.py` が毎朝「絡みリスト」を出せる）
+1. ~~Meta権限の有効化→再認証~~ **✅ 2026-09-14完了**（tokens.json＝hiro_nariai_salon_・scope 7つ・期限2026-11-13）。**ただし標準アクセスでは検索が自分の投稿しか返さない**→ App Review を出すか、Chrome＋Claudeで候補を拾う運用にするかを判断
 2. 固定ポストを1本選んで投稿・固定（`prompts/pinned_post.md` 案A推奨。投稿日の22:00はCTA無しにする）
 3. bio v3 に差し替え（「院長・社長へ」を残すか「院長へ」に絞るかは本人判断）
 4. UTAGE で mtid=`uVqmOIrsLg8j` の週間LINE登録数を教える → `state/line_inflow_manual.jsonl` に記入（Claudeが代筆可）
@@ -86,6 +86,8 @@
 - **Codexに触らせない場所:** Render・クラウド定期便・`post_runner.py`／`scheduler.py` の投稿経路・トークン。Codexは読み取り・分析・提案・レビューまで（今回もそう使った）
 
 - **🔴 再認証（`python threads_auth.py`）は、ブラウザで先にコンサル垢 `hiro_nariai_salon_`（ヒロ先生）にログインしてから。** 同意画面はブラウザに今ログインしている垢で出る。2026-09-14に産後垢（rapport.sango）でログインしたまま開いてしまい「rapport.sangoとして続行」が表示された（押す前に止めた・被害なし）。**同意画面の青いボタンが「hiro_nariai_salon_として続行」でなければ必ずキャンセル。** Metaアプリはコンサル=`自動投稿Threadsコンサル`／産後=`骨盤-8cm` で別物だが、産後垢がコンサルアプリに過去リンクした履歴が残っているので画面上は通ってしまう。安全策＝コンサル専用のChromeプロファイルかシークレットウィンドウで行う
+
+- **keyword_search は標準アクセスだと自分の投稿しか返さない（2026-09-14実測）。** 他人の投稿を検索するには App Review（Advanced Access）が必要。それまで絡み候補は Chrome＋Claude セッションで拾う。トークンは「ユーザートークン生成ツール」で出すのが最短（`.env` のアプリシークレットは古い）。詳細 `engage/README.md`
 
 ## 7. 主要ファイルの地図
 
