@@ -59,8 +59,9 @@
 1. ~~Meta権限の有効化→再認証~~ **✅ 2026-09-14完了**（tokens.json＝hiro_nariai_salon_・scope 7つ・期限2026-11-13）。**ただし標準アクセスでは検索が自分の投稿しか返さない**→ App Review を出すか、Chrome＋Claudeで候補を拾う運用にするかを判断
 2. 固定ポストを1本選んで投稿・固定（`prompts/pinned_post.md` 案A推奨。投稿日の22:00はCTA無しにする）
 3. bio v3 に差し替え（「院長・社長へ」を残すか「院長へ」に絞るかは本人判断）
-4. UTAGE で mtid=`uVqmOIrsLg8j` の週間LINE登録数を教える → `state/line_inflow_manual.jsonl` に記入（Claudeが代筆可）
-5. 棚卸しシートの置き場を決める（UTAGE配布ページ／公開ページ／DMでPDF直送）→ URLを告知文・DM文へ
+4. ~~UTAGEの登録数~~ **✅ 2026-09-14に読み取り開始**（8/31週1・9/7週1・累計2）。以後は週1で `docs/utage_line_inflow_weekly.md` の手順（本人ログイン→Claudeが読む）
+4b. **🔴 LINE公式アカウント（オンラインダイエットコーチ @634vchhg）が送信上限に到達＝UTAGEのLINE配信がエラー。** 問診導線の3通が届かない恐れ。LINE公式の管理画面でプラン変更/追加購入 → UTAGE右上の更新アイコン（本人のみ）
+5. ~~棚卸しシートの置き場~~ **✅ https://hiro0183.github.io/uplink-lp/tanaoroshi/ に公開（2026-09-14）**。固定スレッドに4本目（「表」の受け取り方）を足すのは本人
 6. A4「会話5枠→2枠」の承認
 7. （権限取得後）毎朝10分、`engage/YYYY-MM-DD.md` の5件に返信。**送信は必ず人間**
 
