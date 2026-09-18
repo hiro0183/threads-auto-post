@@ -138,22 +138,7 @@ def daily_reach(days: int = 7, token: str | None = None) -> list:
         # 2026-08-27: SLOT_PLANを10→24枠に拡張したとき、まだ10枠で書かれていた原稿の日が
         # 10/24＝42%と誤警報になるため。到達率が測るのは「書いた原稿が全部出たか」であって、
         # 「原稿が書かれたか」は司令室（ops_dashboard）の担当。役割を混ぜない。
-        slots = _slots_for_date(d)
-        if not slots:
-            # 2026-09-18: 週5本（月〜金・07:30の1枠）へ移行。
-            # 原稿が無い日＝土日の休み＝異常ではない。ここで🚨を出すと毎週末に誤報が飛ぶ。
-            result.append({
-                "date": d,
-                "expected": 0,
-                "actual": 0,
-                "rate": 100.0,
-                "rest": True,
-                "note": "原稿なし＝休み（週5本・月〜金）",
-                "matched": [],
-                "missing": [],
-                "unmatched_posts": 0,
-            })
-            continue
+        slots = _slots_for_date(d) or all_slots
         expected = len(slots)
         assigned, extra = _assign_slots(rows, slots)
         actual = len(assigned)

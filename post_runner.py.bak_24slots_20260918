@@ -47,19 +47,32 @@ from db_state import load_posted_state, save_posted_state, is_posted
 # 2026-09-11: 導線枠(cta:True)は taboo #5 改定により 3本 → **1日1本**（22:00のみ）。
 # 2026-07-12: エンゲージ回復のため 50→10スロットへ削減（自己リーチ共食いの解除）。
 SLOT_PLAN = {
-    # ⚠️ 2026-09-18 大転換: 24枠/日 → 1枠/日（週5本）。なりあいさん決定。
-    # この垢の役割を「集客エンジン」から「紹介状」へ変更した。BNIで会った社長が
-    # 「この人に頼んでいいか」を確かめに来る場所。フォロワー・viewsは追わない。
-    # 追うのは「直近20投稿が名刺として読めるか」だけ（月1回・本人が見る）。
-    # 旧24枠は post_runner.py.bak_24slots_20260918 に保存。戻すならそこから。
-    #
-    # 時刻の根拠: 2026-09-08〜16の実測で 07:30 は中央値42・最大401（n=9）。
-    # 16:30 が中央値49（n=7）でわずかに上だが、サンプルが少なく最大値は07:30が上。
-    # ※1日24本のときの数字なので、1日1本での最適時刻は未検証。3ヶ月後に見直す。
-    #
-    # 週5本の出し方: 原稿がある日だけ出る（「原稿なしなら出さない」方針は維持）。
-    # 土日は原稿を作らない＝自動的に休む。月1回20本まとめて作る。
-    "07:30": {"type": "tree", "cta": False, "layer": "紹介状"},
+    # 拡散=金額/N選/期間型で作る（「僕」「セリフ」「疑問形」「感情語」は入れない）／信頼=保存もの／
+    # 会話=疑問形の書き出しを許可する唯一の層・viewsで評価しない／導線=CTA。詳細は prompts/funnel_rules.md
+    "06:00": {"type": "tree", "cta": False, "layer": "拡散"},
+    "07:30": {"type": "tree", "cta": False, "layer": "拡散"},
+    "08:00": {"type": "tree", "cta": False, "layer": "拡散"},
+    "09:00": {"type": "tree", "cta": False, "layer": "拡散"},
+    "10:00": {"type": "tree", "cta": False, "layer": "信頼"},
+    "10:30": {"type": "tree", "cta": False, "layer": "信頼"},
+    "11:00": {"type": "tree", "cta": False, "layer": "信頼"},  # AI×経営はここに1本（毎日1本のまま継続）
+    "12:00": {"type": "tree", "cta": False, "layer": "拡散"},  # 50枠時代のviews中央値178で全枠トップ
+    "12:45": {"type": "tree", "cta": False, "layer": "信頼"},
+    "13:15": {"type": "tree", "cta": False, "layer": "信頼"},
+    "14:00": {"type": "tree", "cta": False, "layer": "信頼"},
+    "14:30": {"type": "tree", "cta": False, "layer": "信頼"},
+    "15:00": {"type": "tree", "cta": False, "layer": "信頼"},
+    "16:00": {"type": "tree", "cta": False, "layer": "信頼"},
+    "16:30": {"type": "tree", "cta": False, "layer": "拡散"},
+    "17:00": {"type": "tree", "cta": False, "layer": "信頼"},
+    "17:30": {"type": "tree", "cta": False, "layer": "会話"},
+    "18:15": {"type": "tree", "cta": False, "layer": "会話"},
+    "18:45": {"type": "tree", "cta": False, "layer": "会話"},
+    "19:30": {"type": "tree", "cta": False, "layer": "信頼"},  # 2026-09-11: CTA解除（導線→信頼）
+    "20:00": {"type": "tree", "cta": False, "layer": "会話"},  # 2026-09-11: CTA解除。会話枠=あり方の置き場
+    "20:40": {"type": "tree", "cta": False, "layer": "拡散"},
+    "21:20": {"type": "tree", "cta": False, "layer": "会話"},
+    "22:00": {"type": "tree", "cta": True,  "layer": "導線"},  # 2026-09-11: CTAはこの1枠だけ（taboo #5改定=1日1本）。3枠中この枠が実測中央値最高(12 / 19:30=10 / 20:00=7)
 }
 
 # Renderが投稿しに行く時刻。SLOT_PLANから導出するため、両者がズレることは構造上ありえない。
