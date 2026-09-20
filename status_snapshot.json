@@ -1,15 +1,10 @@
 {
   "account": "コンサル垢",
-  "updated": "2026-09-20 07:34",
+  "updated": "2026-09-21 05:00",
   "todos": [
     {
       "title": "IGストーリー投稿（1〜2分）",
-      "detail": "画像あり → スマホのOneDriveアプリ「IGストーリー投稿」から 2026-09-20.png をアップ",
-      "flag": false
-    },
-    {
-      "title": "今日分プレビュー確認（1分）",
-      "detail": "コンサル投稿確認\\2026-09-20.txt（昨日の昼検品時に生成・品質ゲート⚠️だけ注意）",
+      "detail": "画像あり → スマホのOneDriveアプリ「IGストーリー投稿」から 2026-09-21.png をアップ",
       "flag": false
     },
     {
@@ -18,21 +13,26 @@
       "flag": true
     },
     {
-      "title": "🚨投稿時刻に原稿が無いスロットあり（1件・投稿が抜けます）",
-      "detail": "07:30 が posts\\2026-09-20.json に無い → SLOT_PLAN（post_runner.py）とその日の原稿スロットが食い違っています",
+      "title": "⚠️Threads原稿の鮮度異常",
+      "detail": "Claude Codeで「今日の投稿が古い/未pushと出てる、調べて」と伝える（posts\\2026-09-21.json がありません（生成されていない））",
       "flag": true
     },
     {
-      "title": "【日曜】自動生成されたThreads週次企画を確認（5分）",
-      "detail": "04:06にThreadsプラン(クラウド・フック70本)が自動生成済み → weekly_plan を一瞥。⚠️があれば対応",
+      "title": "【月曜】自動生成されたIGストーリー週次プランを確認（5分）",
+      "detail": "05:10にこのPC(Opus 4.8)がIGストーリー週次プランを自動生成済み → ig_stories\\plan を一瞥。⚠️があれば対応",
       "flag": false
+    },
+    {
+      "title": "⚠️LINE流入の記入待ち（2026-09-14週）",
+      "detail": "UTAGEの流入経路（mtid=uVqmOIrsLg8j）の当週LINE登録数を state/line_inflow_manual.jsonl に記入してください（Claudeに数字を言えば代筆。未記入だと導線の効果測定ができません）",
+      "flag": true
     }
   ],
   "checks": [
     {
       "label": "自動タスク全体",
       "ok": true,
-      "detail": "最終チェック 2026-09-19 04:55"
+      "detail": "最終チェック 2026-09-21 04:55"
     },
     {
       "label": "実際に投稿されたか（到達率）",
@@ -41,43 +41,43 @@
     },
     {
       "label": "フォロワー記録",
-      "ok": false,
-      "detail": "今日分が未記録"
+      "ok": true,
+      "detail": "913人"
     },
     {
       "label": "インサイト収集",
       "ok": true,
-      "detail": "最新: 2026-09-17"
+      "detail": "最新: 2026-09-19"
     },
     {
       "label": "IGストーリー準備",
       "ok": true,
-      "detail": "画像あり → スマホのOneDriveアプリ「IGストーリー投稿」から 2026-09-20.png をアップ"
+      "detail": "画像あり → スマホのOneDriveアプリ「IGストーリー投稿」から 2026-09-21.png をアップ"
     },
     {
       "label": "今日のThreads投稿",
-      "ok": true,
-      "detail": "posts\\2026-09-20.json（09/18 21:10 push済みの新原稿）"
+      "ok": false,
+      "detail": "posts\\2026-09-21.json がありません（生成されていない）"
     },
     {
       "label": "投稿時刻と原稿のスロット一致",
-      "ok": false,
-      "detail": "ズレあり: 07:30 に原稿が無い"
+      "ok": null,
+      "detail": "確認できず（今日の原稿が無い）"
     },
     {
       "label": "今日分の検品(Haiku)",
       "ok": null,
-      "detail": "検品のNG 2件は 09/18 21:10 の原稿修正より前の結果です（修正後の再検品がまだです・中身は posts/quality_gate/2026-09-20_inspection.json）"
+      "detail": "未実施（毎朝04:45に自動実行）"
     },
     {
       "label": "明日分の原稿と昼検品",
       "ok": null,
-      "detail": "週次プラン待ち（月曜分は当日朝06:30に自動生成）"
+      "detail": "原稿あり・12:00に検品予定"
     }
   ],
   "metrics": [
     {
-      "value": 0,
+      "value": 913,
       "unit": "人",
       "caption": "フォロワー"
     },
