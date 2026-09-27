@@ -18,6 +18,7 @@
 
 import sys
 import json
+import re
 import requests
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
@@ -31,6 +32,12 @@ REACH_STATUS_FILE = BASE_DIR / "reach_status.json"
 # スロット対応づけの許容幅。Render再起動後のrecover_missed_slotsで
 # 数時間遅れて投稿されることがあるため広めに取る。
 SLOT_MATCH_MINUTES = 180
+
+# posts/{date}.json のキーのうち、本物のスロットとみなす形式（HH:MM）。
+# 2026-09-19に "_旧_07:30" や "_停止メモ" のような退避キー・メモキーへ
+# リネームしたところ、これらもスロット扱いされて時刻分解に失敗し、
+# /reach が500を返し続けた（reach_status.jsonが7日間凍結）。
+SLOT_KEY_RE = re.compile(r"^\d{2}:\d{2}$")
 
 
 def fetch_recent_posts(token: str, limit: int = 100) -> list:
@@ -72,7 +79,11 @@ def _assign_slots(posts: list, slots: list) -> tuple[dict, list]:
         minutes = p["jst"].hour * 60 + p["jst"].minute
         best, best_diff = None, None
         for s in remaining:
-            h, m = map(int, s.split(":"))
+            try:
+                h, m = map(int, s.split(":"))
+            except ValueError:
+                # HH:MM形式でないキー（退避キー・メモキーの混入）はスロットとして扱わない。
+                continue
             diff = abs(minutes - (h * 60 + m))
             if diff <= SLOT_MATCH_MINUTES and (best_diff is None or diff < best_diff):
                 best, best_diff = s, diff
@@ -88,8 +99,9 @@ def _slots_for_date(date_str: str) -> list:
     """その日の原稿 posts/{date}.json に実際に書かれているスロット（空配列は休止として除外）。
 
     原稿が無ければ空リストを返す（呼び出し側が SLOT_PLAN 全枠にフォールバックする）。
+    キーがHH:MM形式でないもの（"_旧_07:30" や "_停止メモ" のような退避キー・メモキー）は
+    スロットではないので除外する。
     """
-    import json
     f = Path(__file__).resolve().parent / "posts" / f"{date_str}.json"
     if not f.exists():
         return []
@@ -97,7 +109,10 @@ def _slots_for_date(date_str: str) -> list:
         data = json.loads(f.read_text(encoding="utf-8"))
     except Exception:
         return []
-    return [slot for slot, posts in data.items() if posts]
+    return [
+        slot for slot, posts in data.items()
+        if SLOT_KEY_RE.match(slot) and posts
+    ]
 
 
 def daily_reach(days: int = 7, token: str | None = None) -> list:
