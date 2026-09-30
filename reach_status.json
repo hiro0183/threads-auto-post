@@ -2,6 +2,17 @@
   "alert": false,
   "daily": [
     {
+      "actual": 0,
+      "date": "2026-09-29",
+      "expected": 0,
+      "matched": [],
+      "missing": [],
+      "note": "原稿なし＝休み（週5本・月〜金）",
+      "rate": 100.0,
+      "rest": true,
+      "unmatched_posts": 0
+    },
+    {
       "actual": 1,
       "date": "2026-09-28",
       "expected": 1,
@@ -66,32 +77,21 @@
       "missing": [],
       "rate": 100.0,
       "unmatched_posts": 0
-    },
-    {
-      "actual": 1,
-      "date": "2026-09-22",
-      "expected": 1,
-      "matched": [
-        "07:30"
-      ],
-      "missing": [],
-      "rate": 100.0,
-      "unmatched_posts": 0
     }
   ],
   "days": 7,
   "miss_streak": 0,
-  "updated": "2026-09-29 10:03",
+  "updated": "2026-09-30 09:34",
   "week_rate": 100.0,
   "yesterday": {
-    "actual": 1,
-    "date": "2026-09-28",
-    "expected": 1,
-    "matched": [
-      "07:30"
-    ],
+    "actual": 0,
+    "date": "2026-09-29",
+    "expected": 0,
+    "matched": [],
     "missing": [],
+    "note": "原稿なし＝休み（週5本・月〜金）",
     "rate": 100.0,
+    "rest": true,
     "unmatched_posts": 0
   }
 }
