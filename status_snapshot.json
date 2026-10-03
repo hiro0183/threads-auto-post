@@ -1,21 +1,21 @@
 {
   "account": "コンサル垢",
-  "updated": "2026-10-03 07:36",
+  "updated": "2026-10-04 05:00",
   "todos": [
     {
       "title": "IGストーリー投稿（1〜2分）",
-      "detail": "画像あり → スマホのOneDriveアプリ「IGストーリー投稿」から 2026-10-03.png をアップ",
+      "detail": "画像あり → スマホのOneDriveアプリ「IGストーリー投稿」から 2026-10-04.png をアップ",
       "flag": false
     },
     {
-      "title": "⚠️自動化の失敗対応",
-      "detail": "Claude Codeで「ヘルスチェックが失敗してる、調べて」と伝える",
+      "title": "⚠️Threads原稿の鮮度異常",
+      "detail": "Claude Codeで「今日の投稿が古い/未pushと出てる、調べて」と伝える（posts\\2026-10-04.json がありません（生成されていない））",
       "flag": true
     },
     {
-      "title": "⚠️Threads原稿の鮮度異常",
-      "detail": "Claude Codeで「今日の投稿が古い/未pushと出てる、調べて」と伝える（posts\\2026-10-03.json がありません（生成されていない））",
-      "flag": true
+      "title": "【日曜】自動生成されたThreads週次企画を確認（5分）",
+      "detail": "04:06にThreadsプラン(クラウド・フック70本)が自動生成済み → weekly_plan を一瞥。⚠️があれば対応",
+      "flag": false
     },
     {
       "title": "⚠️LINE流入の記入待ち（2026-09-14週）",
@@ -26,8 +26,8 @@
   "checks": [
     {
       "label": "自動タスク全体",
-      "ok": false,
-      "detail": "最終チェック 2026-10-02 04:55"
+      "ok": true,
+      "detail": "最終チェック 2026-10-04 04:55"
     },
     {
       "label": "実際に投稿されたか（到達率）",
@@ -36,8 +36,8 @@
     },
     {
       "label": "フォロワー記録",
-      "ok": false,
-      "detail": "今日分が未記録"
+      "ok": true,
+      "detail": "909人"
     },
     {
       "label": "インサイト収集",
@@ -47,12 +47,12 @@
     {
       "label": "IGストーリー準備",
       "ok": true,
-      "detail": "画像あり → スマホのOneDriveアプリ「IGストーリー投稿」から 2026-10-03.png をアップ"
+      "detail": "画像あり → スマホのOneDriveアプリ「IGストーリー投稿」から 2026-10-04.png をアップ"
     },
     {
       "label": "今日のThreads投稿",
       "ok": false,
-      "detail": "posts\\2026-10-03.json がありません（生成されていない）"
+      "detail": "posts\\2026-10-04.json がありません（生成されていない）"
     },
     {
       "label": "投稿時刻と原稿のスロット一致",
@@ -72,7 +72,7 @@
   ],
   "metrics": [
     {
-      "value": 0,
+      "value": 909,
       "unit": "人",
       "caption": "フォロワー"
     },
