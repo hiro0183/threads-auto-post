@@ -470,3 +470,4 @@
 {"timestamp": "2026-10-02T07:30:00.000865+09:00", "slot": "07:30", "status": "error", "post_ids": [], "posts": [], "post_type": "tree", "error": "原稿なし（無検品の緊急生成を回避してスキップ）"}
 {"timestamp": "2026-10-02T09:55:39.748459+09:00", "slot": "07:30", "status": "error", "post_ids": [], "posts": [], "post_type": "tree", "error": "原稿なし（無検品の緊急生成を回避してスキップ）"}
 {"timestamp": "2026-10-03T07:30:00.000900+09:00", "slot": "07:30", "status": "error", "post_ids": [], "posts": [], "post_type": "tree", "error": "原稿なし（無検品の緊急生成を回避してスキップ）"}
+{"timestamp": "2026-10-04T07:30:00.001416+09:00", "slot": "07:30", "status": "error", "post_ids": [], "posts": [], "post_type": "tree", "error": "原稿なし（無検品の緊急生成を回避してスキップ）"}
