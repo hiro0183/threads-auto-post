@@ -138,7 +138,7 @@ def ig_story_today(today: str):
             return (None, f"🚨{gap}日間プラン未作成が続いています（最新プランは{latest}まで。"
                           f"週次セッション(Threads_WeeklySession)が失敗している可能性・"
                           f"Claude Codeで「IGストーリーの週次セッションを確認して」と伝える）")
-    return (None, "今日のプランなし（月曜のFable5セッションで作成）")
+    return (None, "今日のプランなし（日曜04:20にクラウド定期便が週次プランを作成）")
 
 
 def _git_commit_ts(rel_path: str):
