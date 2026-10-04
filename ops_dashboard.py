@@ -67,6 +67,21 @@ def latest_insight_date() -> str:
     return latest or "-"
 
 
+def last_post_date(today: str):
+    """posts/ にある原稿のうち、today 以前で最新の日付(YYYY-MM-DD)。無ければNone。
+    2026-10-04: 9/18の週5本運用では投稿が無い日が普通にあるため、インサイト判定の基準日に使う。"""
+    best = None
+    if POSTS_DIR.exists():
+        for f in POSTS_DIR.glob("*.json"):
+            try:
+                datetime.strptime(f.stem, "%Y-%m-%d")
+            except ValueError:
+                continue
+            if f.stem <= today and (best is None or f.stem > best):
+                best = f.stem
+    return best
+
+
 def follower_today(today: str):
     if not FOLLOWER_LOG.exists():
         return None
@@ -212,18 +227,15 @@ def posts_freshness(date_str: str):
                     f"GitHubには生成済み・このPCが同期遅れです（投稿は正常。Claude Codeで"
                     f"「PCをGitHubに同期して」と伝えれば追いつきます）",
                     "sync_lag")
-        return (False, f"posts\\{date_str}.json がありません（生成されていない）", "not_generated")
+        # 2026-10-04: 9/18の週5本運用に合わせ、「月1回まとめて作る運用」と分かる文言へ。
+        return (False, f"posts\\{date_str}.json が無い（月次の原稿づくりが未実施の可能性。合言葉『コンサル垢の10月分』など）", "not_generated")
     if _git_has_local_changes(rel):
         return (False, f"生成済みだが未push（GitHubに届いておらずRenderは古い版を投稿中）", "unpushed")
     commit_ts = _git_commit_ts(rel)
     if commit_ts is None:
         return (False, "未コミット（GitHubに届いていない）", "unpushed")
-    plan_file = _weekly_plan_for(date_str)
-    if plan_file is not None:
-        plan_ts = _git_commit_ts(f"posts/weekly_plan/{plan_file.name}")
-        if plan_ts and commit_ts < plan_ts:
-            old = datetime.fromtimestamp(commit_ts).strftime("%m/%d")
-            return (False, f"古い原稿（{old}コミットのまま・週次プランが反映されていない）", "stale")
+    # 2026-10-04: 週次プラン比較の stale 判定を無効化。9/18から週次企画は停止し weekly_plan は
+    # もう更新されない（原稿は月1回まとめて作る）。残すと「プランより古い」の誤判定の元になる。
     fresh = datetime.fromtimestamp(commit_ts).strftime("%m/%d %H:%M")
     return (True, f"posts\\{date_str}.json（{fresh} push済みの新原稿）", "ok")
 
@@ -233,7 +245,8 @@ def inspection_status(date_str: str):
     返り値: (ok: bool|None, 詳細)"""
     f = POSTS_DIR / "quality_gate" / f"{date_str}_inspection.json"
     if not f.exists():
-        return (None, "未実施（毎朝04:45に自動実行）")
+        # 2026-10-04: コンサル垢の検品は月1回（日次検品はラポール垢のみ）。無くても異常ではない。
+        return (None, "検品は月1回（日次検品はラポール垢のみ）")
     try:
         results = json.loads(f.read_text(encoding="utf-8"))
     except Exception:
@@ -279,19 +292,18 @@ def inspection_status(date_str: str):
 def tomorrow_status(tomorrow: str, now: datetime):
     """明日分の原稿と昼検品の状態（2026-07-18新設・昼12:00検品体制）。
     返り値: (ok: bool|None, 詳細)"""
+    # 2026-10-04: 9/18の週5本運用に合わせ、原稿が無い・昼検品が無いは異常にしない（灰色）。
+    # 日次の昼検品はラポール垢のみ。検品結果ファイルがあってNGの時だけ赤。
+    tdt = datetime.strptime(tomorrow, "%Y-%m-%d")
+    if tdt.weekday() >= 5:
+        return (None, "明日は土日で休み（週5本・月〜金）")
     posts_file = POSTS_DIR / f"{tomorrow}.json"
     if not posts_file.exists():
-        if _weekly_plan_for(tomorrow) is None:
-            return (None, "週次プラン待ち（月曜分は当日朝06:30に自動生成）")
-        if now.hour >= 7:
-            return (False, "明日分の原稿が未生成（クラウド06:00便が動いていない可能性）")
-        return (None, "クラウドが06:00に生成予定")
+        return (None, "明日分の原稿なし（原稿は月1回まとめて作る運用・検品も月1回）")
     insp_ok, insp_detail = inspection_status(tomorrow)
     if insp_ok is None:
-        if now.hour >= 13:
-            return (False, "原稿はあるが昼12:00の検品が未実施")
-        return (None, "原稿あり・12:00に検品予定")
-    return (insp_ok, f"昼検品: {insp_detail}")
+        return (None, f"原稿あり・{insp_detail}")
+    return (insp_ok, f"検品: {insp_detail}")
 
 
 def health_status():
@@ -388,21 +400,37 @@ def _file_url(p) -> str:
     return "file:///" + str(p).replace("\\", "/")
 
 
-def collect_data():
-    now = datetime.now()
+def collect_data(now=None):
+    # 2026-10-04: now を差し込めるようにした（平日判定のテスト用。通常は引数なし）
+    now = now or datetime.now()
     today = now.strftime("%Y-%m-%d")
     tomorrow = (now + timedelta(days=1)).strftime("%Y-%m-%d")
 
     hc_ok, hc_time = health_status()
     fc = follower_today(today)
     li = latest_insight_date()
-    ok_insight = li >= (now - timedelta(days=3)).strftime("%Y-%m-%d")
+    # 2026-10-04: 9/18の週5本運用に合わせ、「投稿があったのに取れていない」時だけ赤。
+    # 基準＝最後に投稿があった日（posts/の今日以前の最新）−1日。投稿が無い期間は集めるものが無い。
+    last_post = last_post_date(today)
+    if li == "-":
+        ok_insight = False
+    elif last_post is None:
+        ok_insight = True
+    else:
+        ok_insight = li >= (datetime.strptime(last_post, "%Y-%m-%d") - timedelta(days=1)).strftime("%Y-%m-%d")
     ig_kind, ig_detail = ig_story_today(today)
     ig_ok = ig_kind in ("text", "photo")
-    today_posts_ok, posts_detail, posts_kind = posts_freshness(today)
-    insp_ok, insp_detail = inspection_status(today)
+    # 2026-10-04: 土日は投稿が無いのが正常（週5本・月〜金）。投稿・検品・スロット一致は灰色。
+    is_weekend = now.weekday() >= 5
+    if is_weekend:
+        today_posts_ok, posts_detail, posts_kind = (None, "土日は休み（週5本・月〜金）", "weekend")
+        insp_ok, insp_detail = (None, "土日は休み（週5本・月〜金）")
+        missing_slots, slot_check_skipped = ([], True)
+    else:
+        today_posts_ok, posts_detail, posts_kind = posts_freshness(today)
+        insp_ok, insp_detail = inspection_status(today)
+        missing_slots, slot_check_skipped = slot_schedule_mismatch(today)
     tmr_ok, tmr_detail = tomorrow_status(tomorrow, now)
-    missing_slots, slot_check_skipped = slot_schedule_mismatch(today)
 
     reach_ok, reach_detail = reach_status_check()
 
@@ -414,15 +442,15 @@ def collect_data():
         # 実物（Threads API）を見る検査を司令室の一番上に置く。
         ("実際に投稿されたか（到達率）", reach_ok, reach_detail),
         ("フォロワー記録", fc is not None, f"{fc:,}人" if fc else "今日分が未記録"),
-        ("インサイト収集", ok_insight, f"最新: {li}"),
+        ("インサイト収集", ok_insight, f"最新: {li}（最後の投稿: {last_post or 'なし'}）"),
         ("IGストーリー準備", ig_ok, ig_detail if ig_ok else ig_detail),
         ("今日のThreads投稿", today_posts_ok, posts_detail),
         # 確認できない場合は「灰色(None)」にする。旧実装は skipped を True（緑）にしており、
         # 原稿が無い日ほど「一致OK」と表示される逆転が起きていた（8/24に確認）。
         ("投稿時刻と原稿のスロット一致", None if slot_check_skipped else (not missing_slots),
-         "確認できず（今日の原稿が無い）" if slot_check_skipped else ("一致" if not missing_slots else f"ズレあり: {', '.join(missing_slots)} に原稿が無い")),
-        ("今日分の検品(Haiku)", insp_ok, insp_detail),
-        ("明日分の原稿と昼検品", tmr_ok, tmr_detail),
+         ("土日は休み（週5本・月〜金）" if is_weekend else "確認できず（今日の原稿が無い）") if slot_check_skipped else ("一致" if not missing_slots else f"ズレあり: {', '.join(missing_slots)} に原稿が無い")),
+        ("今日分の検品", insp_ok, insp_detail),
+        ("明日分の原稿と検品", tmr_ok, tmr_detail),
     ]
 
     # 今日やること: (タイトル, 詳細, リンク)。リンクはPCのHTMLでクリックすると
@@ -457,16 +485,20 @@ def collect_data():
             todos.append(("⚠️PCの同期遅れ（投稿は正常・追いつくだけ）",
                           f"Claude Codeで「PCをGitHubに同期して」と伝える（{posts_detail}）", None))
         else:
-            todos.append(("⚠️Threads原稿の鮮度異常",
-                          f"Claude Codeで「今日の投稿が古い/未pushと出てる、調べて」と伝える（{posts_detail}）", None))
+            if posts_kind == "not_generated":
+                # 2026-10-04: 月1回まとめて作る運用に合わせた声かけ
+                todos.append(("⚠️今月分の原稿がありません（月1回まとめて作る運用）",
+                              f"Claude Codeで「コンサル垢の今月分を作りたい」と伝える（{posts_detail}）", None))
+            else:
+                todos.append(("⚠️Threads原稿の鮮度異常",
+                              f"Claude Codeで「今日の投稿が古い/未pushと出てる、調べて」と伝える（{posts_detail}）", None))
     if insp_ok is False:
         todos.append(("⚠️今日分の検品でNGあり", f"Claude Codeで「検品NGを見せて」と伝える（{insp_detail}）", None))
     if tmr_ok is False:
         todos.append(("⚠️明日分に問題あり（夜までに直せばOK）", f"Claude Codeで「明日分の検品NGを直して」と伝える（{tmr_detail}）", None))
-    if now.weekday() == 6:
-        todos.append(("【日曜】自動生成されたThreads週次企画を確認（5分）", "04:06にThreadsプラン(クラウド・フック70本)が自動生成済み → weekly_plan を一瞥。⚠️があれば対応", None))
+    # 2026-10-04: 日曜のThreads週次企画の案内は削除（9/18に停止）。IG週次プランはクラウド(日曜04:20 JST)へ移設済み。
     if now.weekday() == 0:
-        todos.append(("【月曜】自動生成されたIGストーリー週次プランを確認（5分）", "05:10にこのPC(Opus 4.8)がIGストーリー週次プランを自動生成済み → ig_stories\\plan を一瞥。⚠️があれば対応", None))
+        todos.append(("【月曜】自動生成されたIGストーリー週次プランを確認（5分）", "日曜04:20にクラウドがIGストーリー週次プランを自動生成済み → ig_stories\\plan を一瞥。⚠️があれば対応", None))
     line_pending = line_manual_pending()
     if line_pending:
         todos.append((f"⚠️LINE流入の記入待ち（{line_pending}週）",
@@ -621,18 +653,16 @@ def build_md(data: dict) -> str:
     L.append("| 04:50 | このPC | インサイト集計（保険の二重実行） |")
     L.append("| 04:55 | このPC | 全タスクのヘルスチェック |")
     L.append("| 05:00 | このPC | この司令室ノート＋ステータスカード画像を更新（**原稿の鮮度もここで検査**）→ 起床時に全部揃っている |")
-    L.append("| 06:00〜21:40 | Render（クラウド） | Threadsへ自動投稿（SLOT_PLANの10枠・PCが寝ていても動く） |")
-    L.append("| 06:00 | claude.ai（クラウド・Sonnet） | 明日・2日後・3日後分のThreads本文生成→自己チェック→GitHubへpush |")
+    L.append("| 月〜金 07:30 | Render（クラウド） | Threadsへ自動投稿（月〜金 07:30の1枠・PCが寝ていても動く） |")
+    L.append("| （停止） | 日次の原稿生成・週次企画 | 2026-09-18に停止。Threads原稿は月1回まとめて作る |")
     L.append("| 07:00 | Render | **到達率チェック**: 前日ぶんが実際にThreadsへ出たかをAPIで確認（**2026-08-24新設**） |")
     L.append("| 07:30 | claude.ai（クラウド） | **到達率チェックと実測取り込み**: Renderの実測をリポジトリへ取り込み、出ていなければ🚨（**2026-08-24新設**） |")
-    L.append("| **日曜 04:06** | claude.ai（クラウド・Opus 4.8） | **Threads週次プラン確定**（フック70本。**2026-08-24に月曜から前倒し**） |")
-    L.append("| 月曜 05:10 | このPC（Opus 4.8） | **IGストーリー週次プランのみ**生成（Threadsは触らない） |")
+    L.append("| **日曜 04:20** | claude.ai（クラウド定期便・Sonnet） | **IGストーリー週次プラン**生成（2026-10-04: PCの月曜05:10から移設済み） |")
     L.append("| 月曜 06:40 | このPC | **IGストーリー1週間分を一括生成** → `OneDrive\\IGストーリー投稿\\今週分\\`（1回DL→毎日1枚アップ） |")
-    L.append("| 12:00 | claude.ai（クラウド） | **毎日の検品**: 3日先までを生成AIとは別セッションで検品（これが事故ゼロの肝） |")
+    L.append("| 12:00 | claude.ai（クラウド） | 毎日の検品（**ラポール垢のみ**。コンサル垢は月1回） |")
     L.append("| 23:30 | Render（クラウド） | 投稿ログをGitHubへ保存 |")
     L.append("")
-    L.append("**週次**: 日曜04:06にクラウドがThreadsフック70本を、月曜05:10にこのPCがIGストーリー7日分を、それぞれ自動企画 → あなたは確認のみ。※月1回のスキーム見直しだけFable 5セッションを手動起動")
-    L.append(f"**次回の月曜セッション（IGストーリー）**: {data['next_monday']}")
+    L.append("**週次**: 日曜04:20にクラウドがIGストーリー7日分を自動企画 → あなたは確認のみ。Threadsは月1回まとめて原稿を作る（週5本・月〜金）")
     L.append("")
 
     L.append("## 📂 どこに何があるか")
@@ -674,21 +704,21 @@ def build_html(data: dict) -> str:
     depts = [
         ("データ収集部", "Insight Room", "前日の投稿データ回収・フォロワー記録・インサイト集計",
          "毎朝 04:30〜04:50", "🤖 Python", st(data["fc"] is not None and data["ok_insight"])),
-        ("分析部", "Analytics Room", "投稿パターン分析・週次レポート生成（日曜・週次企画ルーティン内でweekly_report.pyを実行）",
+        ("分析部", "Analytics Room", "インサイトの分析（2026-09-18に週次レポート・週次企画は停止。データ集計のみ）",
          "毎朝 04:45", "🤖 Python", st(data["ok_insight"])),
-        ("企画戦略部", "Strategy Room", "翌週のThreadsフック70本（日曜04:06クラウド）＋IGストーリー7日分（月曜05:10このPC）を自動企画（あなたは日曜/月曜朝に確認のみ）",
-         "日曜 04:06／月曜 05:10 自動", "🧠 Opus 4.8（クラウド＋ヘッドレス）",
+        ("企画戦略部", "Strategy Room", "IGストーリー7日分を自動企画（日曜04:20クラウド）。Threadsは月1回まとめて企画",
+         "日曜 04:20（IG）／Threadsは月1回", "🤖 Sonnet（クラウド定期便）／Threadsの企画は月1回Claude Code手動",
          st(True, idle_condition=not data["plan_covers_today"])),
-        ("執筆部", "Writing Room", "翌日・2日後・3日後分のThreads本文を生成（フックは一字も変えない）",
-         "毎朝 06:00", "🤖 Sonnet（claude.aiクラウドルーティン）", st(data["today_posts_ok"])),
-        ("品質管理部", "Quality Gate", "3日先までを、執筆部と独立してSonnetが検品・NGは司令室に赤表示",
-         "毎日 12:00", "🤖 Sonnet 5（サブスク実行・別呼び出し）",
+        ("執筆部", "Writing Room", "Threads原稿は月1回まとめて作成（週5本・月〜金）",
+         "月1回（手動起動）", "🤖 Sonnet（Claude Code）", st(data["today_posts_ok"], idle_condition=data["today_posts_ok"] is None)),
+        ("品質管理部", "Quality Gate", "Threadsは月1回検品（日次検品はラポール垢のみ）",
+         "月1回（日次検品はラポール垢のみ）", "🤖 Haiku（別セッション）",
          st(data["insp_ok"], idle_condition=data["insp_ok"] is None)),
         ("到達率監視部", "Reach Room", "「原稿があるか」ではなく「実際にThreadsへ出たか」をAPIで直接確認（2026-08-24新設）",
          "毎朝 07:00（Render）／07:30（クラウド取り込み）", "☁️ Render + クラウド",
          st(data.get("reach_ok"), idle_condition=data.get("reach_ok") is None)),
-        ("投稿部", "Posting Room", "Threadsへ自動投稿（SLOT_PLANの10枠・PCが寝ていても動く）",
-         "毎日 06:00〜21:40", "☁️ Render", st(data["today_posts_ok"])),
+        ("投稿部", "Posting Room", "Threadsへ自動投稿（月〜金 07:30の1枠・Render）",
+         "月〜金 07:30", "☁️ Render", st(data["today_posts_ok"], idle_condition=data["today_posts_ok"] is None)),
         ("IGクリエイティブ部", "Story Studio", "黒バック長文ストーリー画像を自動生成（月曜に1週間分を一括→「今週分」フォルダにまとめ）",
          "毎朝 04:45＋毎週月曜 06:40", "🤖 Python", st(data["ig_ok"], idle_condition=not data["plan_covers_today"] and not data["ig_ok"])),
         ("監査部", "Audit Room", "全部門の成否チェック・この司令室の自動更新",
@@ -798,7 +828,7 @@ def build_html(data: dict) -> str:
   </div>
   <div class="stats">
     <div class="stat"><div class="num">{n_active}<span style="font-size:14px">/{len(depts)}</span></div><div class="label">稼働部門</div></div>
-    <div class="stat"><div class="num">約10</div><div class="label">本日の自動投稿（Threads）</div></div>
+    <div class="stat"><div class="num">{'0' if data['today_posts_ok'] is None else '1'}</div><div class="label">本日の自動投稿（Threads・週5本）</div></div>
     <div class="stat"><div class="num">{len(data['todos'])}</div><div class="label">今日やること</div></div>
     <div class="stat{' alert' if n_ng else ''}"><div class="num">{n_ng}</div><div class="label">要対応</div></div>
   </div>
@@ -809,7 +839,7 @@ def build_html(data: dict) -> str:
     <ol>{todos_html}</ol>
   </div>
   <div class="footer">
-    スマホ用カード: OneDriveアプリ → Desktop → HIRAYASU → コンサルThreads → 運用司令室_今朝の状態.png ／ 次回の自動企画: Threadsは日曜04:06・IGストーリーは{data['next_monday']} 05:10
+    スマホ用カード: OneDriveアプリ → Desktop → HIRAYASU → コンサルThreads → 運用司令室_今朝の状態.png ／ 次回の自動企画: IGストーリーは日曜04:20（クラウド）・Threadsは月1回まとめて
   </div>
   </div>
 </body></html>"""
