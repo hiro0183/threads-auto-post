@@ -3,6 +3,17 @@
   "daily": [
     {
       "actual": 0,
+      "date": "2026-10-09",
+      "expected": 0,
+      "matched": [],
+      "missing": [],
+      "note": "原稿なし＝休み（週5本・月〜金）",
+      "rate": 100.0,
+      "rest": true,
+      "unmatched_posts": 0
+    },
+    {
+      "actual": 0,
       "date": "2026-10-08",
       "expected": 0,
       "matched": [],
@@ -66,26 +77,15 @@
       "rate": 100.0,
       "rest": true,
       "unmatched_posts": 0
-    },
-    {
-      "actual": 0,
-      "date": "2026-10-02",
-      "expected": 0,
-      "matched": [],
-      "missing": [],
-      "note": "原稿なし＝休み（週5本・月〜金）",
-      "rate": 100.0,
-      "rest": true,
-      "unmatched_posts": 0
     }
   ],
   "days": 7,
   "miss_streak": 0,
-  "updated": "2026-10-09 10:16",
+  "updated": "2026-10-10 10:00",
   "week_rate": 0.0,
   "yesterday": {
     "actual": 0,
-    "date": "2026-10-08",
+    "date": "2026-10-09",
     "expected": 0,
     "matched": [],
     "missing": [],
