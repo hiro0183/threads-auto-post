@@ -503,3 +503,5 @@
 {"timestamp": "2026-10-20T07:30:00.000992+09:00", "slot": "07:30", "status": "error", "post_ids": [], "posts": [], "post_type": "tree", "error": "原稿なし（無検品の緊急生成を回避してスキップ）"}
 {"timestamp": "2026-10-20T09:27:44.379114+09:00", "slot": "07:30", "status": "error", "post_ids": [], "posts": [], "post_type": "tree", "error": "原稿なし（無検品の緊急生成を回避してスキップ）"}
 {"timestamp": "2026-10-21T07:30:00.021567+09:00", "slot": "07:30", "status": "error", "post_ids": [], "posts": [], "post_type": "tree", "error": "原稿なし（無検品の緊急生成を回避してスキップ）"}
+{"timestamp": "2026-10-21T08:59:19.523432+09:00", "slot": "07:30", "status": "error", "post_ids": [], "posts": [], "post_type": "tree", "error": "原稿なし（無検品の緊急生成を回避してスキップ）"}
+{"timestamp": "2026-10-22T07:30:00.003679+09:00", "slot": "07:30", "status": "error", "post_ids": [], "posts": [], "post_type": "tree", "error": "原稿なし（無検品の緊急生成を回避してスキップ）"}
