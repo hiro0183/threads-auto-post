@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-院長の時間 棚卸しシート - PDF生成スクリプト (reportlab)
+社長の時間 棚卸しシート - PDF生成スクリプト (reportlab)
 実行: PYTHONIOENCODING=utf-8 python build_pdf.py
 """
 import os
@@ -92,8 +92,8 @@ def build_story():
 
     # ---------- header ----------
     story.append(Paragraph("FREE WORKSHEET", styles["kicker"]))
-    story.append(Paragraph("院長の時間　棚卸しシート", styles["h1"]))
-    story.append(Paragraph("1日2時間をつくるための、「院長がやらなくていい仕事」の見つけ方", styles["subtitle"]))
+    story.append(Paragraph("社長の時間　棚卸しシート", styles["h1"]))
+    story.append(Paragraph("1日2時間をつくるための、「社長がやらなくていい仕事」の見つけ方", styles["subtitle"]))
 
     byline_tbl = Table(
         [[Paragraph(
@@ -136,9 +136,9 @@ def build_story():
     # ---------- section 2 ----------
     story.append(Paragraph("② 使い方　3ステップ", styles["sectiontitle"]))
     steps = [
-        "昨日1日の仕事を、時刻つきで全部書き出します。施術も事務も、5分で終わることも省かずに書きます。",
+        "昨日1日の仕事を、時刻つきで全部書き出します。現場の仕事も事務も、5分で終わることも省かずに書きます。",
         "書き出したものを1つずつ、3つに分けます。<br/>"
-        "<b>残す</b>＝院長にしかできないこと　<b>渡す</b>＝人か仕組みに任せられること　<b>やめる</b>＝やめても何も起きないこと",
+        "<b>残す</b>＝社長にしかできないこと　<b>渡す</b>＝人か仕組みに任せられること　<b>やめる</b>＝やめても何も起きないこと",
         "「渡す」「やめる」の中から<b>1つだけ</b>選び、<b>いつまでにやるか</b>を書きます。期限を切らない気づきは、成果になりません。",
     ]
     step_rows = []
@@ -204,11 +204,11 @@ def build_story():
     # ---------- section 4: checklist ----------
     story.append(Paragraph("④ 「渡す」候補チェック", styles["sectiontitle"]))
     items = [
-        "予約リマインドの連絡", "予約変更・キャンセル待ちの連絡", "口コミへの返信の下書き",
-        "SNS投稿の下書き", "ブログの下書き", "HPの更新", "カルテの整理・清書",
-        "問診票の入力", "月の数字の集計", "領収書・請求書の整理", "物販の在庫確認と発注",
+        "予約・日程調整の連絡", "問い合わせへの返信", "口コミへの返信の下書き",
+        "SNS投稿の下書き", "ブログの下書き", "HPの更新", "議事録・メモの整理",
+        "見積書づくり", "月の数字の集計", "領収書・経費の整理", "請求書づくり",
         "備品の発注", "清掃", "写真の整理", "チラシ・POPづくり", "広告の運用",
-        "求人文の作成", "LINEの定型の返信", "セミナー・勉強会の申込み手続き", "施術中の電話対応",
+        "求人文の作成", "LINEの定型の返信", "セミナー・勉強会の申込み手続き", "会議中・作業中の電話対応",
     ]
     half = (len(items) + 1) // 2
     left_items, right_items = items[:half], items[half:]
@@ -256,9 +256,10 @@ def build_story():
     # ---------- section 6: CTA ----------
     cta_flow = [
         Paragraph("埋めたシートを持って", styles["cta_lead"]),
-        Paragraph("無料の経営の問診（Zoom30分・内容により最大60分）へ", styles["cta_main"]),
+        Paragraph("無料の経営の問診（Zoom60分）へ", styles["cta_main"]),
         Paragraph(
             "どの仕事から手放すと一番ラクになるかを、一緒に見ます。売り込みはしません。<br/>"
+            "時間ができたら、その時間で本当はどうしたいかも一緒に考えます。<br/>"
             "「うちはまだ早い」も、立派な答えです。",
             styles["cta_note"]),
         Paragraph(
@@ -297,7 +298,7 @@ def draw_footer(canvas, doc):
     label_w = canvas.stringWidth("ヒロ先生", "YuGoB", 8)
     canvas.setFont("YuGoR", 8)
     canvas.setFillColor(SUB)
-    canvas.drawString(left + label_w, y, "｜院長を現場から解放する仕掛け人")
+    canvas.drawString(left + label_w, y, "｜忙しい社長の未来を変える伴走者")
     canvas.drawRightString(right, y, f"{canvas.getPageNumber()} / 2")
     canvas.restoreState()
 
@@ -307,7 +308,7 @@ def main():
         OUT_PDF, pagesize=A4,
         leftMargin=16 * mm, rightMargin=16 * mm,
         topMargin=11 * mm, bottomMargin=17 * mm,
-        title="院長の時間 棚卸しシート",
+        title="社長の時間 棚卸しシート",
         author="ヒロ先生",
     )
     story = build_story()
